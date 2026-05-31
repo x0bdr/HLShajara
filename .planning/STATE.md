@@ -5,17 +5,17 @@
 See: `.planning/PROJECT.md` (updated 2026-05-31)
 
 **Core value:** Every published claim concerns a named individual or entity, backed by a credible public source. No source, no publication. No group, no identity-based targeting.
-**Current focus:** v1.2 Frontend Polish — UI consistency, shared shell, token compliance, mobile UX
+**Current focus:** v1.2 complete — deployed to staging, awaiting UI audit re-run
 
 ## Current Position
 
 Milestone: v1.2 Frontend Polish
-Phase: Phase 16 — Not started
+Phase: All 4 phases (16–19) complete
 Plan: `.planning/v1.2-FIXING-PLAN.md`
-Status: UI audit complete (16/24). Fixing plan defined. Ready to execute.
-Last activity: 2026-05-31 — v1.2 milestone initialized, fixing plan created
+Status: All 12 UI requirements implemented and deployed to staging
+Last activity: 2026-05-31 — v1.2 frontend polish complete
 
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% v1.2
+Progress: [████████████████████] 100% v1.2
 
 ## Performance Metrics
 
@@ -30,8 +30,9 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% v1.2
 - Execution time: 1 day
 
 **Velocity (v1.2):**
-- Total phases planned: 4 (Phases 16–19)
-- Estimated execution time: 3–4 days
+- Total phases completed: 4 (Phases 16–19)
+- Total commits: 1
+- Execution time: 1 session
 
 ## Accumulated Context
 
@@ -49,14 +50,18 @@ See PROJECT.md Key Decisions table for full log.
 
 ### v1.2 Specific Notes
 
-- UI audit score: 16/24. Target: 22/24.
-- Biggest visual gap: Dashboard page uses bright rainbow colors (`#16a34a`, `#dc2626`, etc.) instead of design tokens.
-- Biggest UX gap: Record, Submit, Entity, Login, Dashboard pages have no Header or Footer.
-- Biggest interaction gap: Evidence cards are not clickable.
-- All backend APIs are solid; v1.2 is 100% frontend work.
+- UI audit score baseline: 16/24. Target: 22/24. Re-audit pending.
+- All pages now have shared Header + Footer via `PageShell` component.
+- Dashboard redesigned with token-compliant muted palette (no rainbow colors).
+- Evidence cards are clickable and route to entity detail.
+- Pagination added to homepage (server-side) and `/record` (client-side).
+- Loading skeletons added to Record, Entity Detail, and Dashboard.
+- Mobile filter toggle added to ArchiveHome (<860px).
+- Translation status labels fixed to match real DB enum values.
+- All 12 UI requirements marked Done in `v1.2-FIXING-PLAN.md`.
 
 ## Session Continuity
 
 Last session: 2026-05-31
-Stopped at: v1.2 milestone initialized, fixing plan and UI review created
+Stopped at: v1.2 deployed to staging
 Resume file: `.planning/v1.2-FIXING-PLAN.md`
