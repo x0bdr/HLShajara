@@ -1,33 +1,17 @@
 import { NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { db } from "@/db";
 import { submissions } from "@/db/schema";
 import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
 import { getSession, unauthorizedResponse } from "@/lib/session";
-
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 5;
-const ipStore = new Map<string, number[]>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const windows = ipStore.get(ip) ?? [];
-  const recent = windows.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT_MAX) return false;
-  recent.push(now);
-  ipStore.set(ip, recent);
-  return true;
-}
+import { rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
 
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { ok: false, code: "RATE_LIMITED", message: "Too many submissions. Please wait." },
-      { status: 429 }
-    );
-  }
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 5 });
+  if (!rl.ok) return rl.response;
 
   try {
     const body = await request.json();
@@ -43,8 +27,10 @@ export async function POST(request: Request) {
     const screen = validateSubmission({
       entityName: data.entityName,
       entityRole: data.entityRole,
+      entityType: data.entityType,
       allegationDescription: data.allegationDescription,
       sourceCount: data.sourceLinks.length,
+      sourceLinks: data.sourceLinks,
     });
 
     if (!screen.ok) {
@@ -81,7 +67,7 @@ export async function POST(request: Request) {
             submitterEmail: data.submitterEmail ?? null,
             submitterName: data.submitterName ?? null,
             isAnonymous: data.isAnonymous,
-            ipHash: ip === "unknown" ? null : ip,
+            ipHash: ip === "unknown" ? null : createHash("sha256").update(ip).digest("hex"),
           })
           .returning(),
       { action: "create", targetTable: "submissions" }

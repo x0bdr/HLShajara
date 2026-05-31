@@ -4,79 +4,68 @@ export function generateStaticParams() {
 
 import { getTranslations } from "next-intl/server";
 import { EvidenceCard, LegalNote, Button } from "@/components";
-import type { Entity } from "@/lib/types";
+import type { Entity, SourceTier } from "@/lib/types";
 import Link from "next/link";
+import { db } from "@/db";
+import { entities, allegations, sources, allegationSources } from "@/db/schema";
+import { isNotNull, eq } from "drizzle-orm";
 
-const DEMO_ENTITIES: Entity[] = [
-  {
-    id: "ent-001",
-    type: "individual",
-    name: "فلان الفلاني",
-    role: "ضابط بفرع الأمن العسكري ٢٧٩",
-    status: "convicted",
-    evidence: 4,
-    version: 3,
-    rightOfReply: "none",
-    allegations: [
-      {
-        description:
-          "قيادة عمليات اعتقال تعسفي وتعذيب في فرع ٢٧٩ بدمشق خلال الفترة ٢٠١١–٢٠١٣.",
-        period: "٢٠١١–٢٠١٣",
-        location: "دمشق، فرع الأمن العسكري ٢٧٩",
-        classification: "جرائم ضد الإنسانية",
-        sources: [
-          { tier: "A", title: "تقرير لجنة التحقيق الدولية", publisher: "UN CoI Syria", date: "2013-08-15" },
-          { tier: "A", title: "حكم محكمة كوبلنز", publisher: "Oberlandesgericht Koblenz", date: "2022-01-13" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "ent-002",
-    type: "military_unit",
-    name: "الفرقة الرابعة",
-    role: "وحدة عسكرية تابعة للنظام السابق",
-    status: "sanctioned",
-    evidence: 3,
-    version: 2,
-    rightOfReply: "filed",
-    allegations: [
-      {
-        description:
-          "مسؤولة عن هجمات كيميائية على مدينة خان شيخون في أبريل ٢٠١٧.",
-        period: "٢٠١٧-04-04",
-        location: "خان شيخون، إدلب",
-        classification: "جريمة حرب",
-        sources: [
-          { tier: "A", title: "تقرير آلية التحقيق المشتركة", publisher: "UN-OPCW JIM", date: "2017-10-26" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "ent-003",
-    type: "individual",
-    name: "فلان الثاني",
-    role: "مسؤول أمني سابق",
-    status: "indicted",
-    evidence: 2,
-    version: 1,
-    rightOfReply: "none",
-    allegations: [
-      {
-        description:
-          "التورط في قمع المتظاهرين السلميين في مدينة درعا عام ٢٠١١.",
-        period: "٢٠١١-03–2011-05",
-        location: "درعا",
-        classification: "جرائم ضد الإنسانية",
-        sources: [
-          { tier: "B", title: "تقرير منظمة العفو الدولية", publisher: "Amnesty International", date: "2011-07-06" },
-          { tier: "C", title: "تحقيق صحفي", publisher: "Al Jazeera", date: "2011-04-25" },
-        ],
-      },
-    ],
-  },
-];
+async function getPublishedEntities(): Promise<Entity[]> {
+  try {
+    const rows = await db
+      .select()
+      .from(entities)
+      .where(isNotNull(entities.publishedAt))
+      .limit(10);
+
+    const result: Entity[] = [];
+    for (const e of rows) {
+      const als = await db
+        .select()
+        .from(allegations)
+        .where(eq(allegations.entityId, e.id));
+
+      const entityAllegations = [];
+      for (const a of als) {
+        const srcLinks = await db
+          .select({ s: sources })
+          .from(allegationSources)
+          .innerJoin(sources, eq(allegationSources.sourceId, sources.id))
+          .where(eq(allegationSources.allegationId, a.id));
+
+        entityAllegations.push({
+          description: a.description,
+          period: a.period ?? "",
+          location: a.location ?? "",
+          classification: a.classification ?? undefined,
+          sources: srcLinks.map(({ s }) => ({
+            tier: s.tier as SourceTier,
+            title: s.title,
+            publisher: s.publisher,
+            date: s.date,
+          })),
+        });
+      }
+
+      result.push({
+        id: e.publicId,
+        type: e.type as Entity["type"],
+        name: e.name,
+        role: e.role,
+        status: (e.status === "unpublished" ? "alleged" : e.status) as Entity["status"],
+        evidence: Number(e.evidenceLevel) as Entity["evidence"],
+        version: e.version,
+        rightOfReply: (e.rightOfReplyState ?? "none") as Entity["rightOfReply"],
+        allegations: entityAllegations as Entity["allegations"],
+      });
+    }
+    return result;
+  } catch (err) {
+    // DB unavailable during build — return empty
+    console.warn("DB unavailable during build, returning empty entities:", (err as Error).message);
+    return [];
+  }
+}
 
 export default async function HomePage({
   params,
@@ -89,6 +78,11 @@ export default async function HomePage({
   const legal = await getTranslations({ locale, namespace: "legal" });
   const footer = await getTranslations({ locale, namespace: "footer" });
   const labels = await getTranslations({ locale, namespace: "labels" });
+
+  const published = await getPublishedEntities();
+  const entryCount = published.length;
+  const sourceCount = published.reduce((sum, e) => sum + e.allegations.reduce((aSum, a) => aSum + a.sources.length, 0), 0);
+  const verdictCount = published.filter((e) => e.status === "convicted").length;
 
   return (
     <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
@@ -116,6 +110,9 @@ export default async function HomePage({
         </Link>
         <Link href={`/${locale}/dashboard`} className="btn ghost">
           {nav("dashboard")}
+        </Link>
+        <Link href={`/${locale}/policy`} className="btn ghost">
+          {nav("policy")}
         </Link>
       </nav>
 
@@ -151,9 +148,9 @@ export default async function HomePage({
         }}
       >
         {[
-          { n: "3", l: t("stats.entries") },
-          { n: "2", l: t("stats.sources") },
-          { n: "1", l: t("stats.verdicts") },
+          { n: String(entryCount), l: t("stats.entries") },
+          { n: String(sourceCount), l: t("stats.sources") },
+          { n: String(verdictCount), l: t("stats.verdicts") },
         ].map((s) => (
           <div
             key={s.l}
@@ -181,13 +178,19 @@ export default async function HomePage({
         <div className="ds-h3" style={{ marginBottom: 4 }}>
           {t("recordTitle")}
         </div>
-        {DEMO_ENTITIES.map((e) => (
-          <EvidenceCard
-            key={e.id}
-            entity={e}
-            lang={locale as "ar" | "en"}
-          />
-        ))}
+        {published.length === 0 ? (
+          <p className="ds-body" style={{ color: "var(--fg2)", textAlign: "center", padding: "40px 0" }}>
+            {locale === "ar" ? "لا توجد مدخلات منشورة بعد." : "No published entries yet."}
+          </p>
+        ) : (
+          published.map((e) => (
+            <EvidenceCard
+              key={e.id}
+              entity={e}
+              lang={locale as "ar" | "en"}
+            />
+          ))
+        )}
       </section>
 
       {/* Submit CTA */}

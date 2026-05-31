@@ -71,6 +71,9 @@ export async function POST(request: Request) {
         sourceVerification: body.sourceVerification ?? submission.sourceVerification,
         evidenceStrength: body.evidenceStrength ?? submission.evidenceStrength,
         privacyCheckPassed: body.privacyCheckPassed ?? submission.privacyCheckPassed,
+        phrasingApproved: body.phrasingApproved ?? submission.phrasingApproved,
+        privacyRechecked: body.privacyRechecked ?? submission.privacyRechecked,
+        isDeceased: body.isDeceased ?? submission.isDeceased,
       };
 
       await withAudit(
@@ -143,6 +146,12 @@ export async function POST(request: Request) {
       if (!submission.privacyCheckPassed) {
         return NextResponse.json({ ok: false, message: "Privacy check not passed." }, { status: 400 });
       }
+      if (!submission.phrasingApproved) {
+        return NextResponse.json({ ok: false, message: "Phrasing not approved by legal review." }, { status: 400 });
+      }
+      if (!submission.privacyRechecked) {
+        return NextResponse.json({ ok: false, message: "Privacy not rechecked before second review." }, { status: 400 });
+      }
 
       await withAudit(
         { actorId, actorRole },
@@ -166,7 +175,7 @@ export async function POST(request: Request) {
       // Hard boundary: check lawyer sign-off for living persons
       const pubCheck = validatePublication({
         entityName: submission.entityName,
-        isDeceased: false,
+        isDeceased: submission.isDeceased === true,
         hasLawyerSignOff: body.hasLawyerSignOff === true,
         sourceCount: Array.isArray(submission.sourceLinks) ? submission.sourceLinks.length : 0,
       });
@@ -189,6 +198,7 @@ export async function POST(request: Request) {
               role: submission.entityRole,
               status: "alleged",
               evidenceLevel: (submission.evidenceStrength ?? "1") as "0" | "1" | "2" | "3" | "4",
+              isDeceased: submission.isDeceased === true,
               publishedAt: new Date(),
             })
             .returning(),
@@ -229,6 +239,7 @@ export async function POST(request: Request) {
                 date: new Date().toISOString().slice(0, 10),
                 url: link.url,
                 contentHash: verification.contentHash ?? null,
+                snapshotUrl: verification.snapshotUrl ?? null,
                 verifiedAt: verification.verified ? new Date() : null,
               })
               .returning(),

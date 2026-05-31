@@ -166,6 +166,7 @@ export const sources = pgTable(
     date: varchar("date", { length: 20 }).notNull(),
     url: varchar("url", { length: 2048 }),
     archiveUrl: varchar("archive_url", { length: 2048 }),
+    snapshotUrl: varchar("snapshot_url", { length: 2048 }),
     contentHash: varchar("content_hash", { length: 64 }),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
     verifiedBy: integer("verified_by"),
@@ -230,6 +231,9 @@ export const submissions = pgTable(
     sourceVerification: jsonb("source_verification"),
     evidenceStrength: varchar("evidence_strength", { length: 20 }),
     privacyCheckPassed: boolean("privacy_check_passed"),
+    phrasingApproved: boolean("phrasing_approved"),
+    privacyRechecked: boolean("privacy_rechecked"),
+    isDeceased: boolean("is_deceased"),
   },
   (table) => [
     index("submission_status_idx").on(table.status),
@@ -265,6 +269,26 @@ export const reviewLogs = pgTable(
     index("audit_created_idx").on(table.createdAt),
   ]
 );
+
+export const rateLimits = pgTable("rate_limits", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  count: integer("count").notNull().default(0),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const keyDecisions = pgTable("key_decisions", {
+  id: serial("id").primaryKey(),
+  decisionId: varchar("decision_id", { length: 100 }).notNull().unique(),
+  category: varchar("category", { length: 100 }).notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
+  description: text("description").notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("open"),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+  decidedBy: varchar("decided_by", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const replies = pgTable(
   "replies",

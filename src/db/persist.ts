@@ -78,11 +78,52 @@ interface PersistContext {
  * Validate that an entity/allegation submission meets all structural rules.
  * Called BEFORE any database write.
  */
+/* ---------- ADDITIONAL PATTERN SETS ---------- */
+
+const INNOCENT_PROFESSIONS = [
+  /\b(طفل|طفلة|أطفال|طفول|civilian|مدني|مدنية|doctor|طبيب|طبيبة|teacher|معلم|معلمة|nurse|ممرض|ممرضة|journalist|صحفي|صحفية|student|طالب|طالبة|hospital|مستشفى|school|مدرسة|clinic|عيادة|university|جامعة|researcher|باحث|باحثة|activist|ناشط|ناشطة|aid worker|عامل إغاثة)\b/gi,
+];
+
+const ORG_TERMS = [
+  /\b(division|فرقة|brigade|لواء|regiment|فوج|battalion|كتيبة|committee|لجنة|ministry|وزارة|council|مجلس|organization|منظمة|party|حزب|force|قوة| apparatus|جهاز|branch|فرع)\b/gi,
+];
+
+const PRIVATE_DATA_PATTERNS = [
+  /\b\d{4,}\s*[-–]\s*\d{4,}\s*[-–]\s*\d{2,}/, // phone numbers
+  /\b\d{1,3}\.\d{1,6},\s*\d{1,3}\.\d{1,6}\b/, // GPS coordinates
+  /\b(شارع|ساحة|حي|منطقة|بناية|طابق|شقة|زقاق|عمارة)\s+\w+/i, // addresses
+  /\b(facebook\.com|instagram\.com|twitter\.com|x\.com|tiktok\.com)\/[^\s]+/i, // social media handles
+];
+
+function screenInnocentParty(text: string): boolean {
+  return INNOCENT_PROFESSIONS.some((p) => p.test(text));
+}
+
+function screenPrivateTargeting(text: string): boolean {
+  return PRIVATE_DATA_PATTERNS.some((p) => p.test(text));
+}
+
+function screenMismatch(entityType: string, entityRole: string): boolean {
+  const role = entityRole.toLowerCase();
+  if (entityType === "individual") {
+    // Individual should not have organizational role descriptors
+    return /\b(فرقة|لواء|فوج|كتيبة|لجنة|وزارة|مجلس|منظمة|حزب|قوة|جهاز|مؤسسة)\b/.test(role);
+  }
+  if (entityType === "organization" || entityType === "military_unit" || entityType === "security_branch" || entityType === "official_body") {
+    // Organization should not have a single-person job title
+    return /\b(ضابط|عقيد|عميد|لواء|عميد|عميد|نقيب|ملازم|رقيب|جندي|مدير|رئيس|وزير|نائب|سكرتير|مساعد|مستشار)\b/.test(role) &&
+      !/\b(رئيس|مدير|قائد|مسؤول)\b/.test(role);
+  }
+  return false;
+}
+
 export function validateSubmission(data: {
   entityName?: string;
   entityRole?: string;
+  entityType?: string;
   allegationDescription?: string;
   sourceCount?: number;
+  sourceLinks?: { url: string; title?: string }[];
 }): PersistResult<typeof data> {
   // 1. Must have at least one source
   if ((data.sourceCount ?? 0) === 0) {
@@ -90,6 +131,16 @@ export function validateSubmission(data: {
       ok: false,
       code: "NO_SOURCE",
       message: "Every allegation must have at least one credible source.",
+      field: "sources",
+    };
+  }
+
+  // 1b. Weak source check: single source is inherently weak
+  if ((data.sourceCount ?? 0) < 2) {
+    return {
+      ok: false,
+      code: "WEAK_SOURCE",
+      message: "Submissions require at least two independent sources for credibility.",
       field: "sources",
     };
   }
@@ -128,6 +179,36 @@ export function validateSubmission(data: {
       code: "HATE_TONE",
       message: "Submission contains hate speech or dehumanizing language.",
       field: "text",
+    };
+  }
+
+  // 3. Innocent party check
+  if (screenInnocentParty(fullText)) {
+    return {
+      ok: false,
+      code: "INNOCENT_PARTY",
+      message: "Submission appears to target a protected or non-combatant party (child, civilian, medical, educational).",
+      field: "text",
+    };
+  }
+
+  // 4. Private targeting / doxxing check
+  if (screenPrivateTargeting(fullText)) {
+    return {
+      ok: false,
+      code: "PRIVATE_TARGETING",
+      message: "Submission contains private data (addresses, phone numbers, coordinates, or personal social media).",
+      field: "text",
+    };
+  }
+
+  // 5. Type/role mismatch check
+  if (data.entityType && data.entityRole && screenMismatch(data.entityType, data.entityRole)) {
+    return {
+      ok: false,
+      code: "MISMATCH",
+      message: "Entity type and role/description appear mismatched.",
+      field: "entityRole",
     };
   }
 

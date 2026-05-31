@@ -14,6 +14,7 @@ interface SourceVerification {
   tier: "A" | "B" | "C";
   publisher: string;
   contentHash?: string;
+  snapshotUrl?: string;
 }
 
 interface Submission {
@@ -32,6 +33,9 @@ interface Submission {
   sourceVerification: SourceVerification[] | null;
   evidenceStrength: string | null;
   privacyCheckPassed: boolean | null;
+  phrasingApproved: boolean | null;
+  privacyRechecked: boolean | null;
+  isDeceased: boolean | null;
   reviewedBy: number | null;
 }
 
@@ -76,6 +80,9 @@ export default function ReviewerPage() {
       sourceVerification: verifications,
       evidenceStrength: sub.evidenceStrength,
       privacyCheckPassed: sub.privacyCheckPassed,
+      phrasingApproved: sub.phrasingApproved,
+      privacyRechecked: sub.privacyRechecked,
+      isDeceased: sub.isDeceased,
     });
     alert("Triage saved.");
   }
@@ -233,6 +240,18 @@ export default function ReviewerPage() {
                       <option value="C">Tier C</option>
                     </select>
                   </div>
+                  <div style={{ marginTop: 8 }}>
+                    <label style={{ display: "block", marginBottom: 4, fontSize: 13, fontWeight: 600 }}>
+                      {locale === "ar" ? "رابط اللقطة (Snapshot)" : "Snapshot URL"}
+                    </label>
+                    <input
+                      type="url"
+                      value={selected.sourceVerification?.[i]?.snapshotUrl ?? ""}
+                      onChange={(e) => updateSourceVerification(selected, i, { snapshotUrl: e.target.value })}
+                      placeholder={locale === "ar" ? "https://web.archive.org/..." : "https://web.archive.org/..."}
+                      style={{ width: "100%", padding: "6px 10px", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--fg1)", fontSize: 13 }}
+                    />
+                  </div>
                 </div>
               ))}
             </section>
@@ -258,13 +277,40 @@ export default function ReviewerPage() {
                 </select>
               </div>
 
-              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, marginBottom: 8 }}>
                 <input
                   type="checkbox"
                   checked={selected.privacyCheckPassed ?? false}
                   onChange={(e) => updateSub(selected.id, { privacyCheckPassed: e.target.checked })}
                 />
                 {locale === "ar" ? "تم اجتياز فحص الخصوصية" : "Privacy check passed"}
+              </label>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, marginBottom: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={selected.phrasingApproved ?? false}
+                  onChange={(e) => updateSub(selected.id, { phrasingApproved: e.target.checked })}
+                />
+                {locale === "ar" ? "تمت الموافقة على الصياغة" : "Phrasing approved"}
+              </label>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, marginBottom: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={selected.privacyRechecked ?? false}
+                  onChange={(e) => updateSub(selected.id, { privacyRechecked: e.target.checked })}
+                />
+                {locale === "ar" ? "تم إعادة فحص الخصوصية" : "Privacy rechecked"}
+              </label>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
+                <input
+                  type="checkbox"
+                  checked={selected.isDeceased ?? false}
+                  onChange={(e) => updateSub(selected.id, { isDeceased: e.target.checked })}
+                />
+                {locale === "ar" ? "المتوفّى" : "Deceased"}
               </label>
             </section>
 
@@ -288,7 +334,7 @@ export default function ReviewerPage() {
                 <button
                   className="ds-btn-primary"
                   onClick={() => act(selected.id, "second_approve")}
-                  disabled={!selected.identityResolutionConfirmed || !selected.evidenceStrength || !selected.privacyCheckPassed}
+                  disabled={!selected.identityResolutionConfirmed || !selected.evidenceStrength || !selected.privacyCheckPassed || !selected.phrasingApproved || !selected.privacyRechecked}
                 >
                   {locale === "ar" ? "اعتماد (مراجعة ثانية)" : "Approve (2nd Review)"}
                 </button>

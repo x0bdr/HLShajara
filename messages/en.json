@@ -10,7 +10,8 @@
     "reply": "Right of Reply",
     "submit": "Submit Report",
     "reviewer": "Reviewer Console",
-    "dashboard": "Transparency Dashboard"
+    "dashboard": "Transparency Dashboard",
+    "policy": "Anti-Discrimination Policy"
   },
   "home": {
     "title": "LST Shajara",
@@ -192,5 +193,19 @@
     "corrected": "Corrected Entries",
     "pending": "Pending Review",
     "underReview": "Under Review"
+  },
+  "policy": {
+    "title": "Anti-Discrimination Policy",
+    "lead": "LST Shajara is committed to documenting crimes without targeting any group, sect, ethnicity, or identity.",
+    "principle1Title": "1. No Group Targeting",
+    "principle1Text": "We do not collect, process, or publish data based on sectarian, ethnic, religious, or family identity. Our data model structurally excludes any field that could enable group-level targeting.",
+    "principle2Title": "2. Individual Accountability Only",
+    "principle2Text": "Every entry in our record refers to a named individual or specific entity linked to documented acts. We do not associate persons with groups they may belong to.",
+    "principle3Title": "3. No Identity Profiling",
+    "principle3Text": "We reject submissions that profile persons by origin, belief, or affiliation. Our automated filters and human reviewers enforce this boundary at intake and publication.",
+    "principle4Title": "4. Inclusive Documentation Standards",
+    "principle4Text": "Victims and witnesses are documented by the acts committed against them, not by identity. Perpetrators are documented by the acts they committed, not by origin.",
+    "enforcementTitle": "Enforcement",
+    "enforcementText": "Violations of this policy result in automatic rejection at intake or immediate unpublishing if discovered post-publication. Staff are trained and bound by this policy. Reports of violations can be submitted via the Right of Reply form."
   }
 }
