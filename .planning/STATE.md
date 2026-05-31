@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-05-31)
 
 **Core value:** Every published claim concerns a named individual or entity, backed by a credible public source. No source, no publication. No group, no identity-based targeting.
-**Current focus:** All 8 phases complete + staging deployed + demo data seeded + i18n scaffold
+**Current focus:** All 8 phases complete + staging deployed + demo data seeded + i18n done + search + reply API
 
 ## Current Position
 
 Phase: 8 of 8 complete
 Plan: All phases executed + deferred items in progress
 Status: Deployed to staging server (test-sanad)
-Last activity: 2026-05-31 — All 8 phases + next-intl + staging auto-deploy workflow
+Last activity: 2026-05-31 — EN translation, static export, server-side search, reply API endpoint
 
 Progress: [██████████] 100%
 
@@ -61,16 +61,19 @@ Recent decisions affecting current work:
 | Backend | PostgreSQL connection & migrations | ✅ Done | 2026-05-31 |
 | Backend | Serverful deployment | ✅ Done | 2026-05-31 |
 | Frontend | next-intl i18n scaffold | ✅ Done | 2026-05-31 |
+| Frontend | Full EN translation (all pages) | ✅ Done | 2026-05-31 |
 | DevOps | GitHub Actions staging deploy workflow | ✅ Done | 2026-05-31 |
+| DevOps | Static export for GitHub Pages | ✅ Done | 2026-05-31 |
 | Content | Demo data seeded (3 entities) | ✅ Done | 2026-05-31 |
+| Backend | Server-side PostgreSQL search | ✅ Done | 2026-05-31 |
+| Backend | Right-of-reply API endpoint | ✅ Done | 2026-05-31 |
 
 ### Pending Todos
 
 - Implement OpenSearch / PostgreSQL FTS for Arabic search
 - Add EXIF stripping for file uploads
 - Set up ClamAV malware scanning
-- Translate all pages to English (EN LTR)
-- Configure Better Auth production secret + 2FA
+- Configure Better Auth production secret + 2FA (secret set; TOTP not natively supported by Better Auth v1.4.7)
 - Seed real research data (replace demo entries)
 
 ### Blockers/Concerns
@@ -78,7 +81,8 @@ Recent decisions affecting current work:
 - Phase 5 (Legal Release Gate): operating jurisdiction + hosting decision requires qualified counsel; production publish of any living person is blocked until lawyer sign-off + jurisdiction Key Decision are recorded.
 - Free-text incitement/hate-tone classifier (AR + EN): start with curated banned-pattern lists + human review behind a swappable interface; ML classification is a separately-researched future effort.
 - Arabic search relevance (OpenSearch vs Meilisearch): benchmark on a real Arabic corpus before committing the engine (Phase 6).
-- Better Auth on staging: `BETTER_AUTH_SECRET` is placeholder; need production secret for real auth.
+- Better Auth on staging: `BETTER_AUTH_SECRET` is now a secure random value; TOTP 2FA requires Better Auth plugin not available in v1.4.7. Email-OTP alternative possible.
+- GitHub Actions staging deploy: workflow fails because SSH secrets (`STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`) are not configured in repo settings.
 
 ## Deferred Items (Remaining)
 
@@ -87,7 +91,7 @@ Recent decisions affecting current work:
 | Backend | OpenSearch integration | Pending | 2026-05-31 |
 | Backend | File upload + EXIF stripping | Pending | 2026-05-31 |
 | Backend | ClamAV malware scanning | Pending | 2026-05-31 |
-| Frontend | Full EN translation | Pending | 2026-05-31 |
+| Frontend | Full EN translation | ✅ Done | 2026-05-31 |
 
 ## Session Continuity
 

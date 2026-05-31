@@ -71,6 +71,17 @@ export const submitSchema = z.object({
       })
     )
     .min(1, "At least one source is required"),
+  sourceFiles: z
+    .array(
+      z.object({
+        hash: z.string(),
+        filename: z.string(),
+        originalName: z.string(),
+        url: z.string(),
+        size: z.number(),
+      })
+    )
+    .default([]),
   submitterEmail: z.string().email().optional().or(z.literal("")),
   submitterName: z.string().max(255).optional(),
   isAnonymous: z.boolean().default(false),

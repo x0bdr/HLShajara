@@ -67,6 +67,7 @@ export async function POST(request: Request) {
         allegationLocation: data.allegationLocation ?? null,
         allegationClassification: data.allegationClassification ?? null,
         sourceLinks: data.sourceLinks,
+        sourceFiles: data.sourceFiles ?? [],
         submitterEmail: data.submitterEmail ?? null,
         submitterName: data.submitterName ?? null,
         isAnonymous: data.isAnonymous,

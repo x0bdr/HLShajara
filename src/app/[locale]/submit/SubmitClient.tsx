@@ -4,6 +4,14 @@ import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button, LegalNote } from "@/components";
 
+interface UploadedFile {
+  hash: string;
+  filename: string;
+  originalName: string;
+  url: string;
+  size: number;
+}
+
 export default function SubmitPage() {
   const [form, setForm] = useState({
     entityName: "",
@@ -14,6 +22,7 @@ export default function SubmitPage() {
     allegationLocation: "",
     allegationClassification: "",
     sourceLinks: [{ url: "", title: "" }],
+    sourceFiles: [] as UploadedFile[],
     submitterEmail: "",
     submitterName: "",
     isAnonymous: false,
@@ -24,6 +33,7 @@ export default function SubmitPage() {
     code?: string;
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const t = useTranslations("submit");
   const legal = useTranslations("legal");
   const locale = useLocale();
@@ -47,6 +57,54 @@ export default function SubmitPage() {
     setForm((f) => ({
       ...f,
       sourceLinks: [...f.sourceLinks, { url: "", title: "" }],
+    }));
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingFile(true);
+
+    for (const file of Array.from(files)) {
+      const data = new FormData();
+      data.append("file", file);
+
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: data,
+        });
+        const json = await res.json();
+        if (json.ok) {
+          setForm((f) => ({
+            ...f,
+            sourceFiles: [
+              ...f.sourceFiles,
+              {
+                hash: json.hash,
+                filename: json.filename,
+                originalName: json.originalName,
+                url: json.url,
+                size: json.size,
+              },
+            ],
+          }));
+        }
+      } catch (err) {
+        console.error("Upload error:", err);
+      }
+    }
+
+    setUploadingFile(false);
+    // Reset input so the same file can be selected again
+    e.target.value = "";
+  }
+
+  function removeFile(index: number) {
+    setForm((f) => ({
+      ...f,
+      sourceFiles: f.sourceFiles.filter((_, i) => i !== index),
     }));
   }
 
@@ -75,6 +133,7 @@ export default function SubmitPage() {
         allegationLocation: "",
         allegationClassification: "",
         sourceLinks: [{ url: "", title: "" }],
+        sourceFiles: [],
         submitterEmail: "",
         submitterName: "",
         isAnonymous: false,
@@ -245,6 +304,57 @@ export default function SubmitPage() {
         >
           + {t("addSource")}
         </button>
+
+        {/* File uploads */}
+        <div>
+          <label className="ds-caption">{t("uploadFile")}</label>
+          <input
+            type="file"
+            multiple
+            onChange={handleFileChange}
+            disabled={uploadingFile}
+            style={{
+              ...inputStyle,
+              padding: "8px 14px",
+              cursor: uploadingFile ? "not-allowed" : "pointer",
+            }}
+          />
+          {uploadingFile && (
+            <p className="ds-caption" style={{ marginTop: 4 }}>
+              {t("uploading")}
+            </p>
+          )}
+          {form.sourceFiles.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+              {form.sourceFiles.map((file, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px 12px",
+                    background: "var(--surface)",
+                    borderRadius: "var(--radius)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <span className="ds-body-sm">
+                    {file.originalName} ({(file.size / 1024).toFixed(1)} KB)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="btn ghost"
+                    style={{ padding: "4px 8px", fontSize: 12 }}
+                  >
+                    {t("removeFile")}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="ds-h3" style={{ marginTop: 8 }}>
           {t("yourInfo")}
