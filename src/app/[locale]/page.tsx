@@ -2,6 +2,7 @@ export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
 }
 
+import { getTranslations } from "next-intl/server";
 import { EvidenceCard, LegalNote, Button } from "@/components";
 import type { Entity } from "@/lib/types";
 import Link from "next/link";
@@ -77,17 +78,42 @@ const DEMO_ENTITIES: Entity[] = [
   },
 ];
 
-export default function HomePage() {
-  const lang = "ar" as const;
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations("home");
+  const nav = await getTranslations("nav");
+  const legal = await getTranslations("legal");
+  const footer = await getTranslations("footer");
+  const labels = await getTranslations("labels");
 
   return (
     <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
       {/* Nav */}
-      <nav style={{ display: "flex", gap: 16, marginBottom: 32, flexWrap: "wrap", justifyContent: "center" }}>
-        <Link href="/HLShajara/record" className="btn ghost">السجلّ العام</Link>
-        <Link href="/HLShajara/mission" className="btn ghost">المهمّة</Link>
-        <Link href="/HLShajara/faq" className="btn ghost">الأسئلة الشائعة</Link>
-        <Link href="/HLShajara/reply" className="btn ghost">حق الرد</Link>
+      <nav
+        style={{
+          display: "flex",
+          gap: 16,
+          marginBottom: 32,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        <Link href={`/${locale}/record`} className="btn ghost">
+          {nav("record")}
+        </Link>
+        <Link href={`/${locale}/mission`} className="btn ghost">
+          {nav("mission")}
+        </Link>
+        <Link href={`/${locale}/faq`} className="btn ghost">
+          {nav("faq")}
+        </Link>
+        <Link href={`/${locale}/reply`} className="btn ghost">
+          {nav("reply")}
+        </Link>
       </nav>
 
       {/* Hero */}
@@ -96,24 +122,19 @@ export default function HomePage() {
           className="ds-display"
           style={{ fontSize: "clamp(2rem, 5vw, 4rem)", marginBottom: 12 }}
         >
-          لست شجرة
+          {t("title")}
         </div>
         <div className="ds-h2" style={{ color: "var(--fg2)", marginBottom: 8 }}>
-          توثيق ومساءلة ومقاطعة
+          {t("subtitle")}
         </div>
         <p className="ds-lead" style={{ maxWidth: 600, margin: "0 auto" }}>
-          منصّة مدنية تحفظ السجلّ الموثّق للجرائم التي ارتُكبت في سوريا. نجمع
-          ونتحقّق وننشر الأدلّة المتاحة علنًا حول أفرادٍ وجهاتٍ محدّدين.
+          {t("lead")}
         </p>
       </header>
 
       {/* Legal note */}
       <div style={{ marginBottom: 32 }}>
-        <LegalNote lang={lang}>
-          بناءً على مراجعة الإعلان الدستوري السوري الجديد (١٣ مارس ٢٠٢٥)، فإن
-          المادتين ٧ و١٠ تلزمان الدولة لا الأفراد مباشرة. المادة ١٣ تكفل حرية
-          التعبير. هذا المحتوى يعبّر عن رأي سياسي.
-        </LegalNote>
+        <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
       </div>
 
       {/* Stats bar */}
@@ -127,9 +148,9 @@ export default function HomePage() {
         }}
       >
         {[
-          { n: "3", l: "مدخل موثَّق" },
-          { n: "2", l: "مصدر دولي" },
-          { n: "1", l: "حكم محكمة" },
+          { n: "3", l: t("stats.entries") },
+          { n: "2", l: t("stats.sources") },
+          { n: "1", l: t("stats.verdicts") },
         ].map((s) => (
           <div
             key={s.l}
@@ -155,21 +176,34 @@ export default function HomePage() {
       {/* Evidence cards */}
       <section style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <div className="ds-h3" style={{ marginBottom: 4 }}>
-          السجلّ الموثَّق
+          {t("recordTitle")}
         </div>
         {DEMO_ENTITIES.map((e) => (
-          <EvidenceCard key={e.id} entity={e} lang={lang} />
+          <EvidenceCard
+            key={e.id}
+            entity={e}
+            lang={locale as "ar" | "en"}
+          />
         ))}
       </section>
 
       {/* Submit CTA */}
       <section style={{ marginTop: 40, textAlign: "center" }}>
-        <div className="ds-h3" style={{ marginBottom: 12 }}>هل لديك معلومات موثَّقة؟</div>
-        <p className="ds-body" style={{ maxWidth: 500, margin: "0 auto 16px", color: "var(--fg2)" }}>
-          يمكنك تقديم بلاغ موثَّق مع مصادر. كل تقديم يمرّ بفلترة آلية ومراجعة بشرية مزدوجة.
+        <div className="ds-h3" style={{ marginBottom: 12 }}>
+          {t("ctaTitle")}
+        </div>
+        <p
+          className="ds-body"
+          style={{
+            maxWidth: 500,
+            margin: "0 auto 16px",
+            color: "var(--fg2)",
+          }}
+        >
+          {t("ctaText")}
         </p>
-        <Link href="/HLShajara/submit">
-          <Button variant="primary">تقديم بلاغ</Button>
+        <Link href={`/${locale}/submit`}>
+          <Button variant="primary">{t("ctaButton")}</Button>
         </Link>
       </section>
 
@@ -182,12 +216,21 @@ export default function HomePage() {
           textAlign: "center",
         }}
       >
-        <p className="ds-meta">
-          لست شجرة © ٢٠٢٦ — منصة توثيق ومساءلة شعبية
-        </p>
-        <div style={{ marginTop: 8, display: "flex", gap: 12, justifyContent: "center" }}>
-          <Link href="/HLShajara/terms" className="ds-meta">شروط الاستخدام</Link>
-          <Link href="/HLShajara/privacy" className="ds-meta">الخصوصية</Link>
+        <p className="ds-meta">{footer("copyright")}</p>
+        <div
+          style={{
+            marginTop: 8,
+            display: "flex",
+            gap: 12,
+            justifyContent: "center",
+          }}
+        >
+          <Link href={`/${locale}/terms`} className="ds-meta">
+            {footer("terms")}
+          </Link>
+          <Link href={`/${locale}/privacy`} className="ds-meta">
+            {footer("privacy")}
+          </Link>
         </div>
       </footer>
     </main>

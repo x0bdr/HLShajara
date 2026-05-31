@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "LST Shajara — HLShajara",
-    "description": "Civic documentation, accountability, and boycott platform"
+    "title": "LST Shajara — Civic Documentation & Accountability",
+    "description": "A civic platform preserving a documented record of crimes committed in Syria."
   },
   "nav": {
     "record": "Public Record",
@@ -16,18 +16,129 @@
     "subtitle": "Document · Account · Boycott",
     "lead": "A civic platform preserving a documented record of crimes committed in Syria. We collect, verify, and publish publicly available evidence on named individuals and entities.",
     "stats": {
-      "entries": "Documented Entry",
-      "sources": "International Source",
-      "verdicts": "Court Verdict"
+      "entries": "Documented Entries",
+      "sources": "International Sources",
+      "verdicts": "Court Verdicts"
     },
     "recordTitle": "Documented Record",
     "ctaTitle": "Do you have documented information?",
     "ctaText": "You can submit a documented report with sources. Every submission passes an automated filter and dual human review.",
     "ctaButton": "Submit Report"
   },
+  "mission": {
+    "title": "Mission & Principles",
+    "whatWeDo": "What We Do",
+    "whatWeDoText": "LST Shajara is a civic documentation platform that seeks to preserve a publicly documented, source-backed record of crimes committed in Syria. We focus on named individuals and entities linked to specific acts, and refer these records to legal justice mechanisms.",
+    "whatWeDont": "What We Don't Do",
+    "dont1": "We do not target groups, sects, or identities.",
+    "dont2": "We do not publish any allegation without a documented source.",
+    "dont3": "We do not publish home addresses or location-tracking data.",
+    "dont4": "We do not allow any incitement or hate speech content.",
+    "dont5": "We do not publish names of children or uninvolved persons.",
+    "codeOfConduct": "Code of Conduct",
+    "codeOfConductText": "Every contributor to the project is required to adhere to legal documentation standards, not disclose private information, and avoid sectarian or ethnic bias. Dual review is mandatory before any publication."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "q1": "What is LST Shajara?",
+    "a1": "A civic platform for documenting crimes committed in Syria, directed against the former regime and its security, military, and Nusayri apparatus as its nurturing environment. We focus on named individuals and entities linked to specific acts.",
+    "q2": "How do you ensure you don't target groups?",
+    "a2": "We do not collect or publish any data on sectarian, ethnic, or family identity. The data model structurally prevents any field that could be used for group targeting.",
+    "q3": "What is the accepted source standard?",
+    "a3": "Tier A sources: international investigation committees / courts. Tier B: recognized human rights organizations / sanctions lists. Tier C: confirmed investigative journalism.",
+    "q4": "Can anyone submit?",
+    "a4": "Yes, via the public submission form. But every submission passes an automated filter (8 rejection rules) then dual human review before any publication.",
+    "q5": "What is the right of reply?",
+    "a5": "Any person listed in the record has the right to submit a statement or correction. We publish the statement alongside the entry with reply status noted.",
+    "q6": "Is the content legal?",
+    "a6": "Based on the Syrian Constitutional Declaration (March 13, 2025), Article 13 guarantees freedom of expression. This content expresses a political opinion."
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "nature": "1. Nature of Content",
+    "natureText": "This website expresses a political opinion and documents allegations linked to named individuals and entities in the context of the Syrian conflict. Content is based on public, verifiable sources.",
+    "allowedUse": "2. Permitted Use",
+    "allowedUseText": "Content may be used for research, media, and legal purposes, provided the original source is cited. Content may not be used for incitement or to target individuals.",
+    "disclaimer": "3. Disclaimer",
+    "disclaimerText": "We make every effort to ensure accuracy, but we do not guarantee completeness or freedom from error. Users are responsible for independent verification."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "dataCollected": "1. Data We Collect",
+    "dataCollectedText": "When submitting a report, we collect: the name of the reported entity, allegation description, sources, and your email (optional if you choose not to disclose). We do not collect full IP addresses — only an SHA-256 hash to prevent abuse.",
+    "howWeUse": "2. How We Use Data",
+    "howWeUseText": "We use data for verification and review only. We do not sell or share submitter data with any third party. Data submitted anonymously cannot be linked to any identity.",
+    "cookies": "3. Cookies",
+    "cookiesText": "We use only essential cookies for session management. We do not use third-party tracking tools.",
+    "yourRights": "4. Your Rights",
+    "yourRightsText": "You have the right to request deletion of your personal data at any time by contacting us. However, we do not delete records related to review and audit as they are part of the accountability record."
+  },
+  "record": {
+    "title": "Public Record",
+    "lead": "The documented record of entities and individuals linked to specific crimes in Syria.",
+    "searchPlaceholder": "Search by entity name...",
+    "loading": "Loading...",
+    "empty": "No entries yet."
+  },
+  "submit": {
+    "title": "Submit Report",
+    "lead": "Submit documented information about a named individual or entity. Every report passes an automated filter and dual human review.",
+    "success": "Submitted",
+    "error": "Error",
+    "aboutEntity": "About the Entity",
+    "fullName": "Full Name",
+    "type": "Type",
+    "typeIndividual": "Individual",
+    "typeOrganization": "Organization",
+    "typeMilitaryUnit": "Military Unit",
+    "typeSecurityBranch": "Security Branch",
+    "typeOfficialBody": "Official Body",
+    "role": "Role / Position",
+    "aboutAllegation": "About the Allegation",
+    "description": "Description of Involvement",
+    "period": "Time Period",
+    "location": "Location",
+    "sources": "Sources",
+    "sourceLink": "Source Link",
+    "sourceTitle": "Source Title (optional)",
+    "addSource": "Add Source",
+    "yourInfo": "Your Information",
+    "email": "Email (optional)",
+    "name": "Your Name",
+    "anonymous": "Submit Anonymously",
+    "submitting": "Submitting...",
+    "submitButton": "Submit Report"
+  },
+  "reply": {
+    "title": "Right of Reply",
+    "lead": "If you are listed in this record and wish to submit a statement or correction, you can use the form below.",
+    "successTitle": "Submitted",
+    "successText": "Your statement has been received and will be reviewed by the legal team.",
+    "entityName": "Name as it appears in the record",
+    "contactEmail": "Contact Email",
+    "statement": "Statement / Correction",
+    "submitButton": "Submit Statement"
+  },
+  "reviewer": {
+    "title": "Reviewer Console",
+    "loading": "Loading...",
+    "empty": "No pending review requests.",
+    "sources": "Sources",
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "entity": {
+    "loading": "Loading...",
+    "notFound": "Entry not found.",
+    "sources": "Sources",
+    "reply": "Right of Reply",
+    "replyNone": "contact recorded · no statement filed",
+    "replyFiled": "statement on file",
+    "audited": "audited"
+  },
   "legal": {
-    "note": "Based on the review of the new Syrian Constitutional Declaration (March 13, 2025), Articles 7 and 10 bind the state, not individuals directly. Article 13 guarantees freedom of expression. This content expresses a political opinion.",
-    "title": "Legal Note"
+    "title": "Legal Note",
+    "note": "Based on the review of the new Syrian Constitutional Declaration (March 13, 2025), Articles 7 and 10 bind the state, not individuals directly. Article 13 guarantees freedom of expression. This content expresses a political opinion."
   },
   "footer": {
     "copyright": "LST Shajara © 2026 — Civic Documentation & Accountability Platform",

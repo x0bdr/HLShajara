@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button, LegalNote } from "@/components";
 
 export default function ReplyPage() {
@@ -8,7 +9,9 @@ export default function ReplyPage() {
   const [email, setEmail] = useState("");
   const [statement, setStatement] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const lang = "ar" as const;
+  const t = useTranslations("reply");
+  const legal = useTranslations("legal");
+  const locale = useLocale();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,28 +21,41 @@ export default function ReplyPage() {
 
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px" }}>
-      <div className="ds-h1" style={{ marginBottom: 8 }}>حق الرد</div>
+      <div className="ds-h1" style={{ marginBottom: 8 }}>
+        {t("title")}
+      </div>
       <p className="ds-lead" style={{ marginBottom: 24 }}>
-        إذا كنت مدرجًا في هذا السجلّ وترغب في تقديم بيان أو تصحيح، يمكنك استخدام النموذج أدناه.
+        {t("lead")}
       </p>
 
-      <LegalNote lang={lang}>
-        بناءً على الإعلان الدستوري السوري (١٣ مارس ٢٠٢٥)، المادة ١٣ تكفل حرية التعبير.
-        هذا المحتوى يعبّر عن رأي سياسي.
-      </LegalNote>
+      <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
 
       {submitted ? (
         <div
           className="legal"
-          style={{ marginTop: 24, borderColor: "var(--green-500)", background: "var(--green-50)" }}
+          style={{
+            marginTop: 24,
+            borderColor: "var(--green-500)",
+            background: "var(--green-50)",
+          }}
         >
-          <div className="t" style={{ color: "var(--green-700)" }}>تم الإرسال</div>
-          <p>تم استلام بيانك وسيتم مراجعته من قبل الفريق القانوني.</p>
+          <div className="t" style={{ color: "var(--green-700)" }}>
+            {t("successTitle")}
+          </div>
+          <p>{t("successText")}</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            marginTop: 24,
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
           <div>
-            <label className="ds-caption">الاسم كما ورد في السجلّ</label>
+            <label className="ds-caption">{t("entityName")}</label>
             <input
               type="text"
               value={entityName}
@@ -59,7 +75,7 @@ export default function ReplyPage() {
             />
           </div>
           <div>
-            <label className="ds-caption">البريد الإلكتروني للتواصل</label>
+            <label className="ds-caption">{t("contactEmail")}</label>
             <input
               type="email"
               value={email}
@@ -79,7 +95,7 @@ export default function ReplyPage() {
             />
           </div>
           <div>
-            <label className="ds-caption">البيان / التصحيح</label>
+            <label className="ds-caption">{t("statement")}</label>
             <textarea
               value={statement}
               onChange={(e) => setStatement(e.target.value)}
@@ -99,7 +115,9 @@ export default function ReplyPage() {
               }}
             />
           </div>
-          <Button variant="primary" type="submit">إرسال البيان</Button>
+          <Button variant="primary" type="submit">
+            {t("submitButton")}
+          </Button>
         </form>
       )}
     </main>

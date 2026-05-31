@@ -1,22 +1,11 @@
-'use client';
+"use client";
 
-import type { Entity, Lang } from '@/lib/types';
-import { TYPE_LABELS } from '@/lib/labels';
-import { EvidenceStrength } from './EvidenceStrength';
-import { StatusBadge } from './StatusBadge';
+import type { Entity, Lang } from "@/lib/types";
+import { TYPE_LABELS } from "@/lib/labels";
+import { EvidenceStrength } from "./EvidenceStrength";
+import { StatusBadge } from "./StatusBadge";
+import { useTranslations } from "next-intl";
 
-const SOURCES_LABEL: Record<Lang, string> = { en: 'Sources', ar: 'المصادر' };
-const REPLY_LABEL: Record<Lang, string> = { en: 'Right of reply', ar: 'حق الرد' };
-const REPLY_STATE: Record<Lang, { none: string; filed: string }> = {
-  en: { none: 'contact recorded · no statement filed', filed: 'statement on file' },
-  ar: { none: 'جهة الاتصال مسجّلة · لم يُقدَّم بيان', filed: 'يوجد بيان' },
-};
-const AUDITED: Record<Lang, string> = { en: 'audited', ar: 'مُدقّق' };
-
-/**
- * The signature evidence card. Presentational — pass an Entity and a lang.
- * `onOpen` makes it an interactive (clickable) card; omit for a static view.
- */
 export function EvidenceCard({
   entity,
   lang,
@@ -26,26 +15,19 @@ export function EvidenceCard({
   lang: Lang;
   onOpen?: (e: Entity) => void;
 }) {
+  const labels = useTranslations("labels");
   const a = entity.allegations[0];
-  const nSrc = entity.allegations.reduce((n, x) => n + x.sources.length, 0);
-  const interactive = typeof onOpen === 'function';
-
+  const nSrc = entity.allegations.reduce(
+    (n, x) => n + x.sources.length,
+    0
+  );
+  const interactive = typeof onOpen === "function";
   return (
     <article
-      className={`card${interactive ? ' interactive' : ''}`}
+      className={`card${interactive ? " interactive" : ""}`}
       onClick={interactive ? () => onOpen!(entity) : undefined}
-      role={interactive ? 'button' : undefined}
+      role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : undefined}
-      onKeyDown={
-        interactive
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onOpen!(entity);
-              }
-            }
-          : undefined
-      }
     >
       <div className="top">
         <div className="ttl">
@@ -57,26 +39,30 @@ export function EvidenceCard({
         </div>
         <EvidenceStrength level={entity.evidence} lang={lang} />
       </div>
-
       <div className="body">
-        <div style={{ marginBottom: 9 }}>
-          <StatusBadge status={entity.status} lang={lang} />
-        </div>
+        <StatusBadge status={entity.status} lang={lang} />
         <div className="alle">{a.description}</div>
         <div className="srcline">
           <span className="mark">
-            {SOURCES_LABEL[lang]} · {nSrc}
+            {labels("sources")} · {nSrc}
           </span>
-          <span className="tiers">{a.sources.map((s) => `Tier ${s.tier}`).join(' · ')}</span>
+          <span className="tiers">
+            {a.sources.map((s) => `Tier ${s.tier}`).join(" · ")}
+          </span>
         </div>
       </div>
-
       <div className="foot">
         <span className="reply">
-          {REPLY_LABEL[lang]}: {REPLY_STATE[lang][entity.rightOfReply]}
+          {labels("reply")}:{" "}
+          {entity.rightOfReply === "none"
+            ? labels("replyNone")
+            : labels("replyFiled")}
         </span>
         <span className="ver">
-          v{entity.version} · {AUDITED[lang]}
+          {labels("version", {
+            version: entity.version,
+            audited: labels("audited"),
+          })}
         </span>
       </div>
     </article>

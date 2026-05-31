@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { EvidenceStrength, StatusBadge, LegalNote } from "@/components";
 import { TYPE_LABELS } from "@/lib/labels";
 import type { Entity } from "@/lib/types";
@@ -8,11 +9,15 @@ import type { Entity } from "@/lib/types";
 export default function EntityDetailClient({ id }: { id: string }) {
   const [entity, setEntity] = useState<Entity | null>(null);
   const [loading, setLoading] = useState(true);
-  const lang = "ar" as const;
+  const t = useTranslations("entity");
+  const labels = useTranslations("labels");
+  const legal = useTranslations("legal");
+  const locale = useLocale();
+  const lang = locale as "ar" | "en";
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/HLShajara/api/entity?id=${id}`)
+    fetch(`/api/entity?id=${id}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) setEntity(data.entity);
@@ -23,7 +28,9 @@ export default function EntityDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <main style={{ maxWidth: 920, margin: "0 auto", padding: 32 }}>
-        <p className="ds-body" style={{ textAlign: "center" }}>جارِ التحميل...</p>
+        <p className="ds-body" style={{ textAlign: "center" }}>
+          {t("loading")}
+        </p>
       </main>
     );
   }
@@ -31,7 +38,9 @@ export default function EntityDetailClient({ id }: { id: string }) {
   if (!entity) {
     return (
       <main style={{ maxWidth: 920, margin: "0 auto", padding: 32 }}>
-        <p className="ds-body" style={{ textAlign: "center" }}>المدخل غير موجود.</p>
+        <p className="ds-body" style={{ textAlign: "center" }}>
+          {t("notFound")}
+        </p>
       </main>
     );
   }
@@ -59,7 +68,9 @@ export default function EntityDetailClient({ id }: { id: string }) {
             <>
               <div className="alle">{a.description}</div>
               <div className="srcline">
-                <span className="mark">المصادر · {a.sources?.length ?? 0}</span>
+                <span className="mark">
+                  {labels("sources")} · {a.sources?.length ?? 0}
+                </span>
                 <span className="tiers">
                   {a.sources?.map((s) => `Tier ${s.tier}`).join(" · ")}
                 </span>
@@ -69,18 +80,21 @@ export default function EntityDetailClient({ id }: { id: string }) {
         </div>
         <div className="foot">
           <span className="reply">
-            حق الرد: {entity.rightOfReply === "none"
-              ? "جهة الاتصال مسجّلة · لم يُقدَّم بيان"
-              : "يوجد بيان"}
+            {labels("reply")}:{" "}
+            {entity.rightOfReply === "none"
+              ? labels("replyNone")
+              : labels("replyFiled")}
           </span>
-          <span className="ver">v{entity.version} · مُدقّق</span>
+          <span className="ver">
+            {labels("version", {
+              version: entity.version,
+              audited: labels("audited"),
+            })}
+          </span>
         </div>
       </div>
 
-      <LegalNote lang={lang}>
-        بناءً على الإعلان الدستوري السوري (١٣ مارس ٢٠٢٥)، المادة ١٣ تكفل حرية التعبير.
-        هذا المحتوى يعبّر عن رأي سياسي.
-      </LegalNote>
+      <LegalNote lang={lang}>{legal("note")}</LegalNote>
     </main>
   );
 }

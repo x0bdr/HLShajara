@@ -31,7 +31,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build static export
-        run: npm run build
+        run: EXPORT_STATIC=1 npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components";
 
 interface Submission {
@@ -17,9 +18,11 @@ interface Submission {
 export default function ReviewerPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations("reviewer");
+  const locale = useLocale();
 
   useEffect(() => {
-    fetch("/HLShajara/api/review")
+    fetch("/api/review")
       .then((r) => r.json())
       .then((data) => {
         if (data.ok) setSubmissions(data.submissions);
@@ -28,33 +31,43 @@ export default function ReviewerPage() {
   }, []);
 
   async function act(id: number, action: "approve" | "reject") {
-    await fetch("/HLShajara/api/review", {
+    await fetch("/api/review", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, submissionId: id, reviewerId: 1, reviewerRole: "reviewer" }),
+      body: JSON.stringify({
+        action,
+        submissionId: id,
+        reviewerId: 1,
+        reviewerRole: "reviewer",
+      }),
     });
     setSubmissions((prev) => prev.filter((s) => s.id !== id));
   }
 
   return (
     <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
-      <div className="ds-h1" style={{ marginBottom: 24 }}>لوحة المراجعة</div>
+      <div className="ds-h1" style={{ marginBottom: 24 }}>
+        {t("title")}
+      </div>
 
       {loading ? (
-        <p className="ds-body">جارِ التحميل...</p>
+        <p className="ds-body">{t("loading")}</p>
       ) : submissions.length === 0 ? (
         <p className="ds-body" style={{ color: "var(--fg2)" }}>
-          لا توجد طلبات مراجعة معلّقة.
+          {t("empty")}
         </p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {submissions.map((s) => (
-            <div
-              key={s.id}
-              className="card"
-              style={{ padding: 16 }}
-            >
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
+            <div key={s.id} className="card" style={{ padding: 16 }}>
+              <div
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 18,
+                  fontWeight: 700,
+                  marginBottom: 4,
+                }}
+              >
                 {s.entityName}
               </div>
               <div className="ds-caption" style={{ marginBottom: 8 }}>
@@ -64,14 +77,14 @@ export default function ReviewerPage() {
                 {s.allegationDescription}
               </p>
               <div className="ds-meta" style={{ marginBottom: 12 }}>
-                المصادر: {Array.isArray(s.sourceLinks) ? s.sourceLinks.length : 0}
+                {t("sources")}: {Array.isArray(s.sourceLinks) ? s.sourceLinks.length : 0}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <Button variant="primary" onClick={() => act(s.id, "approve")}>
-                  موافقة
+                  {t("approve")}
                 </Button>
                 <Button variant="danger" onClick={() => act(s.id, "reject")}>
-                  رفض
+                  {t("reject")}
                 </Button>
               </div>
             </div>
