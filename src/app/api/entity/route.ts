@@ -55,6 +55,7 @@ export async function GET(request: Request) {
   const id = searchParams.get("id");
   const status = searchParams.get("status");
   const type = searchParams.get("type");
+  const evidence = searchParams.get("evidence");
   const q = searchParams.get("q");
 
   try {
@@ -81,6 +82,7 @@ export async function GET(request: Request) {
     const conditions = [isNotNull(entities.publishedAt)];
     if (status) conditions.push(eq(entities.status, status as any));
     if (type) conditions.push(eq(entities.type, type as any));
+    if (evidence) conditions.push(eq(entities.evidenceLevel, evidence as any));
 
     if (q) {
       const pattern = `%${q}%`;

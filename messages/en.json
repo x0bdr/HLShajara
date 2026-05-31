@@ -78,7 +78,19 @@
     "lead": "The documented record of entities and individuals linked to specific crimes in Syria.",
     "searchPlaceholder": "Search by entity name...",
     "loading": "Loading...",
-    "empty": "No entries yet."
+    "empty": "No entries yet.",
+    "filterStatus": "Status",
+    "filterType": "Type",
+    "filterEvidence": "Evidence Strength",
+    "all": "All",
+    "status_alleged": "Alleged",
+    "status_confirmed": "Confirmed",
+    "status_disputed": "Disputed",
+    "type_individual": "Individual",
+    "type_organization": "Organization",
+    "type_military_unit": "Military Unit",
+    "type_security_branch": "Security Branch",
+    "type_official_body": "Official Body"
   },
   "submit": {
     "title": "Submit Report",

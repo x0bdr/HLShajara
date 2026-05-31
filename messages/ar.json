@@ -78,7 +78,19 @@
     "lead": "السجلّ الموثَّق للجهات والأفراد المرتبطين بجرائم محدّدة في سوريا.",
     "searchPlaceholder": "ابحث باسم الجهة...",
     "loading": "جارِ التحميل...",
-    "empty": "لا توجد مدخلات بعد."
+    "empty": "لا توجد مدخلات بعد.",
+    "filterStatus": "الحالة",
+    "filterType": "النوع",
+    "filterEvidence": "قوة الأدلة",
+    "all": "الكل",
+    "status_alleged": "مُشتَبَه",
+    "status_confirmed": "مُؤكَّد",
+    "status_disputed": "مُتنازَع عليه",
+    "type_individual": "فرد",
+    "type_organization": "منظمة",
+    "type_military_unit": "وحدة عسكرية",
+    "type_security_branch": "فرع أمن",
+    "type_official_body": "جهة رسمية"
   },
   "submit": {
     "title": "تقديم بلاغ",
