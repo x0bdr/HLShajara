@@ -1,5 +1,9 @@
 <div align="center">
 
+> **الملاحظة القانونية:** بناءً على مراجعة الإعلان الدستوري السوري الجديد (13 مارس 2025)، فإن المادتين 7 و10 تلزمان الدولة لا الأفراد مباشرة. المادة 13 تكفل حرية التعبير، والمادة 23 تخضعها للضوابط القانونية. المادة 51 تحتفظ بالقوانين النافذة. هذا المحتوى يعبّر عن رأي سياسي ويقع ضمن نطاق حرية التعبير وفقاً للإعلان الدستوري المؤقت.
+>
+> **Legal Note:** Based on a review of the new Syrian Constitutional Declaration (13 March 2025), Articles 7 and 10 bind the state, not individuals directly. Article 13 guarantees freedom of expression, and Article 23 subjects it to legal controls. Article 51 preserves existing laws. This content expresses a political opinion and falls within the scope of freedom of expression under the interim Constitutional Declaration.
+
 # 🌿 لست شجرة — HLShajara
 
 **توثيق ومساءلة ومقاطعة — لا انتقام ولا عقاب جماعي**
