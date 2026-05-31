@@ -1,3 +1,7 @@
+export function generateStaticParams() {
+  return [{ locale: "ar" }, { locale: "en" }];
+}
+
 import { EvidenceCard, LegalNote, Button } from "@/components";
 import type { Entity } from "@/lib/types";
 import Link from "next/link";
