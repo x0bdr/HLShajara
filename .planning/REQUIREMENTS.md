@@ -5,8 +5,8 @@ Scope: Close operational gaps from v1.0, harden for production use with real dat
 ## v1.1 Requirements
 
 ### Authentication & Access (AUTH)
-- [ ] **AUTH-01**: Staff authenticate with mandatory 2FA (email-OTP via Better Auth; TOTP plugin unavailable in v1.4.7)
-- [ ] **AUTH-03**: Login UI page exists and works in both AR/EN
+- [x] **AUTH-01**: Staff authenticate with mandatory 2FA (TOTP via Better Auth twoFactor plugin)
+- [x] **AUTH-03**: Login UI page exists and works in both AR/EN
 
 ### Internal Draft & Boundary Engine (INTAKE)
 - [ ] **INTAKE-02**: Draft validation auto-rejects with all 8 reason codes: GROUP_TARGET, NO_SOURCE, WEAK_SOURCE, PRIVATE_TARGETING, INNOCENT_PARTY, MISMATCH, HATE_TONE, INCITEMENT
@@ -43,8 +43,8 @@ Scope: Close operational gaps from v1.0, harden for production use with real dat
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 10 | Pending |
-| AUTH-03 | Phase 10 | Pending |
+| AUTH-01 | Phase 10 | Done |
+| AUTH-03 | Phase 10 | Done |
 | INTAKE-02 | Phase 15 | Pending |
 | INTAKE-04 | Phase 15 | Pending |
 | INTAKE-05 | Phase 15 | Pending |
