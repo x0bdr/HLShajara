@@ -8,9 +8,10 @@ import { STATUS_LABELS, TYPE_LABELS, EVIDENCE_LABELS } from "@/lib/labels";
 
 interface ArchiveHomeProps {
   entities: Entity[];
+  showHeader?: boolean;
 }
 
-export function ArchiveHome({ entities }: ArchiveHomeProps) {
+export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
   const locale = useLocale() as "ar" | "en";
   const t = useTranslations("home");
   const record = useTranslations("record");
@@ -46,9 +47,13 @@ export function ArchiveHome({ entities }: ArchiveHomeProps) {
   };
 
   return (
-    <main className="archive-main">
-      <h1 className="archive-title">{t("recordTitle")}</h1>
-      <p className="archive-lead">{t("lead")}</p>
+    <section className="archive-section">
+      {showHeader && (
+        <>
+          <h2 className="archive-title">{t("recordTitle")}</h2>
+          <p className="archive-lead">{t("lead")}</p>
+        </>
+      )}
 
       <input
         value={q}
@@ -119,7 +124,7 @@ export function ArchiveHome({ entities }: ArchiveHomeProps) {
           </div>
         </div>
       </div>
-    </main>
+    </section>
   );
 }
 

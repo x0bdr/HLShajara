@@ -3,8 +3,9 @@ export function generateStaticParams() {
 }
 
 import { getTranslations } from "next-intl/server";
-import { Header, Footer, ArchiveHome } from "@/components";
+import { Header, Footer, HeroSection, StatsBar, ArchiveHome } from "@/components";
 import type { Entity, SourceTier } from "@/lib/types";
+import Link from "next/link";
 import { db } from "@/db";
 import { entities, allegations, sources, allegationSources } from "@/db/schema";
 import { isNotNull, eq } from "drizzle-orm";
@@ -71,12 +72,41 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "home" });
+  const legal = await getTranslations({ locale, namespace: "legal" });
+
   const published = await getPublishedEntities();
+  const entryCount = published.length;
+  const sourceCount = published.reduce(
+    (sum, e) => sum + e.allegations.reduce((aSum, a) => aSum + a.sources.length, 0),
+    0
+  );
+  const verdictCount = published.filter((e) => e.status === "convicted").length;
 
   return (
     <>
       <Header />
-      <ArchiveHome entities={published} />
+      <HeroSection />
+      <StatsBar entries={entryCount} sources={sourceCount} verdicts={verdictCount} />
+
+      <div className="section-pad" style={{ paddingBlock: "24px 0" }}>
+        <div className="legal">
+          <div className="t">{legal("title")}</div>
+          <p>{legal("note")}</p>
+        </div>
+      </div>
+
+      <ArchiveHome entities={published} showHeader={false} />
+
+      {/* Submit CTA */}
+      <section className="cta-section">
+        <h2 className="section-title">{t("ctaTitle")}</h2>
+        <p className="section-lead">{t("ctaText")}</p>
+        <Link href={`/${locale}/submit`}>
+          <button className="btn primary">{t("ctaButton")}</button>
+        </Link>
+      </section>
+
       <Footer />
     </>
   );

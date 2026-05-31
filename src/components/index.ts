@@ -6,4 +6,6 @@ export * from "./Button";
 export * from "./Header";
 export * from "./Footer";
 export * from "./ArchiveHome";
+export * from "./HeroSection";
+export * from "./StatsBar";
 export * from "./SourceCitation";
