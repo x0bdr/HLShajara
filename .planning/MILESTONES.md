@@ -31,6 +31,13 @@ A bilingual, source-backed accountability archive with structural safeguards: id
 - `isDeceased` hardcoded false in publish API
 - Operating jurisdiction + hosting Key Decision not recorded
 
+### Critical Blockers Resolved (Phase 9)
+
+- ✅ Auth enforced on all internal API routes
+- ✅ Audit trail (`withAudit` / `appendAuditLog`) wired to all mutations
+- ✅ RBAC enforced (`hasRole` for reviewers, `canPublish` for publish)
+- ✅ Public entity API filters by `publishedAt IS NOT NULL`
+
 ### Technical Debt
 
 - In-memory rate limiter won't scale across instances
