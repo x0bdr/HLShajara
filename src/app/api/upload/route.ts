@@ -2,9 +2,18 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
+import sharp from "sharp";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+
+const IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/tiff",
+  "image/avif",
+]);
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +35,17 @@ export async function POST(request: Request) {
     }
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    let buffer = Buffer.from(bytes);
+
+    // Strip EXIF/GPS metadata from images using Sharp
+    if (IMAGE_TYPES.has(file.type)) {
+      try {
+        buffer = Buffer.from(await sharp(buffer).rotate().toBuffer());
+      } catch (err) {
+        console.error("Sharp processing error:", err);
+        // Fall through to save original if Sharp fails
+      }
+    }
 
     const hash = createHash("sha256").update(buffer).digest("hex");
     const ext = path.extname(file.name) || "";
@@ -41,7 +60,7 @@ export async function POST(request: Request) {
       hash,
       filename: safeName,
       originalName: file.name,
-      size: file.size,
+      size: buffer.length,
       url: `/uploads/${safeName}`,
     });
   } catch (err) {
