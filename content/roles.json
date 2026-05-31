@@ -1,0 +1,20 @@
+{
+  "roles": [
+    {"role": "visitor", "can": ["read published, sourced entries"]},
+    {"role": "reviewer", "can": ["triage", "source verification", "dual review"]},
+    {"role": "senior_or_legal_safety_reviewer", "can": ["run the legal/safety gate", "handle edge cases"]},
+    {"role": "admin", "can": ["manage users, categories, appeals, takedowns"], "cannot": ["bypass dual review for publishing"]},
+    {"role": "partner_organization", "auth": "vetted HR/legal org", "can": ["elevated-trust submissions", "right-of-reply handling"]},
+    {"role": "subject_named_party", "can": ["submit a right-of-reply or correction request"]}
+  ],
+  "publishing_rule": "No single role can publish unilaterally. Publishing requires dual review + legal/safety gate.",
+  "admin_review_process": [
+    "Daily queue triage by category and evidence strength.",
+    "Dual-review assignment (two independent reviewers, no self-approval).",
+    "Legal/safety gate sign-off on phrasing, privacy, and right-of-reply contact.",
+    "Publish decision logged immutably (who, when, why).",
+    "Appeals/rebuttals routed to senior reviewer; published entries can be updated or unpublished with reasons recorded.",
+    "Periodic re-audit of live entries when new evidence or rulings appear.",
+    "Quarterly methodology review + public transparency report."
+  ]
+}
