@@ -72,6 +72,12 @@ export const rejectionReasonEnum = pgEnum("rejection_reason", [
   "HATE_TONE",
 ]);
 
+export const replyStatusEnum = pgEnum("reply_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 export const userRoleEnum = pgEnum("user_role", [
   "submitter",
   "reviewer",
@@ -246,6 +252,26 @@ export const reviewLogs = pgTable(
     index("audit_actor_idx").on(table.actorId),
     index("audit_created_idx").on(table.createdAt),
   ]
+);
+
+export const replies = pgTable(
+  "replies",
+  {
+    id: serial("id").primaryKey(),
+    entityId: integer("entity_id").references(() => entities.id, {
+      onDelete: "set null",
+    }),
+    entityName: varchar("entity_name", { length: 255 }).notNull(),
+    email: varchar("email", { length: 255 }).notNull(),
+    statement: text("statement").notNull(),
+    status: replyStatusEnum("status").notNull().default("pending"),
+    reviewedBy: integer("reviewed_by"),
+    reviewNote: text("review_note"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("reply_entity_idx").on(table.entityId)]
 );
 
 /* ---------- USERS (for Better Auth) ---------- */

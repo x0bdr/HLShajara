@@ -117,6 +117,7 @@
     "entityName": "Name as it appears in the record",
     "contactEmail": "Contact Email",
     "statement": "Statement / Correction",
+    "submitting": "Submitting...",
     "submitButton": "Submit Statement"
   },
   "reviewer": {

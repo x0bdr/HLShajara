@@ -117,6 +117,7 @@
     "entityName": "الاسم كما ورد في السجلّ",
     "contactEmail": "البريد الإلكتروني للتواصل",
     "statement": "البيان / التصحيح",
+    "submitting": "جارِ الإرسال...",
     "submitButton": "إرسال البيان"
   },
   "reviewer": {

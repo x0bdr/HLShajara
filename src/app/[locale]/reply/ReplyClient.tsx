@@ -9,14 +9,36 @@ export default function ReplyPage() {
   const [email, setEmail] = useState("");
   const [statement, setStatement] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState<{
+    ok: boolean;
+    message: string;
+  } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const t = useTranslations("reply");
   const legal = useTranslations("legal");
   const locale = useLocale();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // In a real implementation, this would POST to an API
-    setSubmitted(true);
+    setSubmitting(true);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityName, email, statement }),
+      });
+      const data = await res.json();
+      setResult(data);
+      if (data.ok) {
+        setSubmitted(true);
+      }
+    } catch {
+      setResult({ ok: false, message: "Network error" });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -54,6 +76,21 @@ export default function ReplyPage() {
             gap: 16,
           }}
         >
+          {result && !result.ok && (
+            <div
+              className="legal"
+              style={{
+                borderColor: "var(--brick-500)",
+                background: "var(--brick-100)",
+              }}
+            >
+              <div className="t" style={{ color: "var(--brick-700)" }}>
+                Error
+              </div>
+              <p>{result.message}</p>
+            </div>
+          )}
+
           <div>
             <label className="ds-caption">{t("entityName")}</label>
             <input
@@ -115,8 +152,8 @@ export default function ReplyPage() {
               }}
             />
           </div>
-          <Button variant="primary" type="submit">
-            {t("submitButton")}
+          <Button variant="primary" type="submit" disabled={submitting}>
+            {submitting ? t("submitting") : t("submitButton")}
           </Button>
         </form>
       )}
