@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getSession } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import ReviewerClient from "./ReviewerClient";
+import { PageShell } from "@/components";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
@@ -19,10 +20,13 @@ export default async function ReviewerPage({
   const isAuthorized = session && hasRole(session.user.role ?? "", "reviewer");
 
   if (!isAuthorized) {
-    // Redirect to login page with return URL
     const { redirect } = await import("next/navigation");
     redirect(`/${locale}/login?redirectTo=/${locale}/reviewer`);
   }
 
-  return <ReviewerClient />;
+  return (
+    <PageShell>
+      <ReviewerClient />
+    </PageShell>
+  );
 }

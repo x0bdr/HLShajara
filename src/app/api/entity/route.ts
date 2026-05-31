@@ -95,6 +95,9 @@ export async function GET(request: Request) {
       if (searchCondition) conditions.push(searchCondition);
     }
 
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "20", 10)));
+
     const whereClause = conditions.length === 1
       ? conditions[0]
       : and(...conditions);
@@ -103,16 +106,20 @@ export async function GET(request: Request) {
       .select()
       .from(entities)
       .where(whereClause)
-      .limit(100);
+      .limit(limit + 1)
+      .offset((page - 1) * limit);
+
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
 
     const mapped = await Promise.all(
-      rows.map(async (row) => {
+      pageRows.map(async (row) => {
         const entityAllegations = await fetchAllegationsForEntity(row.id);
         return mapEntity(row, entityAllegations);
       })
     );
 
-    return NextResponse.json({ ok: true, entities: mapped });
+    return NextResponse.json({ ok: true, entities: mapped, hasMore, page, limit });
   } catch (err) {
     console.error("Entity API error:", err);
     return NextResponse.json(

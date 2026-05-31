@@ -2,9 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import type { Entity } from "@/lib/types";
 import { EvidenceCard } from "./EvidenceCard";
 import { STATUS_LABELS, TYPE_LABELS, EVIDENCE_LABELS } from "@/lib/labels";
+import { Button } from "./Button";
 
 interface ArchiveHomeProps {
   entities: Entity[];
@@ -13,6 +15,7 @@ interface ArchiveHomeProps {
 
 export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
   const locale = useLocale() as "ar" | "en";
+  const router = useRouter();
   const t = useTranslations("home");
   const record = useTranslations("record");
 
@@ -20,6 +23,7 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
   const [activeStatus, setActiveStatus] = useState<Set<string>>(new Set());
   const [activeType, setActiveType] = useState<Set<string>>(new Set());
   const [activeEvidence, setActiveEvidence] = useState<Set<string>>(new Set());
+  const [showFilters, setShowFilters] = useState(false);
 
   const filtered = useMemo(() => {
     return entities.filter((e) => {
@@ -62,9 +66,22 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
         className="archive-search"
       />
 
+      <Button
+        variant="secondary"
+        className="filter-toggle"
+        onClick={() => setShowFilters((s) => !s)}
+      >
+        {locale === "ar" ? "الفلاتر" : "Filters"}
+        {((activeStatus.size + activeType.size + activeEvidence.size) > 0) && (
+          <span className="filter-badge">
+            {activeStatus.size + activeType.size + activeEvidence.size}
+          </span>
+        )}
+      </Button>
+
       <div className="archive-layout">
         {/* Filter sidebar */}
-        <aside className="archive-filters">
+        <aside className={`archive-filters${showFilters ? " open" : ""}`}>
           <FilterGroup
             label={record("filterStatus")}
             items={statusOptions.map((s) => ({
@@ -118,6 +135,7 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
                   key={e.id}
                   entity={e}
                   lang={locale}
+                  onOpen={() => router.push(`/${locale}/entity/${e.id}`)}
                 />
               ))
             )}

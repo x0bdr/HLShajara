@@ -3,20 +3,22 @@ export function generateStaticParams() {
 }
 
 import { getTranslations } from "next-intl/server";
-import { Header, Footer, HeroSection, StatsBar, ArchiveHome } from "@/components";
+import { PageShell, HeroSection, StatsBar, ArchiveHome } from "@/components";
 import type { Entity, SourceTier } from "@/lib/types";
 import Link from "next/link";
 import { db } from "@/db";
 import { entities, allegations, sources, allegationSources } from "@/db/schema";
 import { isNotNull, eq } from "drizzle-orm";
 
-async function getPublishedEntities(): Promise<Entity[]> {
+async function getPublishedEntities(page = 1, limit = 20): Promise<{ entities: Entity[]; hasMore: boolean }> {
   try {
+    const offset = (page - 1) * limit;
     const rows = await db
       .select()
       .from(entities)
       .where(isNotNull(entities.publishedAt))
-      .limit(50);
+      .limit(limit + 1)
+      .offset(offset);
 
     const result: Entity[] = [];
     for (const e of rows) {
@@ -59,23 +61,28 @@ async function getPublishedEntities(): Promise<Entity[]> {
         allegations: entityAllegations as Entity["allegations"],
       });
     }
-    return result;
+    const hasMore = rows.length > limit;
+    return { entities: hasMore ? result.slice(0, limit) : result, hasMore };
   } catch (err) {
     console.warn("DB unavailable during build, returning empty entities:", (err as Error).message);
-    return [];
+    return { entities: [], hasMore: false };
   }
 }
 
 export default async function HomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { locale } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam || "1", 10));
   const t = await getTranslations({ locale, namespace: "home" });
   const legal = await getTranslations({ locale, namespace: "legal" });
 
-  const published = await getPublishedEntities();
+  const { entities: published, hasMore } = await getPublishedEntities(page, 20);
   const entryCount = published.length;
   const sourceCount = published.reduce(
     (sum, e) => sum + e.allegations.reduce((aSum, a) => aSum + a.sources.length, 0),
@@ -84,8 +91,7 @@ export default async function HomePage({
   const verdictCount = published.filter((e) => e.status === "convicted").length;
 
   return (
-    <>
-      <Header />
+    <PageShell noPad>
       <HeroSection />
       <StatsBar entries={entryCount} sources={sourceCount} verdicts={verdictCount} />
 
@@ -98,6 +104,25 @@ export default async function HomePage({
 
       <ArchiveHome entities={published} showHeader={false} />
 
+      {/* Pagination */}
+      <div className="section-pad">
+        <div className="pagination-bar">
+          <Link href={`/${locale}?page=${Math.max(1, page - 1)}`}>
+            <button className="btn secondary" disabled={page <= 1}>
+              {locale === "ar" ? "السابق" : "Previous"}
+            </button>
+          </Link>
+          <span className="ds-body-sm" style={{ color: "var(--fg2)" }}>
+            {locale === "ar" ? `الصفحة ${page}` : `Page ${page}`}
+          </span>
+          <Link href={`/${locale}?page=${page + 1}`}>
+            <button className="btn secondary" disabled={!hasMore}>
+              {locale === "ar" ? "التالي" : "Next"}
+            </button>
+          </Link>
+        </div>
+      </div>
+
       {/* Submit CTA */}
       <section className="cta-section">
         <h2 className="section-title">{t("ctaTitle")}</h2>
@@ -106,8 +131,6 @@ export default async function HomePage({
           <button className="btn primary">{t("ctaButton")}</button>
         </Link>
       </section>
-
-      <Footer />
-    </>
+    </PageShell>
   );
 }

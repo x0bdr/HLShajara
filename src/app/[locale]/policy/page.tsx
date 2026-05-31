@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { PageShell } from "@/components";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
@@ -15,10 +16,9 @@ export default async function PolicyPage({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "policy" });
   const nav = await getTranslations({ locale, namespace: "nav" });
-  const footer = await getTranslations({ locale, namespace: "footer" });
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px" }}>
+    <PageShell narrow>
       <nav style={{ display: "flex", gap: 16, marginBottom: 32, flexWrap: "wrap", justifyContent: "center" }}>
         <Link href={`/${locale}`} className="btn ghost">{nav("record")}</Link>
         <Link href={`/${locale}/mission`} className="btn ghost">{nav("mission")}</Link>
@@ -56,14 +56,6 @@ export default async function PolicyPage({
           <p className="ds-body">{t("enforcementText")}</p>
         </div>
       </section>
-
-      <footer style={{ marginTop: 60, paddingTop: 24, borderTop: "1px solid var(--border)", textAlign: "center" }}>
-        <p className="ds-meta">{footer("copyright")}</p>
-        <div style={{ marginTop: 8, display: "flex", gap: 12, justifyContent: "center" }}>
-          <Link href={`/${locale}/terms`} className="ds-meta">{footer("terms")}</Link>
-          <Link href={`/${locale}/privacy`} className="ds-meta">{footer("privacy")}</Link>
-        </div>
-      </footer>
-    </main>
+    </PageShell>
   );
 }

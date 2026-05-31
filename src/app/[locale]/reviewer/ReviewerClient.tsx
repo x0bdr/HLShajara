@@ -98,10 +98,10 @@ export default function ReviewerPage() {
     updateSub(sub.id, { sourceVerification: updated });
   }
 
-  if (loading) return <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}><p className="ds-body">{t("loading")}</p></main>;
+  if (loading) return <p className="ds-body empty-text">{t("loading")}</p>;
 
   return (
-    <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
+    <>
       <div className="ds-h1" style={{ marginBottom: 24 }}>{t("title")}</div>
 
       {submissions.length === 0 ? (
@@ -359,6 +359,6 @@ export default function ReviewerPage() {
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 }

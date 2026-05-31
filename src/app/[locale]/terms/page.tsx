@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { LegalNote } from "@/components";
+import { PageShell, LegalNote } from "@/components";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
@@ -15,7 +15,7 @@ export default async function TermsPage({
   const legal = await getTranslations({ locale, namespace: "legal" });
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px" }}>
+    <PageShell narrow>
       <div className="ds-h1" style={{ marginBottom: 16 }}>
         {t("title")}
       </div>
@@ -42,6 +42,6 @@ export default async function TermsPage({
       </section>
 
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
-    </main>
+    </PageShell>
   );
 }

@@ -46,10 +46,10 @@ export default function RepliesAdminClient() {
     setCorrectionText("");
   }
 
-  if (loading) return <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}><p>Loading...</p></main>;
+  if (loading) return <p className="ds-body empty-text">Loading...</p>;
 
   return (
-    <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
+    <>
       <div className="ds-h1" style={{ marginBottom: 24 }}>
         {locale === "ar" ? "إدارة ردود الجهات" : "Reply Administration"}
       </div>
@@ -126,6 +126,6 @@ export default function RepliesAdminClient() {
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 }

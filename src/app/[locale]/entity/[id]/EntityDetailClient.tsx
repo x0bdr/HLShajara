@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { EvidenceStrength, StatusBadge, LegalNote } from "@/components";
+import { EvidenceStrength, StatusBadge, LegalNote, SkeletonCard } from "@/components";
 import { TYPE_LABELS } from "@/lib/labels";
 import type { Entity } from "@/lib/types";
 
@@ -27,28 +27,23 @@ export default function EntityDetailClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 920, margin: "0 auto", padding: 32 }}>
-        <p className="ds-body" style={{ textAlign: "center" }}>
-          {t("loading")}
-        </p>
-      </main>
+      <>
+        <SkeletonCard />
+        <SkeletonCard />
+      </>
     );
   }
 
   if (!entity) {
     return (
-      <main style={{ maxWidth: 920, margin: "0 auto", padding: 32 }}>
-        <p className="ds-body" style={{ textAlign: "center" }}>
-          {t("notFound")}
-        </p>
-      </main>
+      <p className="ds-body empty-text">{t("notFound")}</p>
     );
   }
 
   const a = entity.allegations[0];
 
   return (
-    <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
+    <>
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="top">
           <div className="ttl">
@@ -95,6 +90,6 @@ export default function EntityDetailClient({ id }: { id: string }) {
       </div>
 
       <LegalNote lang={lang}>{legal("note")}</LegalNote>
-    </main>
+    </>
   );
 }

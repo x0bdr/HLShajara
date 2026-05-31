@@ -153,13 +153,11 @@ export default function SubmitPage() {
   };
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px" }}>
-      <div className="ds-h1" style={{ marginBottom: 8 }}>
-        {t("title")}
+    <>
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
+        <p className="ds-lead">{t("lead")}</p>
       </div>
-      <p className="ds-lead" style={{ marginBottom: 24 }}>
-        {t("lead")}
-      </p>
 
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
 
@@ -411,6 +409,6 @@ export default function SubmitPage() {
           {submitting ? t("submitting") : t("submitButton")}
         </Button>
       </form>
-    </main>
+    </>
   );
 }

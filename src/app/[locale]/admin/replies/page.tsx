@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import RepliesAdminClient from "./RepliesAdminClient";
+import { PageShell } from "@/components";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
@@ -23,5 +24,12 @@ export default async function RepliesAdminPage({
     redirect(`/${locale}/login?redirectTo=/${locale}/admin/replies`);
   }
 
-  return <RepliesAdminClient />;
+  return (
+    <PageShell>
+      <div className="ds-h1" style={{ marginBottom: 24 }}>
+        {locale === "ar" ? "إدارة ردود الجهات" : "Reply Administration"}
+      </div>
+      <RepliesAdminClient />
+    </PageShell>
+  );
 }

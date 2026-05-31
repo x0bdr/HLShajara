@@ -73,9 +73,9 @@ export default function LoginClient() {
   }
 
   return (
-    <main style={{ maxWidth: 420, margin: "0 auto", padding: "32px 20px" }}>
-      <div className="ds-h1" style={{ marginBottom: 24, textAlign: "center" }}>
-        {t("title")}
+    <>
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
       </div>
 
       {error && (
@@ -191,6 +191,6 @@ export default function LoginClient() {
           {loading ? t("redirecting") : t("submit")}
         </button>
       </form>
-    </main>
+    </>
   );
 }
