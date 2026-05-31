@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { entities, allegations, sources, allegationSources } from "@/db/schema";
-import { eq, or, ilike, and } from "drizzle-orm";
+import { eq, or, ilike, and, isNotNull } from "drizzle-orm";
 import type { Entity, EvidenceLevel, EntityStatus, EntityType } from "@/lib/types";
 
 function mapEntity(
@@ -77,28 +77,25 @@ export async function GET(request: Request) {
       });
     }
 
-    // Build conditions
-    const conditions = [];
+    // Build conditions — public reads only from published projection
+    const conditions = [isNotNull(entities.publishedAt)];
     if (status) conditions.push(eq(entities.status, status as any));
     if (type) conditions.push(eq(entities.type, type as any));
 
     if (q) {
       const pattern = `%${q}%`;
-      conditions.push(
-        or(
-          ilike(entities.name, pattern),
-          ilike(entities.nameEn, pattern),
-          ilike(entities.role, pattern),
-          ilike(entities.roleEn, pattern)
-        )
+      const searchCondition = or(
+        ilike(entities.name, pattern),
+        ilike(entities.nameEn, pattern),
+        ilike(entities.role, pattern),
+        ilike(entities.roleEn, pattern)
       );
+      if (searchCondition) conditions.push(searchCondition);
     }
 
-    const whereClause = conditions.length
-      ? conditions.length === 1
-        ? conditions[0]
-        : and(...conditions)
-      : undefined;
+    const whereClause = conditions.length === 1
+      ? conditions[0]
+      : and(...conditions);
 
     const rows = await db
       .select()

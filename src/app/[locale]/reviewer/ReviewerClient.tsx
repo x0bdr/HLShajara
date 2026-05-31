@@ -31,16 +31,16 @@ export default function ReviewerPage() {
   }, []);
 
   async function act(id: number, action: "approve" | "reject") {
-    await fetch("/api/review", {
+    const res = await fetch("/api/review", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action,
-        submissionId: id,
-        reviewerId: 1,
-        reviewerRole: "reviewer",
-      }),
+      body: JSON.stringify({ action, submissionId: id }),
     });
+    const data = await res.json();
+    if (!data.ok) {
+      alert(data.message || "Action failed");
+      return;
+    }
     setSubmissions((prev) => prev.filter((s) => s.id !== id));
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { entities, replies } from "@/db/schema";
 import { ilike } from "drizzle-orm";
+import { withAudit } from "@/db/persist";
 
 export async function POST(request: Request) {
   try {
@@ -24,17 +25,26 @@ export async function POST(request: Request) {
 
     const entity = matched[0];
 
-    await db.insert(replies).values({
-      entityId: entity?.id ?? null,
-      entityName: entity?.name ?? entityName,
-      email,
-      statement,
-      status: "pending",
-    });
+    const [reply] = await withAudit(
+      { actorId: 0, actorRole: "submitter", reason: `Reply from ${email}` },
+      () =>
+        db
+          .insert(replies)
+          .values({
+            entityId: entity?.id ?? null,
+            entityName: entity?.name ?? entityName,
+            email,
+            statement,
+            status: "pending",
+          })
+          .returning(),
+      { action: "create", targetTable: "replies" }
+    );
 
     return NextResponse.json({
       ok: true,
       message: "Statement received and will be reviewed by the legal team.",
+      replyId: reply.id,
     });
   } catch (err) {
     console.error("Reply API error:", err);

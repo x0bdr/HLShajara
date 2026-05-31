@@ -3,6 +3,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
 import sharp from "sharp";
+import { getSession, unauthorizedResponse } from "@/lib/session";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -17,6 +18,11 @@ const IMAGE_TYPES = new Set([
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return unauthorizedResponse("Authentication required to upload files.");
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

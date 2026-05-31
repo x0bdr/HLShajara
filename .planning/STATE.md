@@ -2,57 +2,46 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-31)
+See: `.planning/PROJECT.md` (updated 2026-05-31)
 
 **Core value:** Every published claim concerns a named individual or entity, backed by a credible public source. No source, no publication. No group, no identity-based targeting.
-**Current focus:** All 8 phases complete + staging deployed + demo data seeded + i18n done + search + reply API
+**Current focus:** v1.0 milestone complete — planning v1.1 Hardening
 
 ## Current Position
 
-Phase: 8 of 8 complete
-Plan: All phases executed + deferred items in progress
+Phase: 9 of 9 complete (v1.0 Foundation shipped)
+Milestone: v1.0 — Complete
 Status: Deployed to staging server (test-sanad)
-Last activity: 2026-05-31 — EN translation, static export, server-side search, reply API endpoint
+Last activity: 2026-05-31 — Milestone audit, critical safety closure (Phase 9), milestone completion
 
-Progress: [██████████] 100%
+Progress: [██████████] 100% v1.0
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: — min
-- Total execution time: 1.0 hours
+- Total phases completed: 9
+- Total commits: 28
+- Execution time: 1 day
 
 **By Phase:**
 
-| Phase | Status | Files |
-|-------|--------|-------|
-| 1. Integrity Core | ✅ Complete | schema.ts, audit.ts, persist.ts |
-| 2. Auth & RBAC | ✅ Complete | auth.ts, middleware.ts |
-| 3. Submission & Boundary Engine | ✅ Complete | submit API, submit page |
-| 4. Verification Pipeline | ✅ Complete | reviewer page, review API |
-| 5. Legal Release Gate | ✅ Complete | lawyer sign-off in review API |
-| 6. Public Record & Search | ✅ Complete | record page, entity detail, entity API |
-| 7. Right-of-Reply | ✅ Complete | reply page |
-| 8. Bilingual Site & Policies | ✅ Complete | mission, faq, terms, privacy |
-
-**Recent Trend:**
-- Last 8 phases: All complete
-- Trend: Rapid sequential execution
-
-*Updated after each plan completion*
+| Phase | Status |
+|-------|--------|
+| 1. Integrity Core | ✅ Complete |
+| 2. Auth & RBAC | ✅ Complete |
+| 3. Submission & Boundary Engine | ✅ Complete |
+| 4. Verification Pipeline | ✅ Complete |
+| 5. Legal Release Gate | ✅ Complete |
+| 6. Public Record & Search | ✅ Complete |
+| 7. Right-of-Reply | ✅ Complete |
+| 8. Bilingual Site & Policies | ✅ Complete |
+| 9. Critical Safety Closure | ✅ Complete |
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- Scope = documentation/accountability archive, NOT a boycott campaign.
-- Anti-discrimination enforced in the data model (no identity fields, no zero-source publish) — structural, not policy.
-- Lawyer-review gate before naming any living person (Phase 5 is a hard, non-skippable boundary).
-- Staging deployment on test-sanad (Sanad infrastructure) — serverful, API routes active.
+See PROJECT.md Key Decisions table for full log.
 
 ### Completed Deferred Items
 
@@ -69,33 +58,36 @@ Recent decisions affecting current work:
 | Backend | Right-of-reply API endpoint | ✅ Done | 2026-05-31 |
 | Backend | File upload endpoint | ✅ Done | 2026-05-31 |
 | Backend | EXIF/GPS metadata stripping (Sharp) | ✅ Done | 2026-05-31 |
+| Backend | Auth enforcement on API routes | ✅ Done | 2026-05-31 |
+| Backend | Audit trail wired to state-changing routes | ✅ Done | 2026-05-31 |
+| Backend | RBAC enforcement (canPublish, hasRole) | ✅ Done | 2026-05-31 |
 
-### Pending Todos
+### Pending Todos (v1.1)
 
-- Implement OpenSearch / PostgreSQL FTS for Arabic search
+- Implement OpenSearch / PostgreSQL FTS for Arabic search relevance
 - Set up ClamAV malware scanning
-- Configure Better Auth production secret + 2FA (secret set; TOTP not natively supported by Better Auth v1.4.7)
+- Configure Better Auth 2FA (email-OTP alternative to TOTP)
 - Seed real research data (replace demo entries)
+- Build login UI page
+- Implement structured triage in reviewer console
+- Build source verification workflow
+- Enforce dual independent review
+- Build reply processing admin workflow
+- Build transparency dashboard
+- Add filter UI for status/type/evidence strength
+- Create dedicated anti-discrimination policy page
+- Record operating jurisdiction + hosting Key Decision
 
 ### Blockers/Concerns
 
 - Phase 5 (Legal Release Gate): operating jurisdiction + hosting decision requires qualified counsel; production publish of any living person is blocked until lawyer sign-off + jurisdiction Key Decision are recorded.
 - Free-text incitement/hate-tone classifier (AR + EN): start with curated banned-pattern lists + human review behind a swappable interface; ML classification is a separately-researched future effort.
-- Arabic search relevance (OpenSearch vs Meilisearch): benchmark on a real Arabic corpus before committing the engine (Phase 6).
+- Arabic search relevance (OpenSearch vs Meilisearch): benchmark on a real Arabic corpus before committing the engine.
 - Better Auth on staging: `BETTER_AUTH_SECRET` is now a secure random value; TOTP 2FA requires Better Auth plugin not available in v1.4.7. Email-OTP alternative possible.
 - GitHub Actions staging deploy: workflow fails because SSH secrets (`STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`) are not configured in repo settings.
-
-## Deferred Items (Remaining)
-
-| Category | Item | Status | Deferred At |
-|----------|------|--------|-------------|
-| Backend | OpenSearch integration | Pending | 2026-05-31 |
-| Backend | File upload + EXIF stripping | ✅ Done | 2026-05-31 |
-| Backend | ClamAV malware scanning | Pending | 2026-05-31 |
-| Frontend | Full EN translation | ✅ Done | 2026-05-31 |
 
 ## Session Continuity
 
 Last session: 2026-05-31
-Stopped at: Staging deployed, demo data seeded, i18n scaffold ready
+Stopped at: v1.0 milestone complete, planning v1.1 Hardening
 Resume file: None

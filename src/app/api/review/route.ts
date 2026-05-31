@@ -1,13 +1,18 @@
-export const dynamic = "force-static";
-
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { submissions, entities, allegations, sources, allegationSources } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { validatePublication } from "@/db/persist";
+import { validatePublication, withAudit } from "@/db/persist";
+import { getSession, unauthorizedResponse, forbiddenResponse } from "@/lib/session";
+import { hasRole, canPublish } from "@/lib/auth";
 
 /* ---------- GET: list pending submissions ---------- */
 export async function GET() {
+  const session = await getSession();
+  if (!session || !hasRole(session.user.role ?? "", "reviewer")) {
+    return forbiddenResponse("Reviewer access required.");
+  }
+
   const pending = await db.query.submissions.findMany({
     where: (s, { eq }) => eq(s.status, "pending"),
     orderBy: (s, { desc }) => [desc(s.createdAt)],
@@ -19,11 +24,27 @@ export async function GET() {
 /* ---------- POST: review action (approve / reject / publish) ---------- */
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session) {
+      return unauthorizedResponse("Authentication required.");
+    }
+
     const body = await request.json();
-    const { action, submissionId, reviewerId, reviewerRole, notes } = body;
+    const { action, submissionId, notes } = body;
 
     if (!["approve", "reject", "publish"].includes(action)) {
       return NextResponse.json({ ok: false, message: "Invalid action" }, { status: 400 });
+    }
+
+    const actorId = Number(session.user.id);
+    const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
+
+    if (action === "publish" && !canPublish(actorRole)) {
+      return forbiddenResponse("Senior reviewer or admin required to publish.");
+    }
+
+    if ((action === "approve" || action === "reject") && !hasRole(actorRole, "reviewer")) {
+      return forbiddenResponse("Reviewer access required.");
     }
 
     const submission = await db.query.submissions.findFirst({
@@ -35,18 +56,30 @@ export async function POST(request: Request) {
     }
 
     if (action === "reject") {
-      await db
-        .update(submissions)
-        .set({ status: "rejected", rejectionNote: notes ?? null, reviewedBy: reviewerId, reviewedAt: new Date() })
-        .where(eq(submissions.id, submissionId));
+      await withAudit(
+        { actorId, actorRole, reason: notes ?? undefined },
+        () =>
+          db
+            .update(submissions)
+            .set({ status: "rejected", rejectionNote: notes ?? null, reviewedBy: actorId, reviewedAt: new Date() })
+            .where(eq(submissions.id, submissionId))
+            .returning(),
+        { action: "reject", targetTable: "submissions", submissionId }
+      );
       return NextResponse.json({ ok: true, message: "Submission rejected." });
     }
 
     if (action === "approve") {
-      await db
-        .update(submissions)
-        .set({ status: "verified", reviewedBy: reviewerId, reviewedAt: new Date() })
-        .where(eq(submissions.id, submissionId));
+      await withAudit(
+        { actorId, actorRole },
+        () =>
+          db
+            .update(submissions)
+            .set({ status: "verified", reviewedBy: actorId, reviewedAt: new Date() })
+            .where(eq(submissions.id, submissionId))
+            .returning(),
+        { action: "verify", targetTable: "submissions", submissionId }
+      );
       return NextResponse.json({ ok: true, message: "Submission verified. Awaiting second review or publish." });
     }
 
@@ -65,43 +98,58 @@ export async function POST(request: Request) {
 
       // Create entity from submission
       const publicId = `ent-${Date.now().toString(36)}`;
-      const [entity] = await db
-        .insert(entities)
-        .values({
-          publicId,
-          type: submission.entityType,
-          name: submission.entityName,
-          role: submission.entityRole,
-          status: "alleged",
-          evidenceLevel: "1",
-          publishedAt: new Date(),
-        })
-        .returning();
+      const [entity] = await withAudit(
+        { actorId, actorRole, reason: notes ?? undefined },
+        () =>
+          db
+            .insert(entities)
+            .values({
+              publicId,
+              type: submission.entityType,
+              name: submission.entityName,
+              role: submission.entityRole,
+              status: "alleged",
+              evidenceLevel: "1",
+              publishedAt: new Date(),
+            })
+            .returning(),
+        { action: "publish", targetTable: "entities" }
+      );
 
-      const [allegation] = await db
-        .insert(allegations)
-        .values({
-          entityId: entity.id,
-          description: submission.allegationDescription,
-          period: submission.allegationPeriod,
-          location: submission.allegationLocation,
-          classification: submission.allegationClassification,
-        })
-        .returning();
+      const [allegation] = await withAudit(
+        { actorId, actorRole },
+        () =>
+          db
+            .insert(allegations)
+            .values({
+              entityId: entity.id,
+              description: submission.allegationDescription,
+              period: submission.allegationPeriod,
+              location: submission.allegationLocation,
+              classification: submission.allegationClassification,
+            })
+            .returning(),
+        { action: "create", targetTable: "allegations", entityId: entity.id }
+      );
 
       // Create sources from submission links
       const sourceLinks = Array.isArray(submission.sourceLinks) ? submission.sourceLinks : [];
       for (const link of sourceLinks) {
-        const [source] = await db
-          .insert(sources)
-          .values({
-            tier: "C",
-            title: link.title ?? "Untitled source",
-            publisher: "Submitted source",
-            date: new Date().toISOString().slice(0, 10),
-            url: link.url,
-          })
-          .returning();
+        const [source] = await withAudit(
+          { actorId, actorRole },
+          () =>
+            db
+              .insert(sources)
+              .values({
+                tier: "C",
+                title: link.title ?? "Untitled source",
+                publisher: "Submitted source",
+                date: new Date().toISOString().slice(0, 10),
+                url: link.url,
+              })
+              .returning(),
+          { action: "create", targetTable: "sources", entityId: entity.id }
+        );
 
         await db.insert(allegationSources).values({
           allegationId: allegation.id,
@@ -109,10 +157,16 @@ export async function POST(request: Request) {
         });
       }
 
-      await db
-        .update(submissions)
-        .set({ status: "published", publishedBy: reviewerId, publishedAt: new Date() })
-        .where(eq(submissions.id, submissionId));
+      await withAudit(
+        { actorId, actorRole },
+        () =>
+          db
+            .update(submissions)
+            .set({ status: "published", publishedBy: actorId, publishedAt: new Date() })
+            .where(eq(submissions.id, submissionId))
+            .returning(),
+        { action: "publish", targetTable: "submissions", submissionId, entityId: entity.id }
+      );
 
       return NextResponse.json({ ok: true, entityId: entity.publicId, message: "Published successfully." });
     }

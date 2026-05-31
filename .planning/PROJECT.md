@@ -14,32 +14,61 @@ sanctions advocacy — while supporting victims and memory. It is bilingual (Ara
 Every published claim concerns a **named individual or entity** and is backed by a
 **credible public source**. No source, no publication. No group, no identity-based targeting.
 
+## Current State
+
+**Shipped:** v1.0 Foundation (2026-05-31)
+
+All 8 planned phases code-complete and deployed to staging (`https://staging.hlshajara.com`).
+Phase 9 (critical safety closure) wired auth enforcement, audit trail, and RBAC after
+milestone audit found gaps. The system is structurally functional but has significant
+operational gaps before production readiness.
+
+**Stack:** Next.js 16 + React 19 + TypeScript + Tailwind CSS + next-intl | PostgreSQL 16 +
+Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + PM2)
+
+**Codebase:** ~3,200 LOC TypeScript/React across 47 source files.
+
 ## Requirements
 
-### Validated
+### Validated (v1.0)
 
-(None yet — ship to validate)
+- ✓ DATA-01 — Identity-free schema — v1.0
+- ✓ INTAKE-01 — Internal draft entry with named actor + source — v1.0
+- ✓ INTAKE-03 — EXIF/GPS stripping + content hash — v1.0
+- ✓ RECORD-02 — Sources + evidence-strength labels — v1.0
+- ✓ RECORD-04 — Arabic + English search — v1.0
+- ✓ REPLY-01 — Right-of-reply submission — v1.0
+- ✓ SITE-01 — Bilingual AR/EN i18n — v1.0
+- ✓ SITE-03 — Legal disclaimer, terms, privacy — v1.0
+- ✓ DATA-03 — persist() choke point wired — v1.0 Phase 9
+- ✓ DATA-04 — Audit trail wired — v1.0 Phase 9
+- ✓ AUTH-02 — RBAC enforced — v1.0 Phase 9
 
 ### Active
 
-- [ ] Bilingual (AR/EN) public site: mission, "what we do / don't", Code of Conduct, anti-discrimination policy, FAQ
-- [ ] Internal research team can draft entries for named individuals/entities with required source(s)
-- [ ] Draft validation engine: auto-reject group-targeting, no-source, private-targeting, innocent-party drafts
-- [ ] Reviewer console with source verification and dual independent review
-- [ ] Legal/safety gate: phrasing matched to evidence strength + privacy re-check before publish
-- [ ] Public record: search/filter (by conduct, role, evidence strength, status — never identity) with per-entry sources visible
-- [ ] Evidence-strength labelling on every published entry
-- [ ] Right-of-reply and correction process for named parties
-- [ ] Immutable review/audit trail on every entry
-- [ ] Legal disclaimer, terms, privacy/data policy
+- [ ] AUTH-01 — Mandatory 2FA for staff (TOTP plugin unavailable in Better Auth v1.4.7; email-OTP alternative)
+- [ ] INTAKE-02 — Complete auto-reject reason codes (WEAK_SOURCE, PRIVATE_TARGETING, INNOCENT_PARTY, MISMATCH)
+- [ ] INTAKE-04 — Distributed rate limiting (Redis or similar)
+- [ ] VERIFY-01 — Structured triage fields in reviewer console
+- [ ] VERIFY-02 — Source verification workflow (snapshot/hash, tier check)
+- [ ] VERIFY-03 — Dual independent review enforcement
+- [ ] VERIFY-04 — Phrasing-to-evidence-strength match + privacy re-check
+- [ ] LEGAL-01 — Functional `isDeceased` check in publish API
+- [ ] LEGAL-02 — Operating jurisdiction + hosting Key Decision gate
+- [ ] RECORD-01 — Filter UI for status, type, evidence strength
+- [ ] RECORD-03 — Separate publish projection table or materialized view
+- [ ] REPLY-02 — Reply processing workflow (approve, correct, unpublish)
+- [ ] TRANS-01 — Public transparency dashboard
+- [ ] SITE-02 — Dedicated anti-discrimination policy page
 
 ### Out of Scope
 
-- Any boycott, social-pressure, or mobilization features
-- Public submission/intake form — entries are added exclusively by the internal research team
-- Targeting or tagging by religion, sect, ethnicity, family, region, tribe, or community — structurally impossible in the data model
-- Publishing home addresses, live locations, or any data enabling physical targeting — safety
+- Boycott / social-pressure / mobilization features — this is an archive that refers to lawful channels, not a campaign
+- Targeting/tagging/filtering by religion, sect, ethnicity, family, region, tribe — structurally impossible
+- Publishing home addresses, live locations, or contact details — safety
 - Naming children or clearly uninvolved persons — privacy of the innocent
+- Crowd voting on guilt; unmoderated public comments — harassment vector
+- Engagement/virality metrics — wrong incentives for an accountability archive
 - Anonymous-rumor-only entries — fails the evidence standard
 
 ## Context
@@ -50,6 +79,8 @@ Every published claim concerns a **named individual or entity** and is backed by
   data-model, workflow, roles, roadmap) and a bilingual `CONCEPT.md`.
 - Aligned in spirit with established transitional-justice documentation work (UN CoI, IIIM,
   recognized human-rights organizations); intended to feed, not replace, those mechanisms.
+- v1.0 shipped rapidly in a single day (2026-05-31) with 28 commits. All work executed inline
+  without formal GSD phase directories.
 
 ## Constraints
 
@@ -66,10 +97,12 @@ Every published claim concerns a **named individual or entity** and is backed by
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Scope = documentation/accountability archive, NOT a boycott campaign | An archive that refers to lawful channels prevents misuse; a mobilization tool cannot be safeguarded | — Pending |
-| Anti-discrimination enforced in the data model (no identity fields, no zero-source publish) | Makes collective/identity targeting structurally impossible, not just discouraged | — Pending |
-| Lawyer-review gate before naming any living person | Defamation + data-protection risk is the top threat to the project's survival | — Pending |
-| Latin brand name = "HLShajara" | User decision | — Pending |
+| Scope = documentation/accountability archive, NOT a boycott campaign | An archive that refers to lawful channels prevents misuse; a mobilization tool cannot be safeguarded | ✅ v1.0 |
+| Anti-discrimination enforced in the data model (no identity fields, no zero-source publish) | Makes collective/identity targeting structurally impossible, not just discouraged | ✅ v1.0 |
+| Lawyer-review gate before naming any living person | Defamation + data-protection risk is the top threat to the project's survival | ✅ v1.0 |
+| Latin brand name = "HLShajara" | User decision | ✅ v1.0 |
+| Phase 9 inserted post-audit to close critical safety gaps inline | Auth, audit, RBAC gaps were blockers to structural integrity | ✅ v1.0 |
+| Staging on test-sanad (Sanad infrastructure) | Existing server infrastructure; serverful deployment keeps API routes active | ✅ v1.0 |
 
 ## Evolution
 
@@ -89,4 +122,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-31 after initialization*
+*Last updated: 2026-05-31 after v1.0 milestone completion*

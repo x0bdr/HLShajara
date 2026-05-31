@@ -1,10 +1,9 @@
-export const dynamic = "force-static";
-
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { submissions } from "@/db/schema";
-import { validateSubmission } from "@/db/persist";
+import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
+import { getSession, unauthorizedResponse } from "@/lib/session";
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 5;
@@ -55,25 +54,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const [submission] = await db
-      .insert(submissions)
-      .values({
-        status: "pending",
-        entityName: data.entityName,
-        entityType: data.entityType,
-        entityRole: data.entityRole,
-        allegationDescription: data.allegationDescription,
-        allegationPeriod: data.allegationPeriod ?? null,
-        allegationLocation: data.allegationLocation ?? null,
-        allegationClassification: data.allegationClassification ?? null,
-        sourceLinks: data.sourceLinks,
-        sourceFiles: data.sourceFiles ?? [],
-        submitterEmail: data.submitterEmail ?? null,
-        submitterName: data.submitterName ?? null,
-        isAnonymous: data.isAnonymous,
-        ipHash: ip === "unknown" ? null : ip,
-      })
-      .returning();
+    const session = await getSession();
+    if (!session) {
+      return unauthorizedResponse("Authentication required to submit evidence.");
+    }
+
+    const actorId = Number(session.user.id);
+    const actorRole = session.user.role as "submitter" | "reviewer" | "senior_reviewer" | "admin";
+
+    const [submission] = await withAudit(
+      { actorId, actorRole },
+      () =>
+        db
+          .insert(submissions)
+          .values({
+            status: "pending",
+            entityName: data.entityName,
+            entityType: data.entityType,
+            entityRole: data.entityRole,
+            allegationDescription: data.allegationDescription,
+            allegationPeriod: data.allegationPeriod ?? null,
+            allegationLocation: data.allegationLocation ?? null,
+            allegationClassification: data.allegationClassification ?? null,
+            sourceLinks: data.sourceLinks,
+            sourceFiles: data.sourceFiles ?? [],
+            submitterEmail: data.submitterEmail ?? null,
+            submitterName: data.submitterName ?? null,
+            isAnonymous: data.isAnonymous,
+            ipHash: ip === "unknown" ? null : ip,
+          })
+          .returning(),
+      { action: "create", targetTable: "submissions" }
+    );
 
     return NextResponse.json({
       ok: true,
