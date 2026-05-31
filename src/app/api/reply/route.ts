@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { entities, replies } from "@/db/schema";
-import { ilike } from "drizzle-orm";
+import { ilike, isNotNull, and } from "drizzle-orm";
 import { withAudit } from "@/db/persist";
+import { rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 5 });
+  if (!rl.ok) return rl.response;
+
   try {
     const body = await request.json();
     const { entityName, email, statement } = body;
@@ -16,11 +20,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Try to find the entity by name (case-insensitive)
+    // Try to find the entity by name (case-insensitive), only published entities
     const matched = await db
       .select()
       .from(entities)
-      .where(ilike(entities.name, `%${entityName}%`))
+      .where(
+        and(ilike(entities.name, `%${entityName}%`), isNotNull(entities.publishedAt))
+      )
       .limit(1);
 
     const entity = matched[0];

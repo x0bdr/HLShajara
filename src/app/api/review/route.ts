@@ -5,9 +5,13 @@ import { eq } from "drizzle-orm";
 import { validatePublication, withAudit } from "@/db/persist";
 import { getSession, unauthorizedResponse, forbiddenResponse, require2FA } from "@/lib/session";
 import { hasRole, canPublish } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/rate-limit";
 
 /* ---------- GET: list pending submissions ---------- */
-export async function GET() {
+export async function GET(request: Request) {
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 30 });
+  if (!rl.ok) return rl.response;
+
   const session = await getSession();
   if (!session || !hasRole(session.user.role ?? "", "reviewer")) {
     return forbiddenResponse("Reviewer access required.");
@@ -26,6 +30,9 @@ export async function GET() {
 
 /* ---------- POST: review action ---------- */
 export async function POST(request: Request) {
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 20 });
+  if (!rl.ok) return rl.response;
+
   try {
     const session = await getSession();
     if (!session) {

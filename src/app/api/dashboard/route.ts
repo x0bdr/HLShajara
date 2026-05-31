@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { entities, submissions, replies } from "@/db/schema";
 import { sql } from "drizzle-orm";
+import { rateLimitResponse } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 60 });
+  if (!rl.ok) return rl.response;
+
   try {
     const publishedCount = await db
       .select({ count: sql<number>`count(*)` })

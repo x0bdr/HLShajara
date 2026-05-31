@@ -10,18 +10,23 @@ See: `.planning/PROJECT.md` (updated 2026-05-31)
 ## Current Position
 
 Milestone: v1.1 Hardening
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-05-31 — Milestone v1.1 started
+Phase: Phases 10–15 code-complete and deployed to staging
+Plan: `.planning/v1.1-MILESTONE-AUDIT.md`
+Status: Gaps found — 3 critical, 3 medium (being closed)
+Last activity: 2026-05-31 — v1.1 deployed to staging.hlshajara.com
 
-Progress: [░░░░░░░░░░] 0% v1.1
+Progress: [████████████░░░░] 75% v1.1
 
 ## Performance Metrics
 
 **Velocity (v1.0):**
 - Total phases completed: 9
 - Total commits: 28
+- Execution time: 1 day
+
+**Velocity (v1.1):**
+- Total phases completed: 6 (Phases 10–15)
+- Total commits: 12
 - Execution time: 1 day
 
 ## Accumulated Context
@@ -34,12 +39,12 @@ See PROJECT.md Key Decisions table for full log.
 
 - Phase 5 (Legal Release Gate): operating jurisdiction + hosting decision requires qualified counsel; production publish of any living person is blocked until lawyer sign-off + jurisdiction Key Decision are recorded.
 - Free-text incitement/hate-tone classifier (AR + EN): start with curated banned-pattern lists + human review behind a swappable interface; ML classification is a separately-researched future effort.
-- Arabic search relevance (OpenSearch vs Meilisearch): benchmark on a real Arabic corpus before committing the engine.
-- Better Auth on staging: `BETTER_AUTH_SECRET` is now a secure random value; TOTP 2FA requires Better Auth plugin not available in v1.4.7. Email-OTP alternative planned for v1.1.
-- GitHub Actions staging deploy: workflow fails because SSH secrets (`STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`) are not configured in repo settings.
+- Arabic search relevance (OpenSearch/Meilisearch): benchmark on a real Arabic corpus before committing the engine.
+- Better Auth on staging: `BETTER_AUTH_SECRET` is now a secure random value; TOTP 2FA working via Better Auth twoFactor plugin.
+- GitHub Actions staging deploy: workflow fails because SSH secrets (`STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY`) are not configured in repo settings. Manual deploy via SSH works.
 
 ## Session Continuity
 
 Last session: 2026-05-31
-Stopped at: v1.1 Hardening initialized
-Resume file: None
+Stopped at: Closing v1.1 critical gaps (CRIT-01/02/03, MED-01/02/03)
+Resume file: `.planning/v1.1-MILESTONE-AUDIT.md`

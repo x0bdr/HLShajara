@@ -41,15 +41,12 @@ export async function POST(request: Request) {
     }
 
     const session = await getSession();
-    if (!session) {
-      return unauthorizedResponse("Authentication required to submit evidence.");
-    }
-
-    const actorId = Number(session.user.id);
-    const actorRole = session.user.role as "submitter" | "reviewer" | "senior_reviewer" | "admin";
+    const isAnonymous = data.isAnonymous || !session;
+    const actorId = session ? Number(session.user.id) : 0;
+    const actorRole = (session?.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     const [submission] = await withAudit(
-      { actorId, actorRole },
+      { actorId, actorRole, reason: isAnonymous ? "Anonymous submission" : undefined },
       () =>
         db
           .insert(submissions)
@@ -66,7 +63,7 @@ export async function POST(request: Request) {
             sourceFiles: data.sourceFiles ?? [],
             submitterEmail: data.submitterEmail ?? null,
             submitterName: data.submitterName ?? null,
-            isAnonymous: data.isAnonymous,
+            isAnonymous,
             ipHash: ip === "unknown" ? null : createHash("sha256").update(ip).digest("hex"),
           })
           .returning(),

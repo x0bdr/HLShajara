@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   try {
     if (id) {
       const row = await db.query.entities.findFirst({
-        where: eq(entities.publicId, id),
+        where: and(eq(entities.publicId, id), isNotNull(entities.publishedAt)),
       });
 
       if (!row) {

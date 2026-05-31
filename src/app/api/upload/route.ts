@@ -5,6 +5,7 @@ import path from "path";
 import sharp from "sharp";
 import { getSession, unauthorizedResponse } from "@/lib/session";
 import { scanBuffer } from "@/lib/clamav";
+import { rateLimitResponse } from "@/lib/rate-limit";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -18,6 +19,9 @@ const IMAGE_TYPES = new Set([
 ]);
 
 export async function POST(request: Request) {
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 10 });
+  if (!rl.ok) return rl.response;
+
   try {
     const session = await getSession();
     if (!session) {

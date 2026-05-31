@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { keyDecisions } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getSession, forbiddenResponse, require2FA } from "@/lib/session";
+import { hasRole } from "@/lib/auth";
+import { rateLimitResponse } from "@/lib/rate-limit";
 
 export async function GET() {
   try {
@@ -14,7 +17,18 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 10 });
+  if (!rl.ok) return rl.response;
+
   try {
+    const session = await getSession();
+    if (!session || !hasRole(session.user.role ?? "", "admin")) {
+      return forbiddenResponse("Admin access required.");
+    }
+    if (!require2FA(session)) {
+      return forbiddenResponse("Two-factor authentication required for staff.");
+    }
+
     const body = await request.json();
     const { decisionId, category, title, description, status, decidedBy } = body;
 
