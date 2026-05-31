@@ -120,11 +120,11 @@ Phases execute in numeric order. Phase 8 (bilingual site) may proceed in paralle
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Integrity Core | 0/TBD | Not started | - |
-| 2. Auth & RBAC | 0/TBD | Not started | - |
-| 3. Submission & Boundary Engine | 0/TBD | Not started | - |
-| 4. Verification Pipeline | 0/TBD | Not started | - |
-| 5. Legal Release Gate | 0/TBD | Not started | - |
-| 6. Public Record & Search | 0/TBD | Not started | - |
-| 7. Right-of-Reply, Correction & Transparency | 0/TBD | Not started | - |
-| 8. Bilingual Site & Policies | 0/TBD | Not started | - |
+| 1. Integrity Core | ✅ | Complete | 2026-05-31 |
+| 2. Auth & RBAC | ✅ | Complete | 2026-05-31 |
+| 3. Submission & Boundary Engine | ✅ | Complete | 2026-05-31 |
+| 4. Verification Pipeline | ✅ | Complete | 2026-05-31 |
+| 5. Legal Release Gate | ✅ | Complete | 2026-05-31 |
+| 6. Public Record & Search | ✅ | Complete | 2026-05-31 |
+| 7. Right-of-Reply, Correction & Transparency | ✅ | Complete | 2026-05-31 |
+| 8. Bilingual Site & Policies | ✅ | Complete | 2026-05-31 |
