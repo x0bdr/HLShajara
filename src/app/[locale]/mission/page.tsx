@@ -1,14 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { LegalNote } from "@/components";
 
+export function generateStaticParams() {
+  return [{ locale: "ar" }, { locale: "en" }];
+}
+
 export default async function MissionPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("mission");
-  const legal = await getTranslations("legal");
+  const t = await getTranslations({ locale, namespace: "mission" });
+  const legal = await getTranslations({ locale, namespace: "legal" });
 
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px" }}>

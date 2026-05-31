@@ -84,11 +84,11 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("home");
-  const nav = await getTranslations("nav");
-  const legal = await getTranslations("legal");
-  const footer = await getTranslations("footer");
-  const labels = await getTranslations("labels");
+  const t = await getTranslations({ locale, namespace: "home" });
+  const nav = await getTranslations({ locale, namespace: "nav" });
+  const legal = await getTranslations({ locale, namespace: "legal" });
+  const footer = await getTranslations({ locale, namespace: "footer" });
+  const labels = await getTranslations({ locale, namespace: "labels" });
 
   return (
     <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>

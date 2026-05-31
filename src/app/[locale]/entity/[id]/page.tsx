@@ -1,7 +1,9 @@
 import EntityDetailClient from "./EntityDetailClient";
 
 export function generateStaticParams() {
-  return [{ id: "ent-001" }, { id: "ent-002" }, { id: "ent-003" }];
+  const ids = ["ent-001", "ent-002", "ent-003"];
+  const locales = ["ar", "en"];
+  return locales.flatMap((locale) => ids.map((id) => ({ locale, id })));
 }
 
 export default async function EntityDetailPage({

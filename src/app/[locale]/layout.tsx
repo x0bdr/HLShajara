@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { fontVars } from "../fonts";
 import "@/styles/tokens.css";
 import "@/components/hlshajara.css";
@@ -13,8 +13,9 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const dir = locale === "ar" ? "rtl" : "ltr";
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <html lang={locale} dir={dir} className={fontVars}>
