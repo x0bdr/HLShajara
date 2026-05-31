@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 Foundation** — Phases 1–9 (shipped 2026-05-31)
-- 🚧 **v1.1 Hardening** — Production readiness, real data, search, 2FA (planned)
+- ✅ **v1.1 Hardening** — Production readiness, real data, search, 2FA (shipped 2026-05-31)
+- 🚧 **v1.2 Frontend Polish** — UI consistency, shared shell, token compliance, mobile UX (in progress)
 - 📋 **v2.0 Scale** — Partner API, export tools, advanced analytics (future)
 
 ## Phases
@@ -25,21 +26,31 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 </details>
 
-### 🚧 v1.1 Hardening (In Progress / Planned)
+<details>
+<summary>✅ v1.1 Hardening (Phases 10–15) — SHIPPED 2026-05-31</summary>
 
-- [ ] Phase 10: 2FA & Login UI — Email-OTP or passkey for staff; login page
-- [ ] Phase 11: Reviewer Console v2 — Structured triage, source verification workflow, dual review
-- [ ] Phase 12: Search & Filtering — OpenSearch/Meilisearch Arabic-aware search, filter UI
-- [ ] Phase 13: Reply Processing — Admin workflow for approving/correcting/unpublishing
-- [ ] Phase 14: Transparency Dashboard — Published/rejected/corrected counts
-- [ ] Phase 15: Data Hardening — Real research data seed, ClamAV scanning, distributed rate limits
+- [x] Phase 10: 2FA & Login UI — TOTP for staff; bilingual login page
+- [x] Phase 11: Reviewer Console v2 — Structured triage, source verification, dual review
+- [x] Phase 12: Search & Filtering — Filter UI, materialized view for published entities
+- [x] Phase 13: Reply Processing — Admin workflow for approving/correcting/unpublishing
+- [x] Phase 14: Transparency Dashboard — Published/rejected/corrected counts
+- [x] Phase 15: Data Hardening — Real research data seed, ClamAV scanning, distributed rate limits
+
+</details>
+
+### 🚧 v1.2 Frontend Polish (In Progress)
+
+- [ ] **Phase 16: Page Shell & Dashboard Redesign** — Shared Header+Footer wrapper, dashboard token compliance, remove inline styles
+- [ ] **Phase 17: Interactions & Pagination** — Evidence card click-through, pagination API + UI, loading skeletons, error states
+- [ ] **Phase 18: Filter UX & Mobile** — Extract shared FilterPanel, collapsible mobile filters, unify search/filter architecture
+- [ ] **Phase 19: Copy & Polish** — Translation gaps, empty states, login UX, stats bar empty state, final build verification
 
 ### 📋 v2.0 Scale (Future)
 
-- [ ] Phase 16: Partner API — Vetted organization access
-- [ ] Phase 17: Export & Citation — Journalist/lawyer/researcher tooling
-- [ ] Phase 18: AI-Assisted Triage — Arabic-dialect incitement classifier
-- [ ] Phase 19: Appeals Process — Formal appeals with SLA
+- [ ] Phase 20: Partner API — Vetted organization access
+- [ ] Phase 21: Export & Citation — Journalist/lawyer/researcher tooling
+- [ ] Phase 22: AI-Assisted Triage — Arabic-dialect incitement classifier
+- [ ] Phase 23: Appeals Process — Formal appeals with SLA
 
 ## Progress
 
@@ -54,9 +65,13 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 | 7. Right-of-Reply | v1.0 | ✅ Complete | 2026-05-31 |
 | 8. Bilingual Site & Policies | v1.0 | ✅ Complete | 2026-05-31 |
 | 9. Critical Safety Closure | v1.0 | ✅ Complete | 2026-05-31 |
-| 10. 2FA & Login UI | v1.1 | ⬜ Not started | — |
-| 11. Reviewer Console v2 | v1.1 | ⬜ Not started | — |
-| 12. Search & Filtering | v1.1 | ⬜ Not started | — |
-| 13. Reply Processing | v1.1 | ⬜ Not started | — |
-| 14. Transparency Dashboard | v1.1 | ⬜ Not started | — |
-| 15. Data Hardening | v1.1 | ⬜ Not started | — |
+| 10. 2FA & Login UI | v1.1 | ✅ Complete | 2026-05-31 |
+| 11. Reviewer Console v2 | v1.1 | ✅ Complete | 2026-05-31 |
+| 12. Search & Filtering | v1.1 | ✅ Complete | 2026-05-31 |
+| 13. Reply Processing | v1.1 | ✅ Complete | 2026-05-31 |
+| 14. Transparency Dashboard | v1.1 | ✅ Complete | 2026-05-31 |
+| 15. Data Hardening | v1.1 | ✅ Complete | 2026-05-31 |
+| 16. Page Shell & Dashboard | v1.2 | ⬜ Not started | — |
+| 17. Interactions & Pagination | v1.2 | ⬜ Not started | — |
+| 18. Filter UX & Mobile | v1.2 | ⬜ Not started | — |
+| 19. Copy & Polish | v1.2 | ⬜ Not started | — |
