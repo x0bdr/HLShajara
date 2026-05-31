@@ -2,7 +2,7 @@
 # (and attach CONCEPT.md if you can)
 
 I'm building a lawful civic accountability and documentation platform called
-"لست شجرة" (Lastu Shajara) about crimes committed in Syria. I have a complete
+"لست شجرة" (HLShajara) about crimes committed in Syria. I have a complete
 concept document (attached / pasted below). Help me refine and complete it into
 a ready-to-build product.
 
