@@ -9,7 +9,8 @@
     "faq": "FAQ",
     "reply": "Right of Reply",
     "submit": "Submit Report",
-    "reviewer": "Reviewer Console"
+    "reviewer": "Reviewer Console",
+    "dashboard": "Transparency Dashboard"
   },
   "home": {
     "title": "LST Shajara",
@@ -180,5 +181,16 @@
     "unauthorized": "Unauthorized",
     "reviewerRequired": "Reviewer console access requires an authenticated reviewer account.",
     "redirecting": "Redirecting..."
+  },
+  "dashboard": {
+    "title": "Transparency Dashboard",
+    "lead": "Real-time statistics on the documentation and review process.",
+    "loading": "Loading statistics...",
+    "empty": "No statistics available.",
+    "published": "Published Entries",
+    "rejected": "Rejected Entries",
+    "corrected": "Corrected Entries",
+    "pending": "Pending Review",
+    "underReview": "Under Review"
   }
 }

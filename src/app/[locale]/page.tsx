@@ -114,6 +114,9 @@ export default async function HomePage({
         <Link href={`/${locale}/reply`} className="btn ghost">
           {nav("reply")}
         </Link>
+        <Link href={`/${locale}/dashboard`} className="btn ghost">
+          {nav("dashboard")}
+        </Link>
       </nav>
 
       {/* Hero */}

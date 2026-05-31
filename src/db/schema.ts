@@ -36,6 +36,7 @@ export const entityStatusEnum = pgEnum("entity_status", [
   "sanctioned",
   "convicted",
   "deceased",
+  "unpublished",
 ]);
 
 export const evidenceLevelEnum = pgEnum("evidence_level", [
@@ -77,6 +78,7 @@ export const replyStatusEnum = pgEnum("reply_status", [
   "pending",
   "approved",
   "rejected",
+  "corrected",
 ]);
 
 export const userRoleEnum = pgEnum("user_role", [
@@ -277,6 +279,9 @@ export const replies = pgTable(
     status: replyStatusEnum("status").notNull().default("pending"),
     reviewedBy: integer("reviewed_by"),
     reviewNote: text("review_note"),
+    processedBy: integer("processed_by"),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    adminNote: text("admin_note"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
