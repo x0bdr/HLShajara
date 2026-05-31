@@ -18,7 +18,7 @@ export function EvidenceCard({
   const labels = useTranslations("labels");
   const a = entity.allegations[0];
   const nSrc = entity.allegations.reduce(
-    (n, x) => n + x.sources.length,
+    (n, x) => n + (x.sources?.length ?? 0),
     0
   );
   const interactive = typeof onOpen === "function";
@@ -41,13 +41,13 @@ export function EvidenceCard({
       </div>
       <div className="body">
         <StatusBadge status={entity.status} lang={lang} />
-        <div className="alle">{a.description}</div>
+        <div className="alle">{a?.description ?? "—"}</div>
         <div className="srcline">
           <span className="mark">
             {labels("sources")} · {nSrc}
           </span>
           <span className="tiers">
-            {a.sources.map((s) => `Tier ${s.tier}`).join(" · ")}
+            {a?.sources.map((s) => `Tier ${s.tier}`).join(" · ") ?? ""}
           </span>
         </div>
       </div>
