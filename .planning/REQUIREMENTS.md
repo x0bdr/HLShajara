@@ -70,4 +70,34 @@ Anti-discrimination and no-zero-source are enforced **structurally**, not by pol
 
 ## Traceability
 
-(Filled by roadmap — every v1 REQ maps to exactly one phase.)
+Every v1 REQ maps to exactly one phase. Coverage: 24/24.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| AUTH-01 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Pending |
+| AUTH-03 | Phase 2 | Pending |
+| INTAKE-01 | Phase 3 | Pending |
+| INTAKE-02 | Phase 3 | Pending |
+| INTAKE-03 | Phase 3 | Pending |
+| INTAKE-04 | Phase 3 | Pending |
+| VERIFY-01 | Phase 4 | Pending |
+| VERIFY-02 | Phase 4 | Pending |
+| VERIFY-03 | Phase 4 | Pending |
+| VERIFY-04 | Phase 4 | Pending |
+| LEGAL-01 | Phase 5 | Pending |
+| LEGAL-02 | Phase 5 | Pending |
+| RECORD-01 | Phase 6 | Pending |
+| RECORD-02 | Phase 6 | Pending |
+| RECORD-03 | Phase 6 | Pending |
+| RECORD-04 | Phase 6 | Pending |
+| REPLY-01 | Phase 7 | Pending |
+| REPLY-02 | Phase 7 | Pending |
+| TRANS-01 | Phase 7 | Pending |
+| SITE-01 | Phase 8 | Pending |
+| SITE-02 | Phase 8 | Pending |
+| SITE-03 | Phase 8 | Pending |
