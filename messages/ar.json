@@ -156,5 +156,17 @@
     "replyFiled": "يوجد بيان",
     "audited": "مُدقّق",
     "version": "v{version} · {audited}"
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "تسجيل الدخول",
+    "totpCode": "رمز المصادقة (6 أرقام)",
+    "totpRequired": "يرجى إدخال رمز المصادقة الثنائية",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "unauthorized": "غير مصرّح",
+    "reviewerRequired": "يتطلّب الوصول إلى لوحة المراجعة حساب مراجع مسجّل الدخول.",
+    "redirecting": "جارٍ التوجيه..."
   }
 }

@@ -22,3 +22,12 @@ export function unauthorizedResponse(message = "Unauthorized") {
 export function forbiddenResponse(message = "Forbidden") {
   return NextResponse.json({ ok: false, message }, { status: 403 });
 }
+
+export function require2FA(session: Awaited<ReturnType<typeof getSession>>): boolean {
+  if (!session) return false;
+  const role = session.user.role ?? "";
+  const staffRoles = ["reviewer", "senior_reviewer", "admin"];
+  const isStaff = staffRoles.includes(role);
+  if (!isStaff) return true; // Non-staff don't need 2FA
+  return (session.user as any).twoFactorEnabled === true;
+}

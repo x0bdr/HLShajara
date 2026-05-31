@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { submissions, entities, allegations, sources, allegationSources } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { validatePublication, withAudit } from "@/db/persist";
-import { getSession, unauthorizedResponse, forbiddenResponse } from "@/lib/session";
+import { getSession, unauthorizedResponse, forbiddenResponse, require2FA } from "@/lib/session";
 import { hasRole, canPublish } from "@/lib/auth";
 
 /* ---------- GET: list pending submissions ---------- */
@@ -11,6 +11,9 @@ export async function GET() {
   const session = await getSession();
   if (!session || !hasRole(session.user.role ?? "", "reviewer")) {
     return forbiddenResponse("Reviewer access required.");
+  }
+  if (!require2FA(session)) {
+    return forbiddenResponse("Two-factor authentication required for staff.");
   }
 
   const pending = await db.query.submissions.findMany({
@@ -27,6 +30,9 @@ export async function POST(request: Request) {
     const session = await getSession();
     if (!session) {
       return unauthorizedResponse("Authentication required.");
+    }
+    if (!require2FA(session)) {
+      return forbiddenResponse("Two-factor authentication required for staff.");
     }
 
     const body = await request.json();

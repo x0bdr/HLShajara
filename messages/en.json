@@ -156,5 +156,17 @@
     "replyFiled": "statement on file",
     "audited": "audited",
     "version": "v{version} · {audited}"
+  },
+  "login": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "totpCode": "Authentication Code (6 digits)",
+    "totpRequired": "Please enter your two-factor authentication code",
+    "invalidCredentials": "Invalid email or password",
+    "unauthorized": "Unauthorized",
+    "reviewerRequired": "Reviewer console access requires an authenticated reviewer account.",
+    "redirecting": "Redirecting..."
   }
 }

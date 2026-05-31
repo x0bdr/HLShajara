@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { twoFactor } from "better-auth/plugins";
 import { db } from "@/db";
 import { userRoleEnum } from "@/db/schema";
 
@@ -14,7 +15,11 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
-  plugins: [],
+  plugins: [
+    twoFactor({
+      issuer: "HLShajara",
+    }),
+  ],
   user: {
     additionalFields: {
       role: {
