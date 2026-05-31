@@ -67,11 +67,12 @@ Recent decisions affecting current work:
 | Content | Demo data seeded (3 entities) | ✅ Done | 2026-05-31 |
 | Backend | Server-side PostgreSQL search | ✅ Done | 2026-05-31 |
 | Backend | Right-of-reply API endpoint | ✅ Done | 2026-05-31 |
+| Backend | File upload endpoint | ✅ Done | 2026-05-31 |
+| Backend | EXIF/GPS metadata stripping (Sharp) | ✅ Done | 2026-05-31 |
 
 ### Pending Todos
 
 - Implement OpenSearch / PostgreSQL FTS for Arabic search
-- Add EXIF stripping for file uploads
 - Set up ClamAV malware scanning
 - Configure Better Auth production secret + 2FA (secret set; TOTP not natively supported by Better Auth v1.4.7)
 - Seed real research data (replace demo entries)
@@ -89,7 +90,7 @@ Recent decisions affecting current work:
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
 | Backend | OpenSearch integration | Pending | 2026-05-31 |
-| Backend | File upload + EXIF stripping | Pending | 2026-05-31 |
+| Backend | File upload + EXIF stripping | ✅ Done | 2026-05-31 |
 | Backend | ClamAV malware scanning | Pending | 2026-05-31 |
 | Frontend | Full EN translation | ✅ Done | 2026-05-31 |
 
