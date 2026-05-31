@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "title": "LST Shajara — HLShajara",
+    "description": "Civic documentation, accountability, and boycott platform"
+  },
+  "nav": {
+    "record": "Public Record",
+    "mission": "Mission",
+    "faq": "FAQ",
+    "reply": "Right of Reply",
+    "submit": "Submit Report",
+    "reviewer": "Reviewer Console"
+  },
+  "home": {
+    "title": "LST Shajara",
+    "subtitle": "Document · Account · Boycott",
+    "lead": "A civic platform preserving a documented record of crimes committed in Syria. We collect, verify, and publish publicly available evidence on named individuals and entities.",
+    "stats": {
+      "entries": "Documented Entry",
+      "sources": "International Source",
+      "verdicts": "Court Verdict"
+    },
+    "recordTitle": "Documented Record",
+    "ctaTitle": "Do you have documented information?",
+    "ctaText": "You can submit a documented report with sources. Every submission passes an automated filter and dual human review.",
+    "ctaButton": "Submit Report"
+  },
+  "legal": {
+    "note": "Based on the review of the new Syrian Constitutional Declaration (March 13, 2025), Articles 7 and 10 bind the state, not individuals directly. Article 13 guarantees freedom of expression. This content expresses a political opinion.",
+    "title": "Legal Note"
+  },
+  "footer": {
+    "copyright": "LST Shajara © 2026 — Civic Documentation & Accountability Platform",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy"
+  },
+  "labels": {
+    "sources": "Sources",
+    "reply": "Right of reply",
+    "replyNone": "contact recorded · no statement filed",
+    "replyFiled": "statement on file",
+    "audited": "audited",
+    "version": "v{version} · {audited}"
+  }
+}
