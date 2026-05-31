@@ -3,3 +3,7 @@ export * from "./EvidenceStrength";
 export * from "./StatusBadge";
 export * from "./LegalNote";
 export * from "./Button";
+export * from "./Header";
+export * from "./Footer";
+export * from "./HeroSection";
+export * from "./StatsBar";
