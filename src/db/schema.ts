@@ -1,0 +1,269 @@
+/**
+ * HLShajara — Identity-free data model
+ * No schema field exists for sect/religion/ethnicity/family/region/tribe.
+ * Every allegation must have ≥1 source. Enforced at DB + persist() layer.
+ */
+
+import {
+  pgTable,
+  serial,
+  varchar,
+  text,
+  integer,
+  timestamp,
+  boolean,
+  pgEnum,
+  uniqueIndex,
+  index,
+  primaryKey,
+  jsonb,
+} from "drizzle-orm/pg-core";
+
+/* ---------- ENUMS ---------- */
+
+export const entityTypeEnum = pgEnum("entity_type", [
+  "individual",
+  "organization",
+  "military_unit",
+  "security_branch",
+  "official_body",
+]);
+
+export const entityStatusEnum = pgEnum("entity_status", [
+  "alleged",
+  "investigating",
+  "indicted",
+  "sanctioned",
+  "convicted",
+  "deceased",
+]);
+
+export const evidenceLevelEnum = pgEnum("evidence_level", [
+  "0", // Under review
+  "1", // Single credible source
+  "2", // Multi-source corroborated
+  "3", // UN/IIIM-documented
+  "4", // Court-confirmed
+]);
+
+export const sourceTierEnum = pgEnum("source_tier", [
+  "A", // International tribunal / UN body
+  "B", // Recognized HR org / sanctions list
+  "C", // Corroborated investigative journalism
+]);
+
+export const submissionStatusEnum = pgEnum("submission_status", [
+  "pending",
+  "under_review",
+  "verified",
+  "rejected",
+  "published",
+  "unpublished",
+]);
+
+export const rejectionReasonEnum = pgEnum("rejection_reason", [
+  "GROUP_TARGET",
+  "INCITEMENT",
+  "NO_SOURCE",
+  "WEAK_SOURCE",
+  "PRIVATE_TARGETING",
+  "INNOCENT_PARTY",
+  "MISMATCH",
+  "HATE_TONE",
+]);
+
+export const userRoleEnum = pgEnum("user_role", [
+  "submitter",
+  "reviewer",
+  "senior_reviewer",
+  "admin",
+]);
+
+export const reviewActionEnum = pgEnum("review_action", [
+  "create",
+  "update",
+  "verify",
+  "reject",
+  "publish",
+  "unpublish",
+  "correct",
+  "lawyer_sign_off",
+]);
+
+/* ---------- TABLES ---------- */
+
+export const entities = pgTable(
+  "entities",
+  {
+    id: serial("id").primaryKey(),
+    publicId: varchar("public_id", { length: 32 }).notNull().unique(),
+    type: entityTypeEnum("type").notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    nameEn: varchar("name_en", { length: 255 }),
+    role: varchar("role", { length: 500 }).notNull(),
+    roleEn: varchar("role_en", { length: 500 }),
+    status: entityStatusEnum("status").notNull().default("alleged"),
+    evidenceLevel: evidenceLevelEnum("evidence_level").notNull().default("0"),
+    version: integer("version").notNull().default(1),
+    isDeceased: boolean("is_deceased").notNull().default(false),
+    rightOfReplyState: varchar("right_of_reply_state", { length: 20 })
+      .notNull()
+      .default("none"),
+    rightOfReplyText: text("right_of_reply_text"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    unpublishedAt: timestamp("unpublished_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("entity_public_id_idx").on(table.publicId),
+    index("entity_status_idx").on(table.status),
+    index("entity_evidence_idx").on(table.evidenceLevel),
+    index("entity_type_idx").on(table.type),
+  ]
+);
+
+export const allegations = pgTable(
+  "allegations",
+  {
+    id: serial("id").primaryKey(),
+    entityId: integer("entity_id")
+      .notNull()
+      .references(() => entities.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    descriptionEn: text("description_en"),
+    period: varchar("period", { length: 100 }),
+    location: varchar("location", { length: 200 }),
+    classification: varchar("classification", { length: 100 }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("allegation_entity_idx").on(table.entityId)]
+);
+
+export const sources = pgTable(
+  "sources",
+  {
+    id: serial("id").primaryKey(),
+    tier: sourceTierEnum("tier").notNull(),
+    title: varchar("title", { length: 500 }).notNull(),
+    titleEn: varchar("title_en", { length: 500 }),
+    publisher: varchar("publisher", { length: 200 }).notNull(),
+    date: varchar("date", { length: 20 }).notNull(),
+    url: varchar("url", { length: 2048 }),
+    archiveUrl: varchar("archive_url", { length: 2048 }),
+    contentHash: varchar("content_hash", { length: 64 }),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    verifiedBy: integer("verified_by"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("source_tier_idx").on(table.tier)]
+);
+
+export const allegationSources = pgTable(
+  "allegation_sources",
+  {
+    allegationId: integer("allegation_id")
+      .notNull()
+      .references(() => allegations.id, { onDelete: "cascade" }),
+    sourceId: integer("source_id")
+      .notNull()
+      .references(() => sources.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.allegationId, table.sourceId] }),
+  ]
+);
+
+export const submissions = pgTable(
+  "submissions",
+  {
+    id: serial("id").primaryKey(),
+    status: submissionStatusEnum("status").notNull().default("pending"),
+    rejectionReason: rejectionReasonEnum("rejection_reason"),
+    rejectionNote: text("rejection_note"),
+    entityName: varchar("entity_name", { length: 255 }).notNull(),
+    entityType: entityTypeEnum("entity_type").notNull(),
+    entityRole: varchar("entity_role", { length: 500 }).notNull(),
+    allegationDescription: text("allegation_description").notNull(),
+    allegationPeriod: varchar("allegation_period", { length: 100 }),
+    allegationLocation: varchar("allegation_location", { length: 200 }),
+    allegationClassification: varchar("allegation_classification", { length: 100 }),
+    sourceLinks: jsonb("source_links").notNull().default("[]"),
+    sourceFiles: jsonb("source_files").default("[]"),
+    submitterEmail: varchar("submitter_email", { length: 255 }),
+    submitterName: varchar("submitter_name", { length: 255 }),
+    isAnonymous: boolean("is_anonymous").notNull().default(false),
+    ipHash: varchar("ip_hash", { length: 64 }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    reviewedBy: integer("reviewed_by"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    publishedBy: integer("published_by"),
+  },
+  (table) => [
+    index("submission_status_idx").on(table.status),
+    index("submission_created_idx").on(table.createdAt),
+  ]
+);
+
+/* ---------- AUDIT LOG ---------- */
+
+export const reviewLogs = pgTable(
+  "review_logs",
+  {
+    id: serial("id").primaryKey(),
+    action: reviewActionEnum("action").notNull(),
+    actorId: integer("actor_id").notNull(),
+    actorRole: userRoleEnum("actor_role").notNull(),
+    entityId: integer("entity_id"),
+    submissionId: integer("submission_id"),
+    targetTable: varchar("target_table", { length: 50 }).notNull(),
+    targetId: integer("target_id").notNull(),
+    oldData: jsonb("old_data"),
+    newData: jsonb("new_data").notNull(),
+    reason: text("reason"),
+    prevHash: varchar("prev_hash", { length: 64 }),
+    rowHash: varchar("row_hash", { length: 64 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("audit_target_idx").on(table.targetTable, table.targetId),
+    index("audit_actor_idx").on(table.actorId),
+    index("audit_created_idx").on(table.createdAt),
+  ]
+);
+
+/* ---------- USERS (for Better Auth) ---------- */
+
+export const users = pgTable(
+  "users",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 255 }),
+    role: userRoleEnum("role").notNull().default("submitter"),
+    is2faEnabled: boolean("is_2fa_enabled").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [uniqueIndex("user_email_idx").on(table.email)]
+);

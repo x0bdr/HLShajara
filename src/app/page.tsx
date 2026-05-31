@@ -1,5 +1,6 @@
 import { EvidenceCard, LegalNote, Button } from "@/components";
 import type { Entity } from "@/lib/types";
+import Link from "next/link";
 
 const DEMO_ENTITIES: Entity[] = [
   {
@@ -77,6 +78,14 @@ export default function HomePage() {
 
   return (
     <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
+      {/* Nav */}
+      <nav style={{ display: "flex", gap: 16, marginBottom: 32, flexWrap: "wrap", justifyContent: "center" }}>
+        <Link href="/HLShajara/record" className="btn ghost">السجلّ العام</Link>
+        <Link href="/HLShajara/mission" className="btn ghost">المهمّة</Link>
+        <Link href="/HLShajara/faq" className="btn ghost">الأسئلة الشائعة</Link>
+        <Link href="/HLShajara/reply" className="btn ghost">حق الرد</Link>
+      </nav>
+
       {/* Hero */}
       <header style={{ textAlign: "center", marginBottom: 48 }}>
         <div
@@ -139,34 +148,6 @@ export default function HomePage() {
         ))}
       </section>
 
-      {/* Filter / search placeholder */}
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginBottom: 28,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="ابحث باسم أو دور..."
-          style={{
-            flex: 1,
-            minWidth: 220,
-            padding: "10px 14px",
-            borderRadius: "var(--radius)",
-            border: "1px solid var(--border)",
-            background: "var(--surface)",
-            color: "var(--fg1)",
-            fontFamily: "var(--font-sans)",
-            fontSize: 14,
-          }}
-        />
-        <Button variant="primary">بحث</Button>
-      </div>
-
       {/* Evidence cards */}
       <section style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <div className="ds-h3" style={{ marginBottom: 4 }}>
@@ -175,6 +156,17 @@ export default function HomePage() {
         {DEMO_ENTITIES.map((e) => (
           <EvidenceCard key={e.id} entity={e} lang={lang} />
         ))}
+      </section>
+
+      {/* Submit CTA */}
+      <section style={{ marginTop: 40, textAlign: "center" }}>
+        <div className="ds-h3" style={{ marginBottom: 12 }}>هل لديك معلومات موثَّقة؟</div>
+        <p className="ds-body" style={{ maxWidth: 500, margin: "0 auto 16px", color: "var(--fg2)" }}>
+          يمكنك تقديم بلاغ موثَّق مع مصادر. كل تقديم يمرّ بفلترة آلية ومراجعة بشرية مزدوجة.
+        </p>
+        <Link href="/HLShajara/submit">
+          <Button variant="primary">تقديم بلاغ</Button>
+        </Link>
       </section>
 
       {/* Footer */}
@@ -189,6 +181,10 @@ export default function HomePage() {
         <p className="ds-meta">
           لست شجرة © ٢٠٢٦ — منصة توثيق ومساءلة شعبية
         </p>
+        <div style={{ marginTop: 8, display: "flex", gap: 12, justifyContent: "center" }}>
+          <Link href="/HLShajara/terms" className="ds-meta">شروط الاستخدام</Link>
+          <Link href="/HLShajara/privacy" className="ds-meta">الخصوصية</Link>
+        </div>
       </footer>
     </main>
   );
