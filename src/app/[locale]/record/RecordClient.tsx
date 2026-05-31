@@ -13,18 +13,24 @@ export default function RecordPage() {
   const legal = useTranslations("legal");
   const locale = useLocale();
 
+  // Debounced server-side search
   useEffect(() => {
-    fetch("/api/entity")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.ok) setEntities(data.entities);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    const url = filter.trim()
+      ? `/api/entity?q=${encodeURIComponent(filter.trim())}`
+      : "/api/entity";
 
-  const filtered = entities.filter((e) =>
-    e.name.toLowerCase().includes(filter.toLowerCase())
-  );
+    const timeout = setTimeout(() => {
+      fetch(url)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.ok) setEntities(data.entities);
+        })
+        .finally(() => setLoading(false));
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [filter]);
 
   return (
     <main style={{ maxWidth: 920, margin: "0 auto", padding: "32px 20px" }}>
@@ -62,7 +68,7 @@ export default function RecordPage() {
         <p className="ds-body" style={{ textAlign: "center" }}>
           {t("loading")}
         </p>
-      ) : filtered.length === 0 ? (
+      ) : entities.length === 0 ? (
         <p
           className="ds-body"
           style={{ textAlign: "center", color: "var(--fg2)" }}
@@ -71,7 +77,7 @@ export default function RecordPage() {
         </p>
       ) : (
         <section style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {filtered.map((e) => (
+          {entities.map((e) => (
             <EvidenceCard
               key={e.id}
               entity={e}
