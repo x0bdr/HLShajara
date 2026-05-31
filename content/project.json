@@ -1,0 +1,24 @@
+{
+  "id": "lastu-shajara",
+  "name_ar": "لست شجرة",
+  "name_en": "HLShajara",
+  "scope": "documentation_and_accountability",
+  "tagline_ar": "توثيق ومساءلة — لا انتقام ولا عقاب جماعي",
+  "tagline_en": "Documentation and lawful accountability — not revenge, not collective punishment",
+  "mission_ar": "«لست شجرة» منصّة مدنية للتوثيق والمساءلة، تحفظ السجلّ الموثّق للجرائم التي ارتُكبت في سوريا. نجمع ونتحقّق وننشر الأدلّة المتاحة علنًا حول أفرادٍ وجهاتٍ محدّدين تتوفّر أدلّة موثوقة على تورّطهم — لا حول طوائف أو مكوّنات أو جماعات. غايتنا حفظ الذاكرة، ودعم الضحايا، ودعم المساءلة عبر القنوات القانونية وحقوق الإنسان المشروعة. نطلب العدالة لا الانتقام.",
+  "mission_en": "HLShajara is a civic documentation and accountability platform that preserves the documented record of crimes committed in Syria. We collect, verify, and publish publicly available evidence about specific individuals and entities credibly implicated — never communities, sects, or groups. Our purpose is memory, victim support, and lawful accountability through legitimate legal and human-rights channels. We seek justice, not revenge.",
+  "core_value": "Every published claim concerns a named individual or entity and is backed by a credible public source. No source, no publication. No group, no identity-based targeting.",
+  "what_it_is": [
+    "A source-backed public archive of individuals and entities credibly implicated in crimes in Syria.",
+    "A referral pathway that feeds lawful justice mechanisms: courts, UN bodies (CoI/IIIM), and sanctions advocacy.",
+    "A space for memory and victim support."
+  ],
+  "what_it_is_not": [
+    "Not a boycott or social-pressure campaign.",
+    "Not a tool to mobilize the public against anyone.",
+    "Not an accuser of communities, sects, families, regions, or tribes.",
+    "Not a venue for harassment, threats, doxxing, or revenge."
+  ],
+  "languages": ["ar", "en"],
+  "legal_gate": "No living individual is named publicly until a qualified lawyer in the operating jurisdiction has reviewed the publication standard and the first entries."
+}

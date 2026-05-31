@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "Entity": {
+      "fields": {
+        "id": "string",
+        "type": "individual | organization | military_unit | security_branch | official_body",
+        "display_name": "string",
+        "aliases": "string[]",
+        "role_or_position": "string  (role, NOT identity)",
+        "status": "alleged | under_investigation | indicted | sanctioned | convicted | deceased",
+        "evidence_strength": "enum (sources.evidence_strength_labels)",
+        "created_at": "datetime",
+        "updated_at": "datetime",
+        "version": "int"
+      }
+    },
+    "Allegation": {
+      "belongs_to": "Entity",
+      "fields": {
+        "id": "string",
+        "entity_id": "string",
+        "description": "string (specific act/role)",
+        "time_period": "string",
+        "location": "string",
+        "legal_classification": "string (optional, mapped to recognized frameworks)",
+        "status": "string",
+        "evidence_strength": "enum"
+      }
+    },
+    "Source": {
+      "belongs_to": "Allegation",
+      "fields": {
+        "id": "string",
+        "allegation_id": "string",
+        "source_type": "enum (sources.tiers)",
+        "title": "string",
+        "publisher": "string",
+        "url_or_document_ref": "string",
+        "date": "date",
+        "excerpt": "string",
+        "verified_by": "string[]",
+        "verified_at": "datetime"
+      }
+    },
+    "RightOfReply": {
+      "belongs_to": "Entity",
+      "fields": {
+        "id": "string",
+        "entity_id": "string",
+        "statement": "string",
+        "submitted_at": "datetime",
+        "published": "bool"
+      }
+    },
+    "ReviewLog": {
+      "note": "immutable audit trail",
+      "fields": {
+        "id": "string",
+        "target_id": "string",
+        "actor": "string",
+        "action": "string",
+        "note": "string",
+        "timestamp": "datetime"
+      }
+    }
+  },
+  "hard_constraints": [
+    "There is NO field for sect/religion/ethnicity/tribe/family-as-category. It cannot be entered.",
+    "entity.type cannot be a group/community.",
+    "An Allegation cannot be saved or published with zero Source rows.",
+    "Every free-text field runs through a banned-pattern + incitement classifier before save."
+  ]
+}
