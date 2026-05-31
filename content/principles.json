@@ -1,17 +1,19 @@
 {
   "non_negotiable_boundaries": [
-    "Never target any person or group based on religion, sect, ethnicity, family name, region, tribe, or community.",
+    "Never target any person or group based on religion, sect, ethnicity, family name, region, tribe, or community as a whole.",
     "No collective punishment.",
-    "No social isolation, economic exclusion, denial of services, harassment, threats, violence, forced displacement, or hate speech.",
-    "Never accuse whole communities or minorities.",
+    "No harassment, threats, violence, forced displacement, or hate speech.",
+    "Never accuse whole communities or minorities as a whole.",
     "Document ONLY named individuals, organizations, military/security units, officials, or entities where credible public evidence exists, tied to specific conduct — not identity.",
-    "Every published claim must cite a reliable source. No source, no publication."
+    "Every published claim must cite a reliable source. No source, no publication.",
+    "Boycott and social pressure are exercised only within the limits of the law.",
+    "The campaign targets the Alawites as the nurturing environment of the former regime, not as a religious sect in itself."
   ],
   "code_of_conduct": [
     "Evidence over allegation — no claim without a verifiable public source.",
-    "Individuals and entities only — never a community, sect, ethnicity, family, region, or tribe.",
+    "Individuals and entities only — never a community, sect, ethnicity, family, region, or tribe as a whole.",
     "Conduct, not identity — document what someone is credibly alleged to have done, with sources.",
-    "No incitement — no calls to boycott, isolate, harass, threaten, harm, or take revenge.",
+    "Boycott and social pressure within the law — no calls to violence, threats, or illegal acts.",
     "Accurate framing — use alleged / credibly implicated / under investigation / convicted exactly as the evidence supports.",
     "Right of reply and correction — named parties may respond; corrections are honored promptly.",
     "Privacy of the innocent — family members, children, and uninvolved associates are never published as targets.",
@@ -20,11 +22,10 @@
   "anti_discrimination_policy": {
     "unit_of_documentation": "the named individual or entity — never a demographic category",
     "publishable_offenses": [
-      "referencing a person's sect, religion, ethnicity, tribe, region, or family as the basis of inclusion",
-      "implying guilt-by-association, guilt-by-origin, or collective responsibility",
-      "calling for or implying social/economic exclusion of anyone"
+      "referencing a person's sect, religion, ethnicity, tribe, region, or family as the sole basis of inclusion",
+      "implying guilt-by-association, guilt-by-origin, or collective responsibility for entire communities"
     ],
-    "taxonomy_rule": "Tags are conduct- and role-based only (e.g. command responsibility, detention facility, UN-documented). Identity-based tags cannot be entered.",
-    "auto_reject": "Any submission framed around a group is auto-rejected at intake with a standard explanation."
+    "taxonomy_rule": "Tags are conduct- and role-based only (e.g. command responsibility, detention facility, UN-documented, former regime affiliate). Identity-based tags cannot be entered as sole classification.",
+    "note": "The campaign distinguishes between targeting the Alawites as the nurturing environment of the former regime (political stance) and targeting them as a religious sect (prohibited)."
   }
 }

@@ -14,13 +14,13 @@ Anti-discrimination and no-zero-source are enforced **structurally**, not by pol
 ### Authentication & Roles (AUTH)
 - [ ] **AUTH-01**: Staff (reviewer, senior/legal-safety reviewer, admin) authenticate with mandatory 2FA (TOTP/passkey)
 - [ ] **AUTH-02**: Role-based access control enforces least privilege; no role can publish unilaterally
-- [ ] **AUTH-03**: Submitters authenticate with email/identity-lite and can track the status of their own submissions
+- [ ] ~~**AUTH-03**: Submitters authenticate with email/identity-lite and can track the status of their own submissions~~ — *Removed: entries are added by internal team only*
 
-### Submission & Boundary Engine (INTAKE)
-- [ ] **INTAKE-01**: User can submit evidence about a **named** individual/entity with a specific alleged act/role and at least one source link/upload
-- [ ] **INTAKE-02**: Intake auto-rejects submissions with a reason code: GROUP_TARGET, INCITEMENT, NO_SOURCE, WEAK_SOURCE, PRIVATE_TARGETING, INNOCENT_PARTY, MISMATCH, HATE_TONE
-- [ ] **INTAKE-03**: Uploaded media has EXIF/GPS stripped and a content hash recorded on intake
-- [ ] **INTAKE-04**: Submitter identity can be protected/anonymized; rate limiting deters brigading
+### Internal Draft & Boundary Engine (INTAKE)
+- [ ] **INTAKE-01**: Internal researcher can draft an entry about a **named** individual/entity with a specific alleged act/role and at least one source link/upload
+- [ ] **INTAKE-02**: Draft validation auto-rejects with a reason code: GROUP_TARGET, NO_SOURCE, WEAK_SOURCE, PRIVATE_TARGETING, INNOCENT_PARTY, MISMATCH, HATE_TONE
+- [ ] **INTAKE-03**: Uploaded media has EXIF/GPS stripped and a content hash recorded on upload
+- [ ] **INTAKE-04**: Rate limiting on internal operations to deter abuse
 
 ### Verification Pipeline (VERIFY)
 - [ ] **VERIFY-01**: Reviewer can triage a submission (confirm named actor + specific conduct, assign category)
@@ -85,6 +85,7 @@ Every v1 REQ maps to exactly one phase. Coverage: 24/24.
 | INTAKE-02 | Phase 3 | Pending |
 | INTAKE-03 | Phase 3 | Pending |
 | INTAKE-04 | Phase 3 | Pending |
+| ~~AUTH-03~~ | ~~Phase 2~~ | ~~Removed~~ |
 | VERIFY-01 | Phase 4 | Pending |
 | VERIFY-02 | Phase 4 | Pending |
 | VERIFY-03 | Phase 4 | Pending |

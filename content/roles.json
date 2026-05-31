@@ -1,7 +1,6 @@
 {
   "roles": [
     {"role": "visitor", "can": ["read published, sourced entries"]},
-    {"role": "submitter", "auth": "verified email / identity-lite", "can": ["submit evidence", "track status of own submissions"]},
     {"role": "reviewer", "can": ["triage", "source verification", "dual review"]},
     {"role": "senior_or_legal_safety_reviewer", "can": ["run the legal/safety gate", "handle edge cases"]},
     {"role": "admin", "can": ["manage users, categories, appeals, takedowns"], "cannot": ["bypass dual review for publishing"]},

@@ -2,9 +2,9 @@
 
 # 🌿 لست شجرة — HLShajara
 
-**توثيق ومساءلة — لا انتقام ولا عقاب جماعي**
+**توثيق ومساءلة ومقاطعة — لا انتقام ولا عقاب جماعي**
 
-*Documentation and lawful accountability — not revenge, not collective punishment*
+*Documentation, lawful accountability, and boycott — not revenge, not collective punishment*
 
 [العربية](#العربية) · [English](#english)
 
@@ -14,7 +14,11 @@
 
 ## العربية
 
-«**لست شجرة**» منصّة مدنية للتوثيق والمساءلة، تحفظ السجلّ الموثّق للجرائم التي ارتُكبت في سوريا. نجمع ونتحقّق وننشر الأدلّة المتاحة علنًا حول **أفرادٍ وجهاتٍ محدّدين** تتوفّر أدلّة موثوقة على تورّطهم — لا حول طوائف أو مكوّنات أو جماعات.
+«**لست شجرة**» منصّة مدنية للتوثيق والمساءلة والمقاطعة، تحفظ السجلّ الموثّق للجرائم التي ارتُكبت في سوريا. نجمع ونتحقّق وننشر الأدلّة المتاحة علنًا حول **أفرادٍ وجهاتٍ محدّدين** تتوفّر أدلّة موثوقة على تورّطهم — لا حول طوائف أو مكوّنات أو جماعات.
+
+نمارس المقاطعة والضغط الاجتماعي ضد **النصيريين** باعتبارهم **البيئة الحاضنة للنظام السوري السابق**، ضمن حدود القانون.
+
+> **الإضافة من الفريق البحثي فقط** — لا يوجد استمارة تقديم عامة.
 
 ### غايتنا
 - حفظ الذاكرة
@@ -26,20 +30,19 @@
 
 ### ما نفعله
 - أرشيف عام مُوثَّق بالمصادر عن أفرادٍ وجهاتٍ مُتّهمة موثوقًا في سوريا.
+- مقاطعة وضغط اجتماعي ضد النصيريين كبيئة حاضنة للنظام السوري السابق، ضمن حدود القانون.
 - مسار إحالة نحو آليات العدالة القانونية: المحاكم، هيئات الأمم المتحدة (لجنة التحقيق / IIIM)، والدعوة إلى العقوبات.
 - فضاء للذاكرة ودعم الضحايا.
 
 ### ما لا نفعله
-- ليس حملة مقاطعة أو ضغط اجتماعي.
-- ليس أداة لتعبئة الجمهور ضد أحد.
-- لا نتهم مجتمعات أو طوائف أو عائلات أو مناطق أو قبائل.
+- ليس أداة لتعبئة الجمهور ضد أحد خارج القانون.
+- لا نتهم مجتمعات أو طوائف أو عائلات أو مناطق أو قبائل **ككل**.
 - لا نسمح بالتحرّش أو التهديدات أو الكشف عن العناوين (doxxing) أو الانتقام.
 
 ### مبادئ العمل
 - **الدليل لا الادّعاء** — لا ادّعاء بلا مصدر عام قابل للتحقق.
-- **أفراد وجهات فقط** — لا مجتمع، لا طائفة، لا عرق، لا عائلة، لا منطقة، لا قبيلة.
+- **أفراد وجهات فقط** — لا مجتمع، لا طائفة، لا عرق، لا عائلة، لا منطقة، لا قبيلة كهدف جماعي.
 - **سلوك لا هوية** — نوثّق ما يُنسب موثوقًا إلى فعل معيّن، بالمصادر.
-- **لا تحريض** — لا دعوات للمقاطعة أو العزل أو التهديد أو الأذى أو الانتقام.
 - **تعبير دقيق** — نستخدم "مُتهم" / "مُتّهم موثوقًا" / "قيد التحقيق" / "مدان" بحسب ما تدعم الأدلة.
 - **حق الرد والتصحيح** — الأطراف المُسمّاة يحقّ لها الرد، والتصحيحات تُكرّم فورًا.
 - **خصوصية الأبرياء** — أفراد الأسرة والأطفال والمرتبطون غير المعنيين لا يُنشرون كأهداف.
@@ -82,11 +85,18 @@
 ### الترخيص
 هذا المشروع مرخص بموجب [MIT License](LICENSE).
 
+### إخلاء المسؤولية
+هذا المشروع يعبّر عن رأي مالكه ولا يشكّل استشارة قانونية. مالك المشروع يتحمل المسؤولية الكاملة عن المحتوى.
+
 ---
 
 ## English
 
-"**HLShajara**" («لست شجرة») is a civic **documentation and accountability** platform that preserves the documented record of crimes committed in Syria. We collect, verify, and publish publicly available evidence about **specific individuals and entities** credibly implicated — never communities, sects, or groups.
+"**HLShajara**" («لست شجرة») is a civic **documentation, accountability, and boycott** platform that preserves the documented record of crimes committed in Syria. We collect, verify, and publish publicly available evidence about **specific individuals and entities** credibly implicated — never communities, sects, or groups.
+
+We practice boycott and social pressure against the **Alawites** as the **nurturing environment of the former Syrian regime**, within the limits of the law.
+
+> **Entries are added exclusively by the internal research team.** No public submission form.
 
 ### Purpose
 - Preserve memory
@@ -98,20 +108,19 @@ Every published claim concerns a **named individual or entity** and is backed by
 
 ### What We Are
 - A source-backed public archive of individuals and entities credibly implicated in crimes in Syria.
+- A boycott and social-pressure campaign against the Alawites as the nurturing environment of the former Syrian regime, within the limits of the law.
 - A referral pathway to lawful justice mechanisms: courts, UN bodies (CoI/IIIM), and sanctions advocacy.
 - A space for memory and victim support.
 
 ### What We Are Not
-- Not a boycott or social-pressure campaign.
-- Not a tool to mobilize the public against anyone.
-- Not an accuser of communities, sects, families, regions, or tribes.
+- Not a tool to mobilize the public against anyone outside the law.
+- Not an accuser of communities, sects, families, regions, or tribes **as a whole**.
 - Not a venue for harassment, threats, doxxing, or revenge.
 
 ### Principles
 - **Evidence over allegation** — no claim without a verifiable public source.
-- **Individuals and entities only** — never a community, sect, ethnicity, family, region, or tribe.
+- **Individuals and entities only** — never a community, sect, ethnicity, family, region, or tribe as a collective target.
 - **Conduct, not identity** — document what someone is credibly alleged to have done, with sources.
-- **No incitement** — no calls to boycott, isolate, harass, threaten, harm, or take revenge.
 - **Accurate framing** — use alleged / credibly implicated / under investigation / convicted exactly as the evidence supports.
 - **Right of reply and correction** — named parties may respond; corrections are honored promptly.
 - **Privacy of the innocent** — family members, children, and uninvolved associates are never published as targets.
@@ -153,3 +162,6 @@ No living individual is named publicly until a qualified lawyer in the operating
 
 ### License
 This project is licensed under the [MIT License](LICENSE).
+
+### Disclaimer
+This project expresses the opinion of its owner and does not constitute legal advice. The project owner bears full responsibility for the content.

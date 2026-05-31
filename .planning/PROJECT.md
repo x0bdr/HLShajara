@@ -23,8 +23,8 @@ Every published claim concerns a **named individual or entity** and is backed by
 ### Active
 
 - [ ] Bilingual (AR/EN) public site: mission, "what we do / don't", Code of Conduct, anti-discrimination policy, FAQ
-- [ ] Evidence submission intake for named individuals/entities with required source(s)
-- [ ] Intake boundary engine: auto-reject group-targeting, incitement, no-source, private-targeting, innocent-party submissions
+- [ ] Internal research team can draft entries for named individuals/entities with required source(s)
+- [ ] Draft validation engine: auto-reject group-targeting, no-source, private-targeting, innocent-party drafts
 - [ ] Reviewer console with source verification and dual independent review
 - [ ] Legal/safety gate: phrasing matched to evidence strength + privacy re-check before publish
 - [ ] Public record: search/filter (by conduct, role, evidence strength, status — never identity) with per-entry sources visible
@@ -35,7 +35,8 @@ Every published claim concerns a **named individual or entity** and is backed by
 
 ### Out of Scope
 
-- Any boycott, social-pressure, or mobilization features — this is an archive that refers to lawful channels, not a campaign that mobilizes the public
+- Any boycott, social-pressure, or mobilization features
+- Public submission/intake form — entries are added exclusively by the internal research team
 - Targeting or tagging by religion, sect, ethnicity, family, region, tribe, or community — structurally impossible in the data model
 - Publishing home addresses, live locations, or any data enabling physical targeting — safety
 - Naming children or clearly uninvolved persons — privacy of the innocent
