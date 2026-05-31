@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); display:flex; flex-direction:column; gap:16px; }
+  h3 { margin:0 0 10px; font-family:var(--font-display); font-size:19px; color:var(--fg1); }
+  .tiers { display:flex; gap:10px; }
+  .tier { flex:1; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); padding:10px 12px; }
+  .tier .t { display:flex; align-items:center; gap:8px; }
+  .badge { width:22px; height:22px; border-radius:var(--radius-sm); display:grid; place-items:center; font-weight:700; font-size:12px; color:var(--white); }
+  .tier .lab { font-size:12px; font-weight:600; color:var(--fg1); }
+  .tier .ex { margin:7px 0 0; font-size:11px; color:var(--fg2); line-height:1.45; }
+  .cite { display:flex; gap:11px; align-items:flex-start; border:1px solid var(--border); border-radius:var(--radius);
+          background:var(--surface); padding:11px 13px; }
+  .cite .mark { font-family:var(--font-mono); font-size:11px; color:var(--brass-700); background:var(--brass-50);
+                border:1px solid var(--brass-300); border-radius:var(--radius-sm); padding:2px 6px; white-space:nowrap; }
+  .cite .body { font-size:12.5px; color:var(--fg1); line-height:1.5; }
+  .cite .meta { font-size:11px; color:var(--fg3); margin-top:3px; }
+  a { color:var(--brand); text-decoration:none; border-bottom:1px solid var(--green-200); }
+</style>
+</head>
+<body>
+  <div>
+    <h3>Source tiers</h3>
+    <div class="tiers">
+      <div class="tier"><div class="t"><span class="badge" style="background:var(--green-700)">A</span><span class="lab">Strongest</span></div>
+        <p class="ex">UN bodies (CoI / IIIM), court records &amp; judgments, official sanctions lists.</p></div>
+      <div class="tier"><div class="t"><span class="badge" style="background:var(--brass-600)">B</span><span class="lab">Strong</span></div>
+        <p class="ex">Recognized HR organizations with documented methodology; official legal filings.</p></div>
+      <div class="tier"><div class="t"><span class="badge" style="background:var(--stone-500)">C</span><span class="lab">Corroboration required</span></div>
+        <p class="ex">Investigative journalism; verified public documentation. Never the sole basis.</p></div>
+    </div>
+  </div>
+  <div>
+    <h3>Citation row</h3>
+    <div class="cite">
+      <span class="mark">Tier A</span>
+      <div>
+        <div class="body">Report of the Independent International Commission of Inquiry on the Syrian Arab Republic — <a href="#">A/HRC/…</a></div>
+        <div class="meta">UN Human Rights Council · verified by 2 reviewers · 12 Mar 2024</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

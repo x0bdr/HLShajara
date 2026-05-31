@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); display:flex; flex-direction:column; gap:14px; }
+  h3 { margin:0; font-family:var(--font-display); font-size:19px; color:var(--fg1); }
+  .grp { }
+  .gl { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--fg2); margin-bottom:8px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { font-size:12.5px; padding:6px 13px; border-radius:var(--radius-pill); border:1px solid var(--border-strong);
+          background:var(--surface); color:var(--fg1); cursor:pointer; }
+  .chip.on { background:var(--green-700); color:var(--on-green); border-color:var(--green-800); }
+  .chip.on::before { content:"✓ "; }
+  .disabled-note { display:flex; align-items:center; gap:9px; padding:10px 13px; border-radius:var(--radius);
+          background:var(--brick-100); border:1px solid #E4C4BD; }
+  .disabled-note .x { width:18px; height:18px; border-radius:50%; background:var(--brick-500); color:#fff;
+          display:grid; place-items:center; font-size:12px; font-weight:700; flex:none; }
+  .disabled-note span { font-size:12px; color:var(--brick-700); line-height:1.4; }
+</style>
+</head>
+<body>
+  <h3>Search &amp; filter</h3>
+  <div class="grp"><div class="gl">By conduct</div>
+    <div class="chips">
+      <span class="chip on">Command responsibility</span>
+      <span class="chip">Unlawful detention</span>
+      <span class="chip">Torture</span>
+      <span class="chip">Enforced disappearance</span>
+    </div>
+  </div>
+  <div class="grp"><div class="gl">By role</div>
+    <div class="chips">
+      <span class="chip">Security branch</span>
+      <span class="chip on">Military unit</span>
+      <span class="chip">Official body</span>
+    </div>
+  </div>
+  <div class="grp"><div class="gl">By evidence strength</div>
+    <div class="chips">
+      <span class="chip">Court-confirmed</span>
+      <span class="chip">UN-documented</span>
+      <span class="chip">Multi-source</span>
+    </div>
+  </div>
+  <div class="disabled-note">
+    <span class="x">✕</span>
+    <span>Filtering by sect, religion, ethnicity, family, region or tribe is not available by design — there is no such field in the data model.</span>
+  </div>
+</body>
+</html>

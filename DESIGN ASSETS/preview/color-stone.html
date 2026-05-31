@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:26px 30px; font-family:var(--font-sans); }
+  .scale { display:grid; grid-template-columns:repeat(9,1fr); gap:0; border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--inset-hair); }
+  .sw { aspect-ratio:1/1.2; display:flex; flex-direction:column; justify-content:flex-end; padding:7px; }
+  .sw .n { font-size:11px; font-weight:600; }
+  .sw .h { font-family:var(--font-mono); font-size:9px; opacity:.8; }
+  .cap { display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+  .cap h3 { margin:0; font-family:var(--font-display); font-size:20px; color:var(--fg1); }
+  .cap span { font-size:12px; color:var(--fg2); }
+  .dark { color:#EDEAE2; } .light { color:var(--stone-800); }
+</style>
+</head>
+<body>
+  <div class="cap"><h3>Stone</h3><span>Warm neutrals · text, borders, surfaces</span></div>
+  <div class="scale">
+    <div class="sw dark" style="background:var(--stone-950)"><span class="n">950</span><span class="h">1B1A16</span></div>
+    <div class="sw dark" style="background:var(--stone-800)"><span class="n">800</span><span class="h">38352E</span></div>
+    <div class="sw dark" style="background:var(--stone-700)"><span class="n">700</span><span class="h">4E4A41</span></div>
+    <div class="sw dark" style="background:var(--stone-600)"><span class="n">600</span><span class="h">6B6457</span></div>
+    <div class="sw dark" style="background:var(--stone-500)"><span class="n">500</span><span class="h">8A8273</span></div>
+    <div class="sw light" style="background:var(--stone-400)"><span class="n">400</span><span class="h">ABA493</span></div>
+    <div class="sw light" style="background:var(--stone-300)"><span class="n">300</span><span class="h">C9C2B2</span></div>
+    <div class="sw light" style="background:var(--stone-200)"><span class="n">200</span><span class="h">E1DBCC</span></div>
+    <div class="sw light" style="background:var(--stone-100)"><span class="n">100</span><span class="h">F1ECE0</span></div>
+  </div>
+  <p style="margin:12px 0 0; font-size:12.5px; color:var(--fg2)">950 ink on paper ≈ 13:1 contrast · 600 is the secondary-text floor (AA on paper).</p>
+</body>
+</html>

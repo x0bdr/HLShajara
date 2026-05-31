@@ -1,57 +1,39 @@
 "use client";
 
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
+import { useLocale } from "next-intl";
+
+const CREED_AR = ["الدليل لا الادّعاء", "سلوك لا هوية", "لا مصدر، لا نشر", "حق الرد", "خصوصية الأبرياء", "لا تصفٍّ ذاتي"];
+const CREED_EN = ["Evidence over allegation", "Conduct, not identity", "No source, no publication", "Right of reply", "Privacy of the innocent", "No vigilantism"];
 
 export function Footer() {
   const locale = useLocale();
-  const footer = useTranslations("footer");
-  const nav = useTranslations("nav");
+  const creed = locale === "ar" ? CREED_AR : CREED_EN;
+  const brandName = locale === "ar" ? "حملة لستَ شجرة" : "HLShajara";
+  const footerNote = locale === "ar"
+    ? "توثيق ومساءلة قانونية — لا انتقام ولا عقاب جماعي."
+    : "Documentation, lawful accountability — not revenge, not collective punishment.";
 
   return (
     <footer className="site-footer">
       <div className="site-footer-inner">
-        <div className="site-footer-main">
-          <div className="site-footer-brand">
-            <span className="site-footer-name">
-              {locale === "ar" ? "لست شجرة" : "LST Shajara"}
-            </span>
-            <p className="site-footer-desc">
-              {locale === "ar"
-                ? "منصّة مدنية لتوثيق الجرائم في سوريا وحفظ السجلّ الموثَّق للمساءلة."
-                : "A civic platform documenting crimes in Syria and preserving an accountability record."}
-            </p>
-          </div>
-          <div className="site-footer-links">
-            <div className="site-footer-col">
-              <span className="site-footer-col-title">{nav("record")}</span>
-              <Link href={`/${locale}/record`}>{nav("record")}</Link>
-              <Link href={`/${locale}/dashboard`}>{nav("dashboard")}</Link>
-            </div>
-            <div className="site-footer-col">
-              <span className="site-footer-col-title">{nav("mission")}</span>
-              <Link href={`/${locale}/mission`}>{nav("mission")}</Link>
-              <Link href={`/${locale}/faq`}>{nav("faq")}</Link>
-              <Link href={`/${locale}/policy`}>{nav("policy")}</Link>
-            </div>
-            <div className="site-footer-col">
-              <span className="site-footer-col-title">{nav("reply")}</span>
-              <Link href={`/${locale}/reply`}>{nav("reply")}</Link>
-              <Link href={`/${locale}/submit`}>{nav("submit")}</Link>
-            </div>
+        <div className="site-footer-brand">
+          <Image
+            src="/logo.jpeg"
+            alt=""
+            width={36}
+            height={36}
+            className="site-footer-logo"
+          />
+          <div>
+            <div className="site-footer-name">{brandName}</div>
+            <div className="site-footer-note">{footerNote}</div>
           </div>
         </div>
-        <div className="site-footer-bottom">
-          <p className="ds-meta">{footer("copyright")}</p>
-          <div className="site-footer-legal">
-            <Link href={`/${locale}/terms`} className="ds-meta">
-              {footer("terms")}
-            </Link>
-            <span className="ds-meta" style={{ color: "var(--fg3)" }}>·</span>
-            <Link href={`/${locale}/privacy`} className="ds-meta">
-              {footer("privacy")}
-            </Link>
-          </div>
+        <div className="site-footer-creed">
+          {creed.map((c) => (
+            <span key={c}>{c}</span>
+          ))}
         </div>
       </div>
     </footer>

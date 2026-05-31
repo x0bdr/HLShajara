@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); }
+  h3 { margin:0 0 14px; font-family:var(--font-display); font-size:19px; color:var(--fg1); }
+  .pipeline { display:flex; align-items:center; gap:0; margin-bottom:18px; flex-wrap:wrap; }
+  .stage { display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--fg2); }
+  .stage .n { width:18px; height:18px; border-radius:50%; display:grid; place-items:center; font-size:10px; font-weight:700;
+              background:var(--green-700); color:var(--on-green); }
+  .stage.todo .n { background:var(--stone-200); color:var(--fg2); }
+  .stage.now .n { background:var(--brass-500); color:#fff; box-shadow:0 0 0 3px var(--brass-50); }
+  .sep { width:18px; height:1px; background:var(--border-strong); margin:0 8px; }
+  .item { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:13px 16px;
+          background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); }
+  .item .who { font-size:14px; font-weight:600; color:var(--fg1); }
+  .item .meta { font-size:11.5px; color:var(--fg3); margin-top:3px; font-family:var(--font-mono); }
+  .review { display:flex; align-items:center; gap:8px; }
+  .rev { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; padding:4px 9px;
+         border-radius:var(--radius-pill); border:1px solid; }
+  .ok { color:var(--green-700); background:var(--green-50); border-color:var(--green-200); }
+  .wait { color:var(--brass-700); background:var(--brass-50); border-color:var(--brass-300); }
+  .gate { font-size:11px; color:var(--fg2); padding:4px 9px; border:1px dashed var(--border-strong); border-radius:var(--radius); }
+</style>
+</head>
+<body>
+  <h3>Reviewer console</h3>
+  <div class="pipeline">
+    <div class="stage"><span class="n">✓</span>Intake</div><span class="sep"></span>
+    <div class="stage"><span class="n">✓</span>Triage</div><span class="sep"></span>
+    <div class="stage"><span class="n">✓</span>Sources</div><span class="sep"></span>
+    <div class="stage now"><span class="n">4</span>Dual review</div><span class="sep"></span>
+    <div class="stage todo"><span class="n">5</span>Legal gate</div><span class="sep"></span>
+    <div class="stage todo"><span class="n">6</span>Publish</div>
+  </div>
+  <div class="item">
+    <div>
+      <div class="who">ENT-2024-0117 · command responsibility</div>
+      <div class="meta">2 sources · Tier A · queued 4h ago</div>
+    </div>
+    <div class="review">
+      <span class="rev ok">✓ Reviewer 1</span>
+      <span class="rev wait">◴ Reviewer 2</span>
+      <span class="gate">Legal/safety gate pending</span>
+    </div>
+  </div>
+</body>
+</html>

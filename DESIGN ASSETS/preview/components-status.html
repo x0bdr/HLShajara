@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); }
+  h3 { margin:0 0 4px; font-family:var(--font-display); font-size:19px; color:var(--fg1); }
+  .sub { margin:0 0 16px; font-size:12px; color:var(--fg2); }
+  .grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px 14px; }
+  .st { display:flex; align-items:center; gap:9px; padding:8px 4px; }
+  .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .en { font-size:13px; font-weight:600; color:var(--fg1); }
+  .arr { color:var(--fg3); }
+  .ar { direction:rtl; font-size:12px; color:var(--fg2); }
+</style>
+</head>
+<body>
+  <h3>Entity status</h3>
+  <p class="sub">Status reflects legal process, not identity. Muted dots, never alarming color.</p>
+  <div class="grid">
+    <div class="st"><span class="dot" style="background:var(--st-alleged)"></span><span class="en">Alleged</span><span class="ar">مُدَّعى</span></div>
+    <div class="st"><span class="dot" style="background:var(--st-investigating)"></span><span class="en">Under investigation</span></div>
+    <div class="st"><span class="dot" style="background:var(--st-indicted)"></span><span class="en">Indicted</span><span class="ar">مُتَّهم</span></div>
+    <div class="st"><span class="dot" style="background:var(--st-sanctioned)"></span><span class="en">Sanctioned</span><span class="ar">خاضع لعقوبات</span></div>
+    <div class="st"><span class="dot" style="background:var(--st-convicted)"></span><span class="en">Convicted</span><span class="ar">مُدان</span></div>
+    <div class="st"><span class="dot" style="background:var(--st-deceased)"></span><span class="en">Deceased</span><span class="ar">متوفّى</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HLShajara — Archive UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--fg1); font-family:var(--font-sans); }
+  #root { min-height:100vh; }
+
+  /* ---------- layout ---------- */
+  .kit-shell { max-width:1080px; margin:0 auto; }
+  .pad { padding-inline:32px; }
+
+  /* ---------- header ---------- */
+  .hdr { position:sticky; top:0; z-index:20; background:rgba(247,243,234,0.92); backdrop-filter:blur(8px);
+         border-bottom:1px solid var(--border); }
+  .hdr-in { max-width:1080px; margin:0 auto; padding:14px 32px; display:flex; align-items:center; gap:18px; }
+  .brand { display:flex; align-items:center; gap:12px; cursor:pointer; }
+  .brand img { width:42px; height:42px; border-radius:50%; }
+  .brand .nm { font-family:var(--font-display); font-weight:700; font-size:20px; line-height:1.3; color:var(--fg1); }
+  .brand .sub { font-size:11px; color:var(--fg2); }
+  .hdr-spacer { flex:1; }
+  .nav { display:flex; gap:4px; }
+  .nav button { font-family:var(--font-sans); font-size:13.5px; font-weight:500; color:var(--fg2);
+         background:transparent; border:0; padding:8px 13px; border-radius:var(--radius); cursor:pointer; }
+  .nav button:hover { background:var(--green-50); color:var(--fg1); }
+  .nav button.active { background:var(--green-700); color:var(--on-green); }
+  .lang { font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--brand); background:var(--surface);
+          border:1px solid var(--border-strong); padding:7px 12px; border-radius:var(--radius); cursor:pointer; }
+  .lang:hover { background:var(--green-50); }
+
+  /* ---------- generic ---------- */
+  .eyebrow { font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--fg2); }
+  [dir=rtl] .eyebrow { letter-spacing:0; text-transform:none; font-size:13px; }
+  .btn { font-family:var(--font-sans); font-size:14px; font-weight:600; padding:9px 18px; border-radius:var(--radius);
+         border:1px solid transparent; cursor:pointer; transition:all var(--dur) var(--ease); }
+  .btn.primary { background:var(--brand); color:var(--on-green); }
+  .btn.primary:hover { background:var(--brand-hover); }
+  .btn.secondary { background:var(--surface); color:var(--fg1); border-color:var(--border-strong); }
+  .btn.secondary:hover { background:var(--stone-100); }
+  .btn.ghost { background:transparent; color:var(--brand); }
+  .btn.ghost:hover { background:var(--green-50); }
+
+  /* ---------- legal note ---------- */
+  .legal { border-inline-start:3px solid var(--green-700); background:var(--green-50);
+           padding:12px 16px; border-radius:0 var(--radius) var(--radius) 0; margin:0; }
+  [dir=rtl] .legal { border-radius:var(--radius) 0 0 var(--radius); }
+  .legal .t { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--green-700); margin-bottom:4px; }
+  [dir=rtl] .legal .t { letter-spacing:0; text-transform:none; }
+  .legal p { margin:0; font-size:12.5px; color:var(--fg1); line-height:1.55; }
+
+  /* ---------- evidence strength pill ---------- */
+  .ev { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:var(--radius-pill);
+        font-size:12px; font-weight:600; border:1px solid; white-space:nowrap; }
+  .ev .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .ev.e0{color:var(--ev-0-fg);background:var(--ev-0-bg);border-color:var(--ev-0-bd)}
+  .ev.e1{color:var(--ev-1-fg);background:var(--ev-1-bg);border-color:var(--ev-1-bd)}
+  .ev.e2{color:var(--ev-2-fg);background:var(--ev-2-bg);border-color:var(--ev-2-bd)}
+  .ev.e3{color:var(--ev-3-fg);background:var(--ev-3-bg);border-color:var(--ev-3-bd)}
+  .ev.e4{color:var(--ev-4-fg);background:var(--ev-4-bg);border-color:var(--ev-4-bd)}
+
+  /* ---------- status ---------- */
+  .status { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; }
+  .status .d { width:8px; height:8px; border-radius:50%; background:currentColor; }
+
+  /* ---------- evidence card ---------- */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+          box-shadow:var(--shadow); overflow:hidden; transition:box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease); cursor:pointer; }
+  .card:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .card .top { padding:15px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .card .name { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--fg1); line-height:1.35; }
+  .card .role { font-size:12.5px; color:var(--fg2); margin-top:3px; }
+  .card .id { font-family:var(--font-mono); font-size:10px; color:var(--fg3); margin-top:6px; }
+  [dir=rtl] .card .id { direction:ltr; text-align:right; }
+  .card .body { padding:13px 18px; }
+  .card .alle { font-size:13.5px; color:var(--fg1); line-height:1.55; }
+  .card .srcline { display:flex; align-items:center; gap:8px; margin-top:11px; }
+  .mark { font-family:var(--font-mono); font-size:10px; color:var(--brass-700); background:var(--brass-50);
+          border:1px solid var(--brass-300); border-radius:var(--radius-sm); padding:2px 6px; white-space:nowrap; }
+  .card .foot { display:flex; justify-content:space-between; align-items:center; padding:10px 18px;
+          background:var(--stone-100); border-top:1px solid var(--border); }
+  .card .reply { font-size:11px; color:var(--fg2); }
+  .card .ver { font-family:var(--font-mono); font-size:10px; color:var(--fg3); }
+
+  /* ---------- filters ---------- */
+  .chip { font-size:12.5px; padding:6px 13px; border-radius:var(--radius-pill); border:1px solid var(--border-strong);
+          background:var(--surface); color:var(--fg1); cursor:pointer; transition:all var(--dur-fast) var(--ease); }
+  .chip:hover { border-color:var(--green-500); }
+  .chip.on { background:var(--green-700); color:var(--on-green); border-color:var(--green-800); }
+
+  /* ---------- entity detail ---------- */
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); }
+  .timeline { position:relative; padding-inline-start:22px; }
+  .timeline::before { content:""; position:absolute; inset-inline-start:6px; top:4px; bottom:4px; width:2px; background:var(--border-strong); }
+  .tl-item { position:relative; padding-bottom:16px; }
+  .tl-item::before { content:""; position:absolute; inset-inline-start:-22px; top:3px; width:10px; height:10px; border-radius:50%;
+          background:var(--green-700); box-shadow:0 0 0 3px var(--paper); }
+
+  /* ---------- reviewer console ---------- */
+  .queue-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 16px;
+          background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:all var(--dur) var(--ease); }
+  .queue-item:hover { border-color:var(--green-500); }
+  .queue-item.sel { border-color:var(--green-700); box-shadow:0 0 0 3px var(--green-50); }
+  .rev { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; padding:4px 9px; border-radius:var(--radius-pill); border:1px solid; }
+  .rev.ok { color:var(--green-700); background:var(--green-50); border-color:var(--green-200); }
+  .rev.wait { color:var(--brass-700); background:var(--brass-50); border-color:var(--brass-300); }
+
+  .footer { border-top:1px solid var(--border); margin-top:48px; background:var(--green-900); color:var(--green-200); }
+  .footer-in { max-width:1080px; margin:0 auto; padding:34px 32px; }
+  .creed { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+  .creed span { font-size:12px; color:var(--green-100); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+                padding:4px 11px; border-radius:var(--radius-pill); }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="screens.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

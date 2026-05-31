@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:26px 30px; font-family:var(--font-sans); }
+  .scale { display:grid; grid-template-columns:repeat(8,1fr); gap:0; border-radius:var(--radius-md); overflow:hidden; box-shadow:var(--inset-hair); }
+  .sw { aspect-ratio:1/1.1; display:flex; flex-direction:column; justify-content:flex-end; padding:8px; }
+  .sw .n { font-size:11px; font-weight:600; }
+  .sw .h { font-family:var(--font-mono); font-size:9.5px; opacity:.8; }
+  .cap { display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+  .cap h3 { margin:0; font-family:var(--font-display); font-size:20px; color:var(--fg1); }
+  .cap span { font-size:12px; color:var(--fg2); }
+  .dark { color:#EAF0E8; } .light { color:var(--green-900); }
+</style>
+</head>
+<body>
+  <div class="cap"><h3>Deep green</h3><span>Primary · the seal · institutional voice</span></div>
+  <div class="scale">
+    <div class="sw dark" style="background:var(--green-950)"><span class="n">950</span><span class="h">#102219</span></div>
+    <div class="sw dark" style="background:var(--green-900)"><span class="n">900</span><span class="h">#16301E</span></div>
+    <div class="sw dark" style="background:var(--green-800)"><span class="n">800</span><span class="h">#1E3F27</span></div>
+    <div class="sw dark" style="background:var(--green-700)"><span class="n">700★</span><span class="h">#264D2E</span></div>
+    <div class="sw dark" style="background:var(--green-600)"><span class="n">600</span><span class="h">#34663C</span></div>
+    <div class="sw dark" style="background:var(--green-500)"><span class="n">500</span><span class="h">#4A8052</span></div>
+    <div class="sw light" style="background:var(--green-200)"><span class="n">200</span><span class="h">#BFD2C0</span></div>
+    <div class="sw light" style="background:var(--green-100)"><span class="n">100</span><span class="h">#E2EBE2</span></div>
+  </div>
+  <p style="margin:12px 0 0; font-size:12.5px; color:var(--fg2)">★ 700 is the brand green, sampled from the campaign seal.</p>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "verification_pipeline": [
+    {"stage": "internal_intake", "desc": "Research team drafts an entry with named actor, specific conduct, and credible source(s)."},
+    {"stage": "triage", "desc": "A reviewer confirms it concerns a named actor + specific conduct; assigns category."},
+    {"stage": "source_verification", "desc": "Each cited source is checked: exists, authentic, actually supports the specific claim, from a credible org."},
+    {"stage": "dual_review", "desc": "Two independent reviewers must agree before anything advances. Disagreement escalates."},
+    {"stage": "legal_safety_gate", "desc": "Claim phrased to match evidentiary strength; right-of-reply contact recorded; privacy/safety re-checked."},
+    {"stage": "publish", "desc": "Entry goes live with sources visible and an evidence-strength label."},
+    {"stage": "monitor_and_correct", "desc": "Rebuttals, new evidence, takedowns. Versioned audit trail on every entry."}
+  ],
+  "entry_requirements": [
+    "A specific named individual or entity (no 'members of group X').",
+    "A specific alleged act or role (what, where, roughly when).",
+    "At least one source from sources.tiers, with a working link or uploaded document."
+  ],
+  "rejection_rules": [
+    {"code": "GROUP_TARGET", "desc": "References a community/sect/ethnicity/family/region as basis."},
+    {"code": "NO_SOURCE", "desc": "Lacks any accepted source."},
+    {"code": "WEAK_SOURCE", "desc": "Only Tier-C/rumor for a serious claim, no corroboration."},
+    {"code": "PRIVATE_TARGETING", "desc": "Exposes home address / live location / data enabling physical harm."},
+    {"code": "INNOCENT_PARTY", "desc": "Names children or clearly uninvolved persons."},
+    {"code": "MISMATCH", "desc": "The source does not actually support the specific claim."},
+    {"code": "HATE_TONE", "desc": "Dehumanizing or sectarian language anywhere in the entry."}
+  ]
+}

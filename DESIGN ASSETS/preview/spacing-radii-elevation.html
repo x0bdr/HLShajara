@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:26px 30px; font-family:var(--font-sans); display:flex; flex-direction:column; gap:22px; }
+  h3 { margin:0 0 14px; font-family:var(--font-display); font-size:18px; color:var(--fg1); }
+  .row { display:flex; gap:18px; align-items:flex-end; }
+  .box { width:84px; height:60px; background:var(--surface); display:flex; align-items:flex-end; justify-content:center; padding-bottom:6px; }
+  .l { font-family:var(--font-mono); font-size:10.5px; color:var(--fg3); }
+  .br1{border-radius:var(--radius-sm)} .br2{border-radius:var(--radius)} .br3{border-radius:var(--radius-md)}
+  .br4{border-radius:var(--radius-lg)} .br5{border-radius:var(--radius-pill)}
+  .e0{box-shadow:var(--inset-hair)} .e1{box-shadow:var(--shadow-sm)} .e2{box-shadow:var(--shadow)} .e3{box-shadow:var(--shadow-md)}
+</style>
+</head>
+<body>
+  <div>
+    <h3>Radii — restrained, document-like</h3>
+    <div class="row">
+      <div style="text-align:center"><div class="box br1" style="box-shadow:var(--inset-hair)"></div><div class="l">sm · 3</div></div>
+      <div style="text-align:center"><div class="box br2" style="box-shadow:var(--inset-hair)"></div><div class="l">base · 6</div></div>
+      <div style="text-align:center"><div class="box br3" style="box-shadow:var(--inset-hair)"></div><div class="l">md · 8</div></div>
+      <div style="text-align:center"><div class="box br4" style="box-shadow:var(--inset-hair)"></div><div class="l">lg · 12</div></div>
+      <div style="text-align:center"><div class="box br5" style="box-shadow:var(--inset-hair); width:60px"></div><div class="l">pill</div></div>
+    </div>
+  </div>
+  <div>
+    <h3>Elevation — soft, low, paper-on-paper</h3>
+    <div class="row">
+      <div style="text-align:center"><div class="box br3 e0"></div><div class="l">hairline</div></div>
+      <div style="text-align:center"><div class="box br3 e1"></div><div class="l">sm</div></div>
+      <div style="text-align:center"><div class="box br3 e2"></div><div class="l">base</div></div>
+      <div style="text-align:center"><div class="box br3 e3"></div><div class="l">md</div></div>
+    </div>
+  </div>
+</body>
+</html>

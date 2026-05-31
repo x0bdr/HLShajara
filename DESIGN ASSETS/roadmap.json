@@ -1,0 +1,29 @@
+{
+  "mvp": {
+    "in": [
+      "Bilingual landing + 'what we do / don't' + Code of Conduct + anti-discrimination policy pages.",
+      "Submission form with the boundary engine (auto-reject group-target/incitement/no-source).",
+      "Reviewer console with dual-review + source verification.",
+      "Entity/Allegation/Source data model with hard constraints.",
+      "Published record: search + per-entry sources + evidence-strength label.",
+      "Right-of-reply intake + correction process.",
+      "Legal disclaimer, terms, privacy/data policy."
+    ],
+    "out": [
+      "Public commenting",
+      "Partner API",
+      "Advanced media forensics",
+      "Memorial space",
+      "Languages beyond AR/EN"
+    ],
+    "pre_launch_gate": "Lawyer review of publication standard + first entries before any living person is named publicly."
+  },
+  "phases": [
+    {"n": 0, "name": "Foundations", "goal": "Editorial standard, source tiers, legal review, governance. No code-naming yet."},
+    {"n": 1, "name": "Public shell", "goal": "Bilingual landing, policies, Code of Conduct, FAQ live; submission intake collecting (not yet publishing)."},
+    {"n": 2, "name": "Review pipeline", "goal": "Reviewer console, dual review, boundary engine, data model, audit trail."},
+    {"n": 3, "name": "First record (gated)", "goal": "Publish initial Tier-A (UN/court/sanctions) entities only, after legal sign-off."},
+    {"n": 4, "name": "Right-of-reply + transparency", "goal": "Correction portal + transparency dashboard live."},
+    {"n": 5, "name": "v1 launch", "goal": "Controlled public launch with partner endorsements + monitoring."}
+  ]
+}

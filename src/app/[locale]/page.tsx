@@ -3,9 +3,8 @@ export function generateStaticParams() {
 }
 
 import { getTranslations } from "next-intl/server";
-import { EvidenceCard, LegalNote, Header, Footer, HeroSection, StatsBar } from "@/components";
+import { Header, Footer, ArchiveHome } from "@/components";
 import type { Entity, SourceTier } from "@/lib/types";
-import Link from "next/link";
 import { db } from "@/db";
 import { entities, allegations, sources, allegationSources } from "@/db/schema";
 import { isNotNull, eq } from "drizzle-orm";
@@ -16,7 +15,7 @@ async function getPublishedEntities(): Promise<Entity[]> {
       .select()
       .from(entities)
       .where(isNotNull(entities.publishedAt))
-      .limit(10);
+      .limit(50);
 
     const result: Entity[] = [];
     for (const e of rows) {
@@ -72,63 +71,12 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "home" });
-  const legal = await getTranslations({ locale, namespace: "legal" });
-
   const published = await getPublishedEntities();
-  const entryCount = published.length;
-  const sourceCount = published.reduce(
-    (sum, e) => sum + e.allegations.reduce((aSum, a) => aSum + a.sources.length, 0),
-    0
-  );
-  const verdictCount = published.filter((e) => e.status === "convicted").length;
 
   return (
     <>
       <Header />
-      <HeroSection />
-
-      <StatsBar entries={entryCount} sources={sourceCount} verdicts={verdictCount} />
-
-      {/* Legal note */}
-      <div className="section-pad" style={{ paddingBlock: "24px 0" }}>
-        <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
-      </div>
-
-      {/* Evidence cards */}
-      <section className="section-pad">
-        <h2 className="section-title">{t("recordTitle")}</h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {published.length === 0 ? (
-            <p
-              className="ds-body"
-              style={{ color: "var(--fg2)", textAlign: "center", padding: "40px 0" }}
-            >
-              {locale === "ar"
-                ? "لا توجد مدخلات منشورة بعد."
-                : "No published entries yet."}
-            </p>
-          ) : (
-            published.map((e) => (
-              <EvidenceCard
-                key={e.id}
-                entity={e}
-                lang={locale as "ar" | "en"}
-              />
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* Submit CTA */}
-      <section className="cta-section">
-        <h2 className="section-title">{t("ctaTitle")}</h2>
-        <p className="section-lead">{t("ctaText")}</p>
-        <Link href={`/${locale}/submit`}>
-          <button className="btn primary">{t("ctaButton")}</button>
-        </Link>
-      </section>
-
+      <ArchiveHome entities={published} />
       <Footer />
     </>
   );

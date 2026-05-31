@@ -1,0 +1,39 @@
+{
+  "tiers": {
+    "A": {
+      "label": "Strongest",
+      "types": [
+        "UN bodies (Commission of Inquiry on Syria, IIIM, OHCHR) and UN-mandated reports",
+        "Court records, indictments, judgments (national/international, incl. universal-jurisdiction cases)",
+        "Official sanctions lists (UN, EU, US OFAC, UK, etc.)"
+      ]
+    },
+    "B": {
+      "label": "Strong",
+      "types": [
+        "Reports by recognized human-rights organizations with documented methodology",
+        "Official legal filings and prosecutorial documents"
+      ]
+    },
+    "C": {
+      "label": "Corroboration required (never sole basis for a strong claim)",
+      "types": [
+        "Credible investigative journalism from established outlets",
+        "Verified public documentation (authenticated photo/video/document with provenance)"
+      ]
+    }
+  },
+  "not_accepted": [
+    "Anonymous social-media posts",
+    "Unverified rumor",
+    "Partisan content without primary sourcing",
+    "Anything that cannot be independently checked"
+  ],
+  "evidence_strength_labels": [
+    "Under review",
+    "Single credible source",
+    "Multi-source corroborated",
+    "UN/IIIM-documented",
+    "Court-confirmed"
+  ]
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:28px 30px; font-family:var(--font-sans);
+         display:flex; flex-direction:column; gap:24px; }
+  .ds-display.ar, .ds-h1.ar { line-height:1.45; }
+  .row { display:flex; align-items:baseline; gap:18px; }
+  .ar { direction:rtl; }
+  .tag { font-family:var(--font-mono); font-size:11px; color:var(--fg3); width:118px; flex:none; }
+  .specimen { color:var(--fg1); }
+  .rule { height:1px; background:var(--border); border:0; margin:2px 0; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="tag">display · 64</span>
+    <div>
+      <div class="specimen ds-display ar">لستَ شجرة</div>
+      <div class="specimen ds-display" style="font-size:var(--text-2xl)">Documented. Sourced.</div>
+    </div>
+  </div>
+  <hr class="rule">
+  <div class="row">
+    <span class="tag">h1 · 48</span>
+    <div class="specimen ds-h1 ar">سجلٌّ موثّق للعدالة</div>
+  </div>
+  <div class="row">
+    <span class="tag">h2 · 36</span>
+    <div class="specimen ds-h2">An archive of record</div>
+  </div>
+  <div class="row">
+    <span class="tag">h3 · 28</span>
+    <div class="specimen ds-h3 ar">الدليل لا الادّعاء</div>
+  </div>
+</body>
+</html>

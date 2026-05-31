@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+          box-shadow:var(--shadow); overflow:hidden; }
+  .top { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .name { font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--fg1); line-height:1.2; }
+  .role { font-size:12.5px; color:var(--fg2); margin-top:3px; }
+  .id { font-family:var(--font-mono); font-size:10.5px; color:var(--fg3); margin-top:6px; }
+  .ev { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:var(--radius-pill);
+        font-size:12px; font-weight:600; color:var(--ev-4-fg); background:var(--ev-4-bg); border:1px solid var(--ev-4-bd); white-space:nowrap; }
+  .ev .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .body { padding:14px 20px; }
+  .row { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .status { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--st-convicted); }
+  .status .d { width:8px; height:8px; border-radius:50%; background:currentColor; }
+  .alle { font-size:13.5px; color:var(--fg1); line-height:1.55; }
+  .alle .meta { color:var(--fg3); font-size:11.5px; margin-top:5px; }
+  .src { margin-top:13px; padding-top:13px; border-top:1px solid var(--border); }
+  .src .h { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--fg2); margin-bottom:9px; }
+  .cite { display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .mark { font-family:var(--font-mono); font-size:10px; color:var(--brass-700); background:var(--brass-50);
+          border:1px solid var(--brass-300); border-radius:var(--radius-sm); padding:2px 6px; white-space:nowrap; }
+  .ctxt { font-size:12px; color:var(--fg1); line-height:1.45; }
+  .ctxt a { color:var(--brand); text-decoration:none; border-bottom:1px solid var(--green-200); }
+  .foot { display:flex; justify-content:space-between; align-items:center; padding:11px 20px;
+          background:var(--stone-100); border-top:1px solid var(--border); }
+  .foot .reply { font-size:11.5px; color:var(--fg2); }
+  .foot .ver { font-family:var(--font-mono); font-size:10.5px; color:var(--fg3); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div>
+        <div class="name">[Named Official]</div>
+        <div class="role">Commanding role · detention facility · 2012–2014</div>
+        <div class="id">ENT-2024-0117 · individual</div>
+      </div>
+      <span class="ev"><span class="dot"></span>Court-confirmed</span>
+    </div>
+    <div class="body">
+      <div class="row"><span class="status"><span class="d"></span>Convicted</span></div>
+      <div class="alle">
+        Convicted in a universal-jurisdiction trial for command responsibility over unlawful detention and torture at a named facility.
+        <div class="meta">Damascus / Europe · judgment entered 2022</div>
+      </div>
+      <div class="src">
+        <div class="h">Sources · 2</div>
+        <div class="cite"><span class="mark">Tier A</span><span class="ctxt">National court judgment, case no. […] — <a href="#">official record</a></span></div>
+        <div class="cite"><span class="mark">Tier A</span><span class="ctxt">UN Commission of Inquiry report — <a href="#">A/HRC/…</a></span></div>
+      </div>
+    </div>
+    <div class="foot">
+      <span class="reply">Right of reply: contact recorded · no statement filed</span>
+      <span class="ver">v3 · audited</span>
+    </div>
+  </div>
+</body>
+</html>

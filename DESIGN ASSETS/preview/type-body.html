@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:26px 30px; display:flex; flex-direction:column; gap:16px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:30px; }
+  .ar { direction:rtl; }
+  .lbl { font-family:var(--font-mono); font-size:11px; color:var(--fg3); margin-bottom:8px; }
+  p { margin:0 0 8px; }
+</style>
+</head>
+<body>
+  <div class="cols">
+    <div class="ar">
+      <div class="lbl" style="direction:ltr">IBM Plex Sans Arabic — نص</div>
+      <p class="ds-lead">كل ادّعاء منشور يخصّ شخصًا أو جهةً مُسمّاة.</p>
+      <p class="ds-body">نجمع ونتحقّق وننشر الأدلّة المتاحة علنًا. لا مصدر، لا نشر. التحقّق المزدوج شرطٌ قبل أي نشر.</p>
+      <p class="ds-caption">تسمية · حقل · إرشاد</p>
+    </div>
+    <div>
+      <div class="lbl">IBM Plex Sans Arabic — Latin</div>
+      <p class="ds-lead">Every claim names a person or entity.</p>
+      <p class="ds-body">We collect, verify, and publish publicly available evidence. No source, no publication. Dual review precedes anything going live.</p>
+      <p class="ds-caption">Label · field · helper text</p>
+    </div>
+  </div>
+  <div>
+    <div class="lbl">weights · 300 400 500 600 700</div>
+    <div style="display:flex; gap:18px; align-items:baseline; font-size:20px; color:var(--fg1)">
+      <span style="font-weight:300">Aa أ</span><span style="font-weight:400">Aa أ</span>
+      <span style="font-weight:500">Aa أ</span><span style="font-weight:600">Aa أ</span>
+      <span style="font-weight:700">Aa أ</span>
+    </div>
+  </div>
+</body>
+</html>

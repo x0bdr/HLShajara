@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:26px 30px; font-family:var(--font-sans); display:flex; flex-direction:column; gap:18px; }
+  .fam { display:flex; flex-direction:column; gap:5px; }
+  .meta { display:flex; align-items:baseline; gap:10px; }
+  .meta .n { font-family:var(--font-mono); font-size:11px; color:var(--brass-700); }
+  .meta .u { font-size:11.5px; color:var(--fg2); }
+  .ar { direction:rtl; }
+  .s-disp { font-family:var(--font-display); font-weight:700; font-size:30px; color:var(--fg1); line-height:1.5; }
+  .s-text { font-family:var(--font-reading); font-weight:400; font-size:19px; color:var(--fg1); line-height:1.7; }
+  .s-sans { font-family:var(--font-sans); font-weight:400; font-size:18px; color:var(--fg1); line-height:1.6; }
+</style>
+</head>
+<body>
+  <div class="fam">
+    <div class="meta"><span class="n">Serif Display</span><span class="u">headings · the campaign voice</span></div>
+    <div class="s-disp ar">حملة لستَ شجرة</div>
+  </div>
+  <div class="fam">
+    <div class="meta"><span class="n">Serif Text</span><span class="u">long-form reading · context &amp; statements</span></div>
+    <div class="s-text ar">نجمع ونتحقّق وننشر الأدلّة المتاحة علنًا حول أفرادٍ وجهاتٍ محدّدين.</div>
+  </div>
+  <div class="fam">
+    <div class="meta"><span class="n">Sans</span><span class="u">UI · labels · body</span></div>
+    <div class="s-sans ar">واجهة · مصادر · حق الرد · قيد المراجعة · مؤكَّد قضائيًّا</div>
+  </div>
+</body>
+</html>

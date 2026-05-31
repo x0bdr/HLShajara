@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:26px; }
+  label { display:block; font-size:12px; font-weight:600; color:var(--fg1); margin-bottom:6px; }
+  .req { color:var(--brass-600); }
+  input, select, textarea { width:100%; box-sizing:border-box; font-family:var(--font-sans); font-size:13.5px;
+    padding:9px 11px; border:1px solid var(--border-strong); border-radius:var(--radius); background:var(--surface);
+    color:var(--fg1); transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+  input::placeholder, textarea::placeholder { color:var(--stone-400); }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--brass-500);
+    box-shadow:0 0 0 3px var(--brass-50); }
+  .field { margin-bottom:15px; }
+  .help { font-size:11px; color:var(--fg3); margin-top:5px; }
+  .err input { border-color:var(--brick-500); }
+  .err .help { color:var(--brick-700); }
+  .ar { direction:rtl; }
+</style>
+</head>
+<body>
+  <div class="cols">
+    <div>
+      <div class="field"><label>Named individual or entity <span class="req">*</span></label>
+        <input placeholder="Specific name — never a group" value="[Named Official]"></div>
+      <div class="field"><label>Role / position <span class="req">*</span></label>
+        <input placeholder="What they did — not who they are"></div>
+      <div class="field err"><label>Source link <span class="req">*</span></label>
+        <input placeholder="https://…" value="anonymous post">
+        <div class="help">A source from Tier A–C is required. No source, no publication.</div></div>
+    </div>
+    <div class="ar">
+      <div class="field"><label>الفرد أو الجهة المُسمّاة <span class="req">*</span></label>
+        <input placeholder="اسم محدّد — لا جماعة" value="[مسؤول مُسمّى]"></div>
+      <div class="field"><label>الدور / المنصب <span class="req">*</span></label>
+        <input placeholder="ما فعله — لا من يكون"></div>
+      <div class="field"><label>وصف الفعل المحدّد <span class="req">*</span></label>
+        <textarea rows="2" placeholder="ماذا، أين، ومتى تقريبًا"></textarea>
+        <div class="help">يخضع كل نص لمصنّف الكراهية قبل الحفظ.</div></div>
+    </div>
+  </div>
+</body>
+</html>

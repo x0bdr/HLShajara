@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:24px 30px; font-family:var(--font-sans); direction:rtl; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+          box-shadow:var(--shadow); overflow:hidden; }
+  .top { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .name { font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--fg1); line-height:1.4; }
+  .role { font-size:13px; color:var(--fg2); margin-top:3px; }
+  .id { font-family:var(--font-mono); font-size:10.5px; color:var(--fg3); margin-top:6px; direction:ltr; text-align:right; }
+  .ev { display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:var(--radius-pill);
+        font-size:12.5px; font-weight:600; color:var(--ev-4-fg); background:var(--ev-4-bg); border:1px solid var(--ev-4-bd); white-space:nowrap; }
+  .ev .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .body { padding:14px 20px; }
+  .status { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:var(--st-convicted); margin-bottom:10px; }
+  .status .d { width:8px; height:8px; border-radius:50%; background:currentColor; }
+  .alle { font-size:14.5px; color:var(--fg1); line-height:1.7; }
+  .alle .meta { color:var(--fg3); font-size:12px; margin-top:5px; }
+  .src { margin-top:13px; padding-top:13px; border-top:1px solid var(--border); }
+  .src .h { font-size:12px; font-weight:700; color:var(--fg2); margin-bottom:9px; }
+  .cite { display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; }
+  .mark { font-family:var(--font-mono); font-size:10px; color:var(--brass-700); background:var(--brass-50);
+          border:1px solid var(--brass-300); border-radius:var(--radius-sm); padding:2px 6px; white-space:nowrap; direction:ltr; }
+  .ctxt { font-size:13px; color:var(--fg1); line-height:1.6; }
+  .ctxt a { color:var(--brand); text-decoration:none; border-bottom:1px solid var(--green-200); }
+  .foot { display:flex; justify-content:space-between; align-items:center; padding:11px 20px;
+          background:var(--stone-100); border-top:1px solid var(--border); }
+  .foot .reply { font-size:12px; color:var(--fg2); }
+  .foot .ver { font-family:var(--font-mono); font-size:10.5px; color:var(--fg3); direction:ltr; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div>
+        <div class="name">[مسؤول مُسمّى]</div>
+        <div class="role">دور قيادي · مرفق احتجاز · ٢٠١٢–٢٠١٤</div>
+        <div class="id">ENT-2024-0117 · فرد</div>
+      </div>
+      <span class="ev"><span class="dot"></span>مؤكَّد قضائيًّا</span>
+    </div>
+    <div class="body">
+      <div class="status"><span class="d"></span>مُدان</div>
+      <div class="alle">
+        أُدين في محاكمة قائمة على الولاية القضائية العالمية بمسؤولية القيادة عن احتجاز غير قانوني وتعذيب في مرفق محدّد بالاسم.
+        <div class="meta">دمشق / أوروبا · صدر الحكم ٢٠٢٢</div>
+      </div>
+      <div class="src">
+        <div class="h">المصادر · ٢</div>
+        <div class="cite"><span class="mark">Tier A</span><span class="ctxt">حكم محكمة وطنية، القضية رقم […] — <a href="#">السجلّ الرسمي</a></span></div>
+        <div class="cite"><span class="mark">Tier A</span><span class="ctxt">تقرير لجنة التحقيق الأممية — <a href="#">A/HRC/…</a></span></div>
+      </div>
+    </div>
+    <div class="foot">
+      <span class="reply">حق الرد: جهة الاتصال مسجّلة · لم يُقدَّم بيان</span>
+      <span class="ver">v3 · مُدقّق</span>
+    </div>
+  </div>
+</body>
+</html>

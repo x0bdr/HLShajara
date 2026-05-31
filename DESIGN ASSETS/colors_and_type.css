@@ -1,0 +1,200 @@
+/* ============================================================
+   حملة لستَ شجرة — HLShajara · Design Tokens
+   Colors + Type foundations for the documentation & accountability archive.
+   Bilingual-first (AR / RTL · EN / LTR), high-contrast, dignified.
+   ============================================================ */
+
+/* ---- Monospace (CDN — no brand mono was supplied) ---- */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* ---- Brand typefaces: Thmanyah (free, by ثمانية) — self-hosted ----
+   Three families: Serif Display (headings), Serif Text (long reading),
+   Sans (UI / body). Weights: Light 300 · Regular 400 · Medium 500 · Bold 700 · Black 900. */
+
+/* Thmanyah Serif Display */
+@font-face { font-family:"Thmanyah Serif Display"; src:url("fonts/thmanyahserifdisplay-Light.otf")   format("opentype"); font-weight:300; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Display"; src:url("fonts/thmanyahserifdisplay-Regular.otf") format("opentype"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Display"; src:url("fonts/thmanyahserifdisplay-Medium.otf")  format("opentype"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Display"; src:url("fonts/thmanyahserifdisplay-Bold.otf")    format("opentype"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Display"; src:url("fonts/thmanyahserifdisplay-Black.otf")   format("opentype"); font-weight:900; font-display:swap; }
+
+/* Thmanyah Serif Text */
+@font-face { font-family:"Thmanyah Serif Text"; src:url("fonts/thmanyahseriftext-Light.otf")   format("opentype"); font-weight:300; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Text"; src:url("fonts/thmanyahseriftext-Regular.otf") format("opentype"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Text"; src:url("fonts/thmanyahseriftext-Medium.otf")  format("opentype"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Text"; src:url("fonts/thmanyahseriftext-Bold.otf")    format("opentype"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Thmanyah Serif Text"; src:url("fonts/thmanyahseriftext-Black.otf")   format("opentype"); font-weight:900; font-display:swap; }
+
+/* Thmanyah Sans */
+@font-face { font-family:"Thmanyah Sans"; src:url("fonts/thmanyahsans-Light.otf")   format("opentype"); font-weight:300; font-display:swap; }
+@font-face { font-family:"Thmanyah Sans"; src:url("fonts/thmanyahsans-Regular.otf") format("opentype"); font-weight:400; font-display:swap; }
+@font-face { font-family:"Thmanyah Sans"; src:url("fonts/thmanyahsans-Medium.otf")  format("opentype"); font-weight:500; font-display:swap; }
+@font-face { font-family:"Thmanyah Sans"; src:url("fonts/thmanyahsans-Bold.otf")    format("opentype"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Thmanyah Sans"; src:url("fonts/thmanyahsans-Black.otf")   format("opentype"); font-weight:900; font-display:swap; }
+
+:root {
+  /* ============ COLOR — RAW SCALES ============ */
+
+  /* Deep green — sampled from the campaign seal (pine / forest).
+     The institutional, solemn primary. */
+  --green-950: #102219;
+  --green-900: #16301E;
+  --green-800: #1E3F27;
+  --green-700: #264D2E;   /* ← primary brand green (the seal) */
+  --green-600: #34663C;
+  --green-500: #4A8052;
+  --green-200: #BFD2C0;
+  --green-100: #E2EBE2;
+  --green-50:  #F0F4EF;
+
+  /* Stone — warm neutral grays. Text, borders, surfaces. */
+  --stone-950: #1B1A16;   /* ink — primary text */
+  --stone-800: #38352E;
+  --stone-700: #4E4A41;
+  --stone-600: #6B6457;   /* secondary text */
+  --stone-500: #8A8273;
+  --stone-400: #ABA493;   /* muted / placeholder */
+  --stone-300: #C9C2B2;   /* hairline on dark surfaces */
+  --stone-200: #E1DBCC;   /* borders */
+  --stone-150: #EAE4D6;
+  --stone-100: #F1ECE0;   /* subtle fills */
+
+  /* Warm whites — paper. */
+  --paper:        #F7F3EA;  /* app background */
+  --paper-raised: #FCFAF3;  /* cards / panels */
+  --white:        #FFFFFF;
+
+  /* Single accent — muted brass. RESERVED for evidence-strength labels.
+     Do not use brass for decoration elsewhere; it reads as "evidence". */
+  --brass-700: #6E4D1C;
+  --brass-600: #8A6224;
+  --brass-500: #9A6B2B;   /* ← the accent */
+  --brass-300: #CDA86A;
+  --brass-150: #ECDFC4;
+  --brass-50:  #F6EFDF;
+
+  /* Muted brick — corrections, rejections, takedowns. Used sparingly. */
+  --brick-700: #6F2B22;
+  --brick-500: #8C3A2E;
+  --brick-100: #F0DED9;
+
+  /* ============ COLOR — SEMANTIC ============ */
+  --bg:            var(--paper);
+  --surface:       var(--paper-raised);
+  --surface-sunk:  var(--stone-100);
+  --fg1:           var(--stone-950);   /* primary text */
+  --fg2:           var(--stone-600);   /* secondary text */
+  --fg3:           var(--stone-400);   /* tertiary / meta */
+  --on-green:      #F2F6EF;            /* text on deep green */
+  --border:        var(--stone-200);   /* hairlines */
+  --border-strong: var(--stone-300);
+  --brand:         var(--green-700);
+  --brand-hover:   var(--green-800);
+  --brand-press:   var(--green-900);
+  --focus-ring:    var(--brass-500);
+
+  /* Evidence-strength ladder (sources.json.evidence_strength_labels).
+     Neutral → brass ramp → institutional green at the strongest rung. */
+  --ev-0-fg: var(--stone-600);  --ev-0-bg: var(--stone-100);  --ev-0-bd: var(--stone-300); /* Under review */
+  --ev-1-fg: var(--brass-700);  --ev-1-bg: var(--brass-50);   --ev-1-bd: var(--brass-300); /* Single credible source */
+  --ev-2-fg: #5A4012;           --ev-2-bg: var(--brass-150);  --ev-2-bd: var(--brass-500); /* Multi-source corroborated */
+  --ev-3-fg: var(--white);      --ev-3-bg: var(--brass-600);  --ev-3-bd: var(--brass-700); /* UN/IIIM-documented */
+  --ev-4-fg: var(--on-green);   --ev-4-bg: var(--green-700);  --ev-4-bd: var(--green-900); /* Court-confirmed (institutional) */
+
+  /* Entity status dots (data-model: alleged → convicted). Muted, not a rainbow. */
+  --st-alleged:      var(--stone-500);
+  --st-investigating:var(--brass-500);
+  --st-indicted:     var(--brass-700);
+  --st-sanctioned:   var(--green-600);
+  --st-convicted:    var(--green-800);
+  --st-deceased:     var(--stone-400);
+
+  /* ============ TYPE — FAMILIES ============ */
+  --font-display: "Thmanyah Serif Display", "Times New Roman", serif;   /* headings */
+  --font-reading: "Thmanyah Serif Text", "Thmanyah Serif Display", serif; /* long-form reading */
+  --font-sans:    "Thmanyah Sans", system-ui, -apple-system, "Segoe UI", sans-serif; /* UI / body */
+  --font-mono:    "IBM Plex Mono", "SF Mono", ui-monospace, "Cascadia Code", monospace;
+
+  /* ============ TYPE — SCALE (rem, 1rem = 16px) ============ */
+  --text-xs:   0.75rem;   /* 12 — meta, source refs */
+  --text-sm:   0.875rem;  /* 14 — captions, labels */
+  --text-base: 1rem;      /* 16 — body min */
+  --text-md:   1.125rem;  /* 18 — comfortable body */
+  --text-lg:   1.375rem;  /* 22 — lead / card titles */
+  --text-xl:   1.75rem;   /* 28 — h3 */
+  --text-2xl:  2.25rem;   /* 36 — h2 */
+  --text-3xl:  3rem;      /* 48 — h1 */
+  --text-4xl:  4rem;      /* 64 — display */
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.35;
+  --leading-normal: 1.6;   /* Arabic body needs generous leading */
+  --leading-loose:  1.85;
+
+  --tracking-tight: -0.01em;
+  --tracking-wide:  0.04em;
+  --tracking-caps:  0.08em;  /* for Latin small-caps labels only */
+
+  /* ============ SPACING (4px base) ============ */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  /* ============ RADII — restrained, document-like ============ */
+  --radius-sm: 3px;
+  --radius:    6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* ============ ELEVATION — soft, low, paper-on-paper ============ */
+  --shadow-sm: 0 1px 2px rgba(27,26,22,0.05);
+  --shadow:    0 1px 3px rgba(27,26,22,0.06), 0 4px 12px rgba(27,26,22,0.05);
+  --shadow-md: 0 2px 6px rgba(27,26,22,0.07), 0 12px 28px rgba(27,26,22,0.07);
+  --inset-hair: inset 0 0 0 1px var(--border);
+
+  /* ============ MOTION — calm, no bounce ============ */
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur:      200ms;
+  --dur-slow: 320ms;
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT STYLES
+   Apply with the data-ds attribute or the matching class so the
+   tokens read as real typographic roles, not ad-hoc sizes.
+   ============================================================ */
+
+.ds-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg1);
+}
+.ds-h1 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-3xl); line-height: var(--leading-tight);  color: var(--fg1); }
+.ds-h2 { font-family: var(--font-display); font-weight: 700; font-size: var(--text-2xl); line-height: var(--leading-snug);  color: var(--fg1); }
+.ds-h3 { font-family: var(--font-display); font-weight: 500; font-size: var(--text-xl);  line-height: var(--leading-snug);  color: var(--fg1); }
+.ds-lead { font-family: var(--font-sans); font-weight: 400; font-size: var(--text-lg); line-height: var(--leading-normal); color: var(--fg2); }
+.ds-body { font-family: var(--font-sans); font-weight: 400; font-size: var(--text-md); line-height: var(--leading-normal); color: var(--fg1); }
+.ds-body-sm { font-family: var(--font-sans); font-weight: 400; font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--fg1); }
+.ds-caption { font-family: var(--font-sans); font-weight: 500; font-size: var(--text-sm); line-height: var(--leading-snug); color: var(--fg2); }
+.ds-meta { font-family: var(--font-sans); font-weight: 400; font-size: var(--text-xs); line-height: var(--leading-snug); color: var(--fg3); }
+/* Latin eyebrow / small-cap label. Arabic should NOT be letter-spaced or uppercased. */
+.ds-eyebrow:not(:lang(ar)) {
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--fg2);
+}
+.ds-eyebrow:lang(ar) { font-family: var(--font-sans); font-weight: 600; font-size: var(--text-sm); color: var(--fg2); }
+.ds-mono { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0; color: var(--fg2); }
+
+/* Arabic gets a touch more line-height and size for parity with Latin. */
+:lang(ar) { line-height: var(--leading-normal); }
+
+*:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

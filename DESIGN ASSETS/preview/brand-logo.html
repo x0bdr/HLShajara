@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; background:var(--bg); padding:0; font-family:var(--font-sans); }
+  .split { display:grid; grid-template-columns:1fr 1fr; min-height:240px; }
+  .pane { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; }
+  .on-paper { background:var(--paper); }
+  .on-green { background:var(--green-800); }
+  .seal { width:120px; height:120px; border-radius:50%; object-fit:cover; }
+  .on-green .seal { background:var(--paper); padding:6px; }
+  .cap { font-size:11.5px; color:var(--fg2); }
+  .on-green .cap { color:var(--green-200); }
+  .name { font-family:var(--font-display); font-size:20px; font-weight:700; }
+  .on-green .name { color:var(--on-green); }
+</style>
+</head>
+<body>
+  <div class="split">
+    <div class="pane on-paper">
+      <img class="seal" src="../assets/logo.jpeg" alt="Lastu Shajara seal">
+      <div class="name" style="color:var(--fg1)">حملة لستَ شجرة</div>
+      <div class="cap">Seal on warm paper — primary lockup</div>
+    </div>
+    <div class="pane on-green">
+      <img class="seal" src="../assets/logo.jpeg" alt="Lastu Shajara seal">
+      <div class="name">HLShajara</div>
+      <div class="cap">Reversed on deep green — never recolor the mark</div>
+    </div>
+  </div>
+</body>
+</html>
