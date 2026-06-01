@@ -15,7 +15,7 @@
   },
   "home": {
     "title": "HLShajara",
-    "subtitle": "Document · Account · Boycott",
+    "subtitle": "Civic Documentation & Accountability",
     "lead": "A civic platform preserving a documented record of crimes committed in Syria. We collect, verify, and publish publicly available evidence on named individuals and entities.",
     "stats": {
       "entries": "Documented Entries",
@@ -23,6 +23,10 @@
       "verdicts": "Court Verdicts"
     },
     "recordTitle": "Documented Record",
+    "principlesTitle": "Campaign Principles",
+    "principlesLead": "Six non-negotiable principles govern everything we do.",
+    "domainsTitle": "Documentation Domains",
+    "domainsLead": "We receive and verify evidence from multiple trusted sources.",
     "ctaTitle": "Do you have documented information?",
     "ctaText": "You can submit a documented report with sources. Every submission passes an automated filter and dual human review.",
     "ctaButton": "Submit Report"

@@ -3,7 +3,7 @@ export function generateStaticParams() {
 }
 
 import { getTranslations } from "next-intl/server";
-import { PageShell, HeroSection, StatsBar, ArchiveHome } from "@/components";
+import { PageShell, HeroSection, StatsBar, ArchiveHome, PrinciplesSection, DocumentationDomains, FoundingBanner } from "@/components";
 import type { Entity, SourceTier } from "@/lib/types";
 import Link from "next/link";
 import { db } from "@/db";
@@ -95,6 +95,9 @@ export default async function HomePage({
     <PageShell noPad>
       <HeroSection />
       <StatsBar entries={entryCount} sources={sourceCount} verdicts={verdictCount} />
+      <PrinciplesSection />
+      <DocumentationDomains />
+      <FoundingBanner />
 
       <section className="archive-section">
         <div className="archive-header">

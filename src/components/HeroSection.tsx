@@ -11,20 +11,20 @@ export function HeroSection() {
   const nav = useTranslations("nav");
 
   return (
-    <section className="hero">
+    <section className="hero hero-dramatic">
       <div className="hero-inner">
         <div className="hero-seal">
           <Image
             src="/logo.jpeg"
             alt="حملة لستَ شجرة"
-            width={120}
-            height={120}
+            width={160}
+            height={160}
             className="hero-seal-img"
             priority
           />
         </div>
-        <div className="hero-kicker">
-          {locale === "ar" ? "سجلّ موثَّق · مصادر دولية · مساءلة شعبية" : "Documented Record · International Sources · Civic Accountability"}
+        <div className="hero-badge">
+          {locale === "ar" ? "تأسست ٣٠ مايو ٢٠٢٦" : "Founded May 30, 2026"}
         </div>
         <h1 className="hero-title">
           {t("title")}
