@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { fontVars } from "../fonts";
+import { GtmScript, GtmNoScript } from "@/components/GtmScript";
 import "@/styles/tokens.css";
 import "@/components/hlshajara.css";
 
@@ -19,6 +20,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir} className={fontVars}>
+      <head>
+        <GtmScript />
+      </head>
       <body
         style={{
           margin: 0,
@@ -27,6 +31,7 @@ export default async function LocaleLayout({
           fontFamily: "var(--font-sans)",
         }}
       >
+        <GtmNoScript />
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>

@@ -1,74 +1,56 @@
-# Requirements — HLShajara v1.1 Hardening
+# Requirements — HLShajara v1.3 Outreach & Analytics
 
-Scope: Close operational gaps from v1.0, harden for production use with real data, complete reviewer workflow.
+Scope: Add a publications channel for campaign communications, enable Twitter/X social login for supporter engagement, and implement analytics via Google Tag Manager.
 
-## v1.1 Requirements
+## v1.3 Requirements
 
-### Authentication & Access (AUTH)
-- [x] **AUTH-01**: Staff authenticate with mandatory 2FA (TOTP via Better Auth twoFactor plugin)
-- [x] **AUTH-03**: Login UI page exists and works in both AR/EN
+### Publications (PUB)
+- [ ] **PUB-01**: Publications schema — `post` table with id, slug, title, excerpt, body (markdown/html), coverImageUrl, status (draft/published), locale (ar/en), publishedAt, createdAt, updatedAt, authorId
+- [ ] **PUB-02**: Public publications listing page (`/[locale]/publications`) — responsive card grid, sorted by publishedAt desc, filter by locale
+- [ ] **PUB-03**: Individual publication page (`/[locale]/publications/[slug]`) — full content rendering, cover image, back navigation, meta tags
+- [ ] **PUB-04**: Admin publication management in dashboard — create, edit, preview, publish, unpublish, delete (soft)
+- [ ] **PUB-05**: Publications i18n — each post has a locale; Arabic posts shown on /ar/publications, English on /en/publications
+- [ ] **PUB-06**: Publication slugs are unique per locale (same Arabic title can exist in both locales with different slugs)
 
-### Internal Draft & Boundary Engine (INTAKE)
-- [x] **INTAKE-02**: Draft validation auto-rejects with all 8 reason codes: GROUP_TARGET, NO_SOURCE, WEAK_SOURCE, PRIVATE_TARGETING, INNOCENT_PARTY, MISMATCH, HATE_TONE, INCITEMENT
-- [x] **INTAKE-04**: Rate limiting is distributed (PostgreSQL-backed) and covers all internal endpoints
-- [x] **INTAKE-05**: Uploaded files are scanned for malware (ClamAV wrapper) before storage
+### Social Authentication (AUTH)
+- [ ] **AUTH-04**: Twitter/X OAuth provider configured in Better Auth (clientId, clientSecret, callback URL)
+- [ ] **AUTH-05**: OAuth login button on login page — "Sign in with X" in AR/EN
+- [ ] **AUTH-06**: OAuth users get default role "submitter"; can complete profile (name) post-login
+- [ ] **AUTH-07**: Link/unlink social account in user profile (future-proofing)
 
-### Verification Pipeline (VERIFY)
-- [x] **VERIFY-01**: Reviewer console has structured triage fields: confirm named actor, specific conduct, assign category
-- [x] **VERIFY-02**: Reviewer verifies each source (exists, authentic, supports claim, credible tier) and captures snapshot/hash at verification time
-- [x] **VERIFY-03**: Two independent reviewers of distinct identities must agree, including explicit identity-resolution confirmation, before entry advances
-- [x] **VERIFY-04**: Legal/safety gate matches published phrasing to evidence-strength tier and re-checks privacy before publish
-
-### Legal Gate (LEGAL)
-- [x] **LEGAL-01**: Publish action correctly checks `isDeceased` status (read from submission, not hardcoded) before applying lawyer-sign-off requirement
-- [x] **LEGAL-02**: Operating jurisdiction + hosting decision is recorded as a gated Key Decision in the system
-
-### Public Record (RECORD)
-- [x] **RECORD-01**: Public record page exposes UI filters for status, type, and evidence strength
-- [x] **RECORD-03**: Public reads are served from a separate publish projection (materialized view SQL provided) — drafts never exposed
-
-### Right-of-Reply & Correction (REPLY)
-- [x] **REPLY-02**: Named party replies can be approved, corrected, or rejected by admin; corrections/unpublishes record reason in audit trail
-
-### Transparency (TRANS)
-- [x] **TRANS-01**: Public transparency dashboard shows aggregate published / rejected / corrected counts
-
-### Public Site (SITE)
-- [x] **SITE-02**: Dedicated anti-discrimination policy page exists in both AR/EN
-
-### Data & Operations (DATA)
-- [x] **DATA-05**: Real research data is seeded (seed script + dynamic homepage loads from DB)
+### Analytics (ANALYTICS)
+- [ ] **ANALYTICS-01**: Google Tag Manager container script injected in `<head>` via Next.js Script component (strategy="afterInteractive")
+- [ ] **ANALYTICS-02**: GTM ID configurable via `NEXT_PUBLIC_GTM_ID` env var; no-op if missing
+- [ ] **ANALYTICS-03**: Data layer events pushed for: page views (locale change), publication reads, submit button clicks, record filter usage
+- [ ] **ANALYTICS-04**: No PII (personally identifiable information) sent to GTM — only aggregate interaction events
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 10 | Done |
-| AUTH-03 | Phase 10 | Done |
-| INTAKE-02 | Phase 15 | Done |
-| INTAKE-04 | Phase 15 | Done |
-| INTAKE-05 | Phase 15 | Done |
-| VERIFY-01 | Phase 11 | Done |
-| VERIFY-02 | Phase 11 | Done |
-| VERIFY-03 | Phase 11 | Done |
-| VERIFY-04 | Phase 11 | Done |
-| LEGAL-01 | Phase 15 | Done |
-| LEGAL-02 | Phase 15 | Done |
-| RECORD-01 | Phase 12 | Done |
-| RECORD-03 | Phase 12 | Done |
-| REPLY-02 | Phase 13 | Done |
-| TRANS-01 | Phase 14 | Done |
-| SITE-02 | Phase 15 | Done |
-| DATA-05 | Phase 15 | Done |
+| PUB-01 | Phase 24 | Pending |
+| PUB-02 | Phase 24 | Pending |
+| PUB-03 | Phase 24 | Pending |
+| PUB-04 | Phase 25 | Pending |
+| PUB-05 | Phase 24 | Pending |
+| PUB-06 | Phase 24 | Pending |
+| AUTH-04 | Phase 26 | Pending |
+| AUTH-05 | Phase 26 | Pending |
+| AUTH-06 | Phase 26 | Pending |
+| AUTH-07 | Phase 26 | Pending |
+| ANALYTICS-01 | Phase 27 | Pending |
+| ANALYTICS-02 | Phase 27 | Pending |
+| ANALYTICS-03 | Phase 27 | Pending |
+| ANALYTICS-04 | Phase 27 | Pending |
 
-## Out of Scope (v1.1)
+## Out of Scope (v1.3)
 
-- Partner API (v2.0)
-- Export/citation tooling (v2.0)
-- AI-assisted triage classifier (v2.0)
-- Formal appeals process (v2.0)
-- Mobile app
-- Offline mode
+- Publication comments / discussion (broadcast-only for v1.3)
+- Publication email subscriptions / newsletter
+- Facebook/LinkedIn OAuth
+- Cookie consent banner (deferred until GDPR counsel review)
+- Publication RSS feed
+- Publication scheduled publishing (future)
 
 ---
-*Created: 2026-05-31 for v1.1 Hardening milestone*
+*Created: 2026-06-01 for v1.3 Outreach & Analytics milestone*

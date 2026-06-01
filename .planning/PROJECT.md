@@ -14,31 +14,26 @@ sanctions advocacy — while supporting victims and memory. It is bilingual (Ara
 Every published claim concerns a **named individual or entity** and is backed by a
 **credible public source**. No source, no publication. No group, no identity-based targeting.
 
-## Current Milestone: v1.2 Frontend Polish
+## Current Milestone: v1.3 Outreach & Analytics
 
-**Goal:** Fix all UI/UX gaps from the 6-pillar audit, unify the design language across all pages, and make the platform feel like a single coherent product.
+**Goal:** Expand platform reach with a publications channel, enable supporter engagement via social login, and implement analytics for evidence-based growth decisions.
 
 **Target features:**
-- Shared page shell (Header + Footer on all pages)
-- Dashboard redesign using design tokens only
-- Evidence card click-through to entity detail
-- Pagination for archive views
-- Loading skeletons and error states
-- Unified search/filter component
-- Mobile filter UX (collapsible sidebar)
-- Translation gap fixes
-- Typography consistency (remove inline styles)
-- Empty state design
-- Login UX improvements (show password, visible labels)
+- Publications page — curated posts, press releases, campaign statements in AR/EN
+- Twitter/X OAuth login — supporters can sign in with Twitter to show solidarity
+- Google Tag Manager — page-view, event, and conversion tracking
+- Admin publication editor — create, edit, schedule posts
+- Publication i18n — full Arabic/English content parity
 
 **Shipped:**
 - v1.0 Foundation (2026-05-31) — see `.planning/milestones/v1.0-ROADMAP.md`
 - v1.1 Hardening (2026-05-31) — all 17 requirements code-complete and deployed
+- v1.2 Frontend Polish (2026-06-01) — UI consistency, editorial redesign, homepage overhaul
 
 **Stack:** Next.js 16 + React 19 + TypeScript + Tailwind CSS + next-intl | PostgreSQL 16 +
 Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + PM2)
 
-**Codebase:** ~3,200 LOC TypeScript/React across 47 source files.
+**Codebase:** ~3,800 LOC TypeScript/React across 55+ source files.
 
 ## Requirements
 
@@ -76,20 +71,34 @@ Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + 
 - ✓ SITE-02 — Dedicated anti-discrimination policy page
 - ✓ DATA-05 — Real research data seeding
 
-### Active (v1.2)
+### Validated (v1.2)
 
-- [ ] **UI-01** — Shared page shell (Header + Footer on all pages)
-- [ ] **UI-02** — Dashboard redesign using design tokens only
-- [ ] **UI-03** — Evidence card click-through to entity detail
-- [ ] **UI-04** — Pagination for archive views
-- [ ] **UI-05** — Loading skeletons and error states
-- [ ] **UI-06** — Unified search/filter component shared between homepage and /record
-- [ ] **UI-07** — Mobile filter UX (collapsible sidebar)
-- [ ] **UI-08** — Translation gap fixes (status labels, filter notice, creeds)
-- [ ] **UI-09** — Typography consistency (remove inline styles, use .ds-* classes)
-- [ ] **UI-10** — Empty state design with CTA
-- [ ] **UI-11** — Stats bar empty state (show — instead of 0)
-- [ ] **UI-12** — Login UX improvements (show password, visible labels, error styling)
+- ✓ **UI-01** — Shared page shell (Header + Footer on all pages)
+- ✓ **UI-02** — Dashboard redesign using design tokens only
+- ✓ **UI-03** — Evidence card click-through to entity detail
+- ✓ **UI-04** — Pagination for archive views
+- ✓ **UI-05** — Loading skeletons and error states
+- ✓ **UI-06** — Unified search/filter component shared between homepage and /record
+- ✓ **UI-07** — Mobile filter UX (collapsible sidebar)
+- ✓ **UI-08** — Translation gap fixes (status labels, filter notice, creeds)
+- ✓ **UI-09** — Typography consistency (remove inline styles, use .ds-* classes)
+- ✓ **UI-10** — Empty state design with CTA
+- ✓ **UI-11** — Stats bar empty state (show — instead of 0)
+- ✓ **UI-12** — Login UX improvements (show password, visible labels, error styling)
+
+### Active (v1.3)
+
+- [ ] **PUB-01** — Publications schema + API (title, slug, body, excerpt, cover image, publishedAt, locale, status)
+- [ ] **PUB-02** — Public publications page (`/[locale]/publications`) with card grid
+- [ ] **PUB-03** — Individual publication page (`/[locale]/publications/[slug]`) with full content
+- [ ] **PUB-04** — Admin publication editor in dashboard (create, edit, publish, unpublish)
+- [ ] **PUB-05** — Publications i18n — full AR/EN content parity
+- [ ] **AUTH-04** — Twitter/X OAuth provider in Better Auth
+- [ ] **AUTH-05** — OAuth callback page and error handling
+- [ ] **AUTH-06** — Link/unlink social accounts in user profile
+- [ ] **ANALYTICS-01** — Google Tag Manager container script injection
+- [ ] **ANALYTICS-02** — Custom data-layer events (page view, submit click, publication read)
+- [ ] **ANALYTICS-03** — GTM ID configurable via env var
 
 ### Out of Scope
 
@@ -105,6 +114,10 @@ Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + 
 - AI-assisted triage classifier (v2.0)
 - Mobile app / PWA
 - Dark mode
+- Publication comments / discussion (out of scope — focus is broadcast not engagement)
+- Publication email subscriptions / newsletter (v2.0)
+- Facebook/LinkedIn OAuth (v2.0 — add if requested)
+- Cookie consent banner (deferred until GDPR counsel review)
 
 ## Context
 
@@ -138,7 +151,8 @@ Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + 
 | Phase 9 inserted post-audit | Close critical safety gaps inline | ✅ v1.0 |
 | Staging on test-sanad | Existing infrastructure; serverful deployment | ✅ v1.0 |
 | Email-OTP for 2FA (v1.1) | TOTP plugin unavailable in Better Auth v1.4.7 | ✅ v1.1 |
-| v1.2 = Frontend Polish milestone | UI audit score 16/24; user-facing inconsistency is blocking | — v1.2 |
+| v1.2 = Frontend Polish milestone | UI audit score 16/24; user-facing inconsistency is blocking | ✅ v1.2 |
+| v1.3 = Outreach & Analytics | Publications channel, social login, GTM for growth evidence | — v1.3 |
 
 ## Evolution
 

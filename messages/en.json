@@ -11,7 +11,8 @@
     "submit": "Submit Report",
     "reviewer": "Reviewer Console",
     "dashboard": "Transparency Dashboard",
-    "policy": "Anti-Discrimination Policy"
+    "policy": "Anti-Discrimination Policy",
+    "publications": "Publications"
   },
   "home": {
     "title": "HLShajara",
@@ -160,6 +161,13 @@
     "replyNone": "contact recorded · no statement filed",
     "replyFiled": "statement on file",
     "audited": "audited"
+  },
+  "publications": {
+    "title": "Publications",
+    "lead": "Campaign statements, reports, and verified updates.",
+    "empty": "No publications yet.",
+    "back": "Back to publications",
+    "readMore": "Read more"
   },
   "legal": {
     "title": "Legal Note",

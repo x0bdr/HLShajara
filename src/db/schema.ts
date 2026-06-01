@@ -100,6 +100,12 @@ export const reviewActionEnum = pgEnum("review_action", [
   "lawyer_sign_off",
 ]);
 
+export const postStatusEnum = pgEnum("post_status", [
+  "draft",
+  "published",
+  "archived",
+]);
+
 /* ---------- TABLES ---------- */
 
 export const entities = pgTable(
@@ -312,6 +318,31 @@ export const replies = pgTable(
       .defaultNow(),
   },
   (table) => [index("reply_entity_idx").on(table.entityId)]
+);
+
+/* ---------- PUBLICATIONS ---------- */
+
+export const posts = pgTable(
+  "posts",
+  {
+    id: serial("id").primaryKey(),
+    slug: varchar("slug", { length: 255 }).notNull(),
+    locale: varchar("locale", { length: 10 }).notNull().default("ar"),
+    status: postStatusEnum("status").notNull().default("draft"),
+    title: varchar("title", { length: 500 }).notNull(),
+    excerpt: text("excerpt"),
+    body: text("body").notNull(),
+    coverImageUrl: varchar("cover_image_url", { length: 2048 }),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    authorId: integer("author_id").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("post_slug_locale_idx").on(table.slug, table.locale),
+    index("post_status_locale_idx").on(table.status, table.locale),
+    index("post_published_at_idx").on(table.publishedAt),
+  ]
 );
 
 /* ---------- USERS (for Better Auth) ---------- */

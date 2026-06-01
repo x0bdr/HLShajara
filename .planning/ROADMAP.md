@@ -45,12 +45,19 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 - [x] **Phase 18: Filter UX & Mobile** — Extract shared FilterPanel, collapsible mobile filters, unify search/filter architecture
 - [x] **Phase 19: Copy & Polish** — Translation gaps, empty states, login UX, stats bar empty state, final build verification
 
+### 🚧 v1.3 Outreach & Analytics (In Progress)
+
+- [ ] **Phase 24: Publications System** — DB schema, public listing + detail pages, card grid, i18n routing
+- [ ] **Phase 25: Admin Publication Editor** — Dashboard CRUD for posts, WYSIWYG/markdown editor, publish/unpublish
+- [ ] **Phase 26: Social Authentication** — Twitter/X OAuth via Better Auth, login button, profile linking
+- [ ] **Phase 27: Analytics & GTM** — Google Tag Manager injection, data-layer events, env-based config
+
 ### 📋 v2.0 Scale (Future)
 
-- [ ] Phase 20: Partner API — Vetted organization access
-- [ ] Phase 21: Export & Citation — Journalist/lawyer/researcher tooling
-- [ ] Phase 22: AI-Assisted Triage — Arabic-dialect incitement classifier
-- [ ] Phase 23: Appeals Process — Formal appeals with SLA
+- [ ] Phase 28: Partner API — Vetted organization access
+- [ ] Phase 29: Export & Citation — Journalist/lawyer/researcher tooling
+- [ ] Phase 30: AI-Assisted Triage — Arabic-dialect incitement classifier
+- [ ] Phase 31: Appeals Process — Formal appeals with SLA
 
 ## Progress
 
@@ -77,3 +84,7 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 | 19. Copy & Polish | v1.2 | ✅ Complete | 2026-05-31 |
 | 19b. Editorial Redesign Pass 1 | v1.2 | ✅ Complete | 2026-05-31 |
 | 19c. Editorial Redesign Pass 2 | v1.2 | ✅ Complete | 2026-05-31 |
+| 24. Publications System | v1.3 | 🚧 In Progress | — |
+| 25. Admin Publication Editor | v1.3 | 🚧 In Progress | — |
+| 26. Social Authentication | v1.3 | 🚧 In Progress | — |
+| 27. Analytics & GTM | v1.3 | 🚧 In Progress | — |

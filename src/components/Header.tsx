@@ -21,6 +21,7 @@ export function Header() {
 
   const navLinks = [
     { href: "/record", label: t("record") },
+    { href: "/publications", label: t("publications") },
     { href: "/mission", label: t("mission") },
     { href: "/faq", label: t("faq") },
     { href: "/reply", label: t("reply") },
