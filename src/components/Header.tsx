@@ -35,7 +35,7 @@ export function Header() {
           <div className="site-logo-wrap">
             <Image
               src="/logo.jpeg"
-              alt="لست شجرة"
+              alt="حملة لستَ شجرة"
               width={44}
               height={44}
               className="site-logo"
@@ -43,7 +43,7 @@ export function Header() {
             />
           </div>
           <div className="site-brand-text">
-            <span className="site-brand-name">{locale === "ar" ? "لست شجرة" : "LST Shajara"}</span>
+            <span className="site-brand-name">{locale === "ar" ? "حملة لستَ شجرة" : "HLShajara"}</span>
             <span className="site-brand-tag">
               {locale === "ar" ? "منصّة توثيق ومساءلة" : "Civic Documentation"}
             </span>

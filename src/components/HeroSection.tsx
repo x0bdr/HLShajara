@@ -16,7 +16,7 @@ export function HeroSection() {
         <div className="hero-seal">
           <Image
             src="/logo.jpeg"
-            alt="لست شجرة"
+            alt="حملة لستَ شجرة"
             width={120}
             height={120}
             className="hero-seal-img"
