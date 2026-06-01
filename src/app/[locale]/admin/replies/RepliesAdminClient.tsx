@@ -50,40 +50,40 @@ export default function RepliesAdminClient() {
 
   return (
     <>
-      <div className="ds-h1" style={{ marginBottom: 24 }}>
-        {locale === "ar" ? "إدارة ردود الجهات" : "Reply Administration"}
-      </div>
-
       {replies.length === 0 ? (
-        <p className="ds-body" style={{ color: "var(--fg2)" }}>
-          {locale === "ar" ? "لا توجد ردود قيد الانتظار." : "No pending replies."}
-        </p>
+        <div className="card" style={{ padding: 40, textAlign: "center" }}>
+          <p className="ds-body" style={{ color: "var(--fg2)" }}>
+            {locale === "ar" ? "لا توجد ردود قيد الانتظار." : "No pending replies."}
+          </p>
+        </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="reviewer-grid">
           {replies.map((r) => (
-            <div key={r.id} className="card" style={{ padding: 16 }}>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
-                {r.entityName}
-              </div>
-              <div className="ds-caption" style={{ marginBottom: 8 }}>{r.email}</div>
-              <p className="ds-body-sm" style={{ marginBottom: 12 }}>{r.statement}</p>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button className="ds-btn-primary" onClick={() => setSelected(r)}>
+            <div key={r.id} className="reviewer-card">
+              <div className="rc-head">
+                <div>
+                  <div className="rc-name">{r.entityName}</div>
+                  <div className="rc-meta">{r.email}</div>
+                </div>
+                <button className="btn primary btn-sm" onClick={() => setSelected(r)}>
                   {locale === "ar" ? "معالجة" : "Process"}
                 </button>
               </div>
+              <p className="rc-desc">{r.statement}</p>
             </div>
           ))}
         </div>
       )}
 
       {selected && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 100 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}>
-          <div style={{ background: "var(--surface)", borderRadius: "var(--radius)", maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto", padding: 24 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}
+        >
+          <div className="modal-panel">
+            <div className="modal-header">
               <div className="ds-h2">{selected.entityName}</div>
-              <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--fg1)" }}>×</button>
+              <button onClick={() => setSelected(null)} className="modal-close">×</button>
             </div>
 
             <div style={{ marginBottom: 16 }}>
@@ -91,35 +91,37 @@ export default function RepliesAdminClient() {
               <p className="ds-body-sm" style={{ marginTop: 8 }}>{selected.statement}</p>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <strong>{locale === "ar" ? "ملاحظات الإدارة:" : "Admin Notes:"}</strong>
+            <div className="form-field" style={{ marginBottom: 16 }}>
+              <label>{locale === "ar" ? "ملاحظات الإدارة:" : "Admin Notes:"}</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                style={{ width: "100%", padding: "8px 12px", marginTop: 8, borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--fg1)", minHeight: 80 }}
+                className="ds-input"
+                style={{ minHeight: 80 }}
               />
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <strong>{locale === "ar" ? "نص التصحيح (للإجراء 'تصحيح'):" : "Correction Text (for 'correct' action):"}</strong>
+            <div className="form-field" style={{ marginBottom: 16 }}>
+              <label>{locale === "ar" ? "نص التصحيح:" : "Correction Text:"}</label>
               <textarea
                 value={correctionText}
                 onChange={(e) => setCorrectionText(e.target.value)}
-                style={{ width: "100%", padding: "8px 12px", marginTop: 8, borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--fg1)", minHeight: 80 }}
+                className="ds-input"
+                style={{ minHeight: 80 }}
               />
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button className="ds-btn-primary" onClick={() => act(selected.id, "approve")}>
+              <button className="btn primary" onClick={() => act(selected.id, "approve")}>
                 {locale === "ar" ? "اعتماد" : "Approve"}
               </button>
-              <button className="ds-btn-primary" onClick={() => act(selected.id, "correct", { correctionText })}>
+              <button className="btn primary" onClick={() => act(selected.id, "correct", { correctionText })}>
                 {locale === "ar" ? "تصحيح" : "Correct"}
               </button>
-              <button className="ds-btn-danger" onClick={() => act(selected.id, "reject")}>
+              <button className="btn danger" onClick={() => act(selected.id, "reject")}>
                 {locale === "ar" ? "رفض" : "Reject"}
               </button>
-              <button className="ds-btn-danger" onClick={() => act(selected.id, "unpublish")}>
+              <button className="btn danger" onClick={() => act(selected.id, "unpublish")}>
                 {locale === "ar" ? "إلغاء النشر" : "Unpublish"}
               </button>
             </div>

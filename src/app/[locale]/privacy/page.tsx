@@ -16,37 +16,29 @@ export default async function PrivacyPage({
 
   return (
     <PageShell narrow>
-      <div className="ds-h1" style={{ marginBottom: 16 }}>
-        {t("title")}
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
       </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("dataCollected")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("dataCollected")}</div>
         <p className="ds-body-sm">{t("dataCollectedText")}</p>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("howWeUse")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("howWeUse")}</div>
         <p className="ds-body-sm">{t("howWeUseText")}</p>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("cookies")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("cookies")}</div>
         <p className="ds-body-sm">{t("cookiesText")}</p>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("yourRights")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("yourRights")}</div>
         <p className="ds-body-sm">{t("yourRightsText")}</p>
-      </section>
+      </div>
 
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
     </PageShell>

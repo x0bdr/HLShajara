@@ -25,12 +25,12 @@ export default async function PolicyPage({
         <Link href={`/${locale}/faq`} className="btn ghost">{nav("faq")}</Link>
       </nav>
 
-      <header style={{ textAlign: "center", marginBottom: 40 }}>
-        <div className="ds-h1" style={{ marginBottom: 12 }}>{t("title")}</div>
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
         <p className="ds-lead">{t("lead")}</p>
-      </header>
+      </div>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <section style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div className="card" style={{ padding: 24 }}>
           <h2 className="ds-h3" style={{ marginBottom: 12 }}>{t("principle1Title")}</h2>
           <p className="ds-body">{t("principle1Text")}</p>

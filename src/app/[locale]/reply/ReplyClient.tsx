@@ -89,65 +89,35 @@ export default function ReplyPage() {
             </div>
           )}
 
-          <div>
-            <label className="ds-caption">{t("entityName")}</label>
+          <div className="form-field">
+            <label>{t("entityName")}</label>
             <input
               type="text"
               value={entityName}
               onChange={(e) => setEntityName(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: "var(--radius)",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--fg1)",
-                fontFamily: "var(--font-sans)",
-                fontSize: 14,
-                marginTop: 4,
-              }}
+              className="ds-input"
             />
           </div>
-          <div>
-            <label className="ds-caption">{t("contactEmail")}</label>
+          <div className="form-field">
+            <label>{t("contactEmail")}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: "var(--radius)",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--fg1)",
-                fontFamily: "var(--font-sans)",
-                fontSize: 14,
-                marginTop: 4,
-              }}
+              className="ds-input"
             />
           </div>
-          <div>
-            <label className="ds-caption">{t("statement")}</label>
+          <div className="form-field">
+            <label>{t("statement")}</label>
             <textarea
               value={statement}
               onChange={(e) => setStatement(e.target.value)}
               required
               rows={6}
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: "var(--radius)",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--fg1)",
-                fontFamily: "var(--font-sans)",
-                fontSize: 14,
-                marginTop: 4,
-                resize: "vertical",
-              }}
+              className="ds-input"
+              style={{ resize: "vertical" }}
             />
           </div>
           <Button variant="primary" type="submit" disabled={submitting}>

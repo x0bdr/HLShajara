@@ -61,6 +61,7 @@ async function getPublishedEntities(page = 1, limit = 20): Promise<{ entities: E
         allegations: entityAllegations as Entity["allegations"],
       });
     }
+
     const hasMore = rows.length > limit;
     return { entities: hasMore ? result.slice(0, limit) : result, hasMore };
   } catch (err) {
@@ -95,17 +96,22 @@ export default async function HomePage({
       <HeroSection />
       <StatsBar entries={entryCount} sources={sourceCount} verdicts={verdictCount} />
 
-      <div className="section-pad" style={{ paddingBlock: "24px 0" }}>
+      <section className="archive-section">
+        <div className="archive-header">
+          <h2 className="archive-title">{t("recordTitle")}</h2>
+          <p className="archive-lead">{t("lead")}</p>
+        </div>
+
         <div className="legal">
           <div className="t">{legal("title")}</div>
           <p>{legal("note")}</p>
         </div>
-      </div>
 
-      <ArchiveHome entities={published} showHeader={false} />
+        <div style={{ marginTop: 20 }}>
+          <ArchiveHome entities={published} showHeader={false} />
+        </div>
 
-      {/* Pagination */}
-      <div className="section-pad">
+        {/* Pagination */}
         <div className="pagination-bar">
           <Link href={`/${locale}?page=${Math.max(1, page - 1)}`}>
             <button className="btn secondary" disabled={page <= 1}>
@@ -121,7 +127,7 @@ export default async function HomePage({
             </button>
           </Link>
         </div>
-      </div>
+      </section>
 
       {/* Submit CTA */}
       <section className="cta-section">

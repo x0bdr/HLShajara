@@ -50,12 +50,10 @@ export default function RecordPage() {
 
   return (
     <>
-      <header style={{ textAlign: "center", marginBottom: 40 }}>
-        <div className="ds-h1" style={{ marginBottom: 8 }}>
-          {t("title")}
-        </div>
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
         <p className="ds-lead">{t("lead")}</p>
-      </header>
+      </div>
 
       <div style={{ marginBottom: 24 }}>
         <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
@@ -68,6 +66,7 @@ export default function RecordPage() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="ds-input"
+          style={{ fontSize: 15, padding: "12px 16px" }}
         />
       </div>
 
@@ -105,7 +104,9 @@ export default function RecordPage() {
           ))}
         </section>
       ) : entities.length === 0 ? (
-        <p className="ds-body empty-text">{t("empty")}</p>
+        <div className="card" style={{ padding: 48, textAlign: "center" }}>
+          <p className="ds-body" style={{ color: "var(--fg2)" }}>{t("empty")}</p>
+        </div>
       ) : (
         <>
           <section className="record-list">

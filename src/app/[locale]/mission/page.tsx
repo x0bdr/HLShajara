@@ -16,42 +16,30 @@ export default async function MissionPage({
 
   return (
     <PageShell narrow>
-      <div className="ds-h1" style={{ marginBottom: 16 }}>
-        {t("title")}
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
       </div>
 
-      <section style={{ marginBottom: 32 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("whatWeDo")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("whatWeDo")}</div>
         <p className="ds-body">{t("whatWeDoText")}</p>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 32 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("whatWeDont")}
-        </div>
-        <ul
-          style={{
-            paddingInlineStart: 20,
-            color: "var(--fg1)",
-            lineHeight: 1.7,
-          }}
-        >
+      <div className="form-section">
+        <div className="form-section-title">{t("whatWeDont")}</div>
+        <ul style={{ paddingInlineStart: 20, color: "var(--fg1)", lineHeight: 1.7 }}>
           <li>{t("dont1")}</li>
           <li>{t("dont2")}</li>
           <li>{t("dont3")}</li>
           <li>{t("dont4")}</li>
           <li>{t("dont5")}</li>
         </ul>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 32 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("codeOfConduct")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("codeOfConduct")}</div>
         <p className="ds-body">{t("codeOfConductText")}</p>
-      </section>
+      </div>
 
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
     </PageShell>

@@ -25,20 +25,17 @@ export default async function FAQPage({
 
   return (
     <PageShell narrow>
-      <div className="ds-h1" style={{ marginBottom: 24 }}>
-        {t("title")}
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         {faqs.map((faq, i) => (
-          <div key={i} className="card" style={{ padding: "16px 18px" }}>
-            <div className="ds-h3" style={{ marginBottom: 6 }}>
+          <div key={i} className="card" style={{ padding: "20px 22px" }}>
+            <div className="ds-h3" style={{ marginBottom: 8, lineHeight: 1.35 }}>
               {faq.q}
             </div>
-            <p
-              className="ds-body-sm"
-              style={{ color: "var(--fg2)", lineHeight: 1.6 }}
-            >
+            <p className="ds-body-sm" style={{ color: "var(--fg2)", lineHeight: 1.65 }}>
               {faq.a}
             </p>
           </div>

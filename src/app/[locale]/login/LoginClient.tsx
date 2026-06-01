@@ -13,6 +13,7 @@ export default function LoginClient() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [totpCode, setTotpCode] = useState("");
   const [needsTOTP, setNeedsTOTP] = useState(false);
   const [error, setError] = useState("");
@@ -37,19 +38,16 @@ export default function LoginClient() {
           return;
         }
 
-        // Check if 2FA is required
         if ((res.data as any)?.twoFactorRedirect) {
           setNeedsTOTP(true);
           setLoading(false);
           return;
         }
 
-        // Success — redirect
         window.location.href = redirectTo;
         return;
       }
 
-      // Verify TOTP
       const verifyRes = await fetch("/api/auth/two-factor/verify-totp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,7 +62,6 @@ export default function LoginClient() {
         return;
       }
 
-      // Success — redirect
       window.location.href = redirectTo;
     } catch (err) {
       setError(t("invalidCredentials"));
@@ -74,123 +71,88 @@ export default function LoginClient() {
 
   return (
     <>
-      <div className="page-header-center">
-        <div className="ds-h1">{t("title")}</div>
-      </div>
-
-      {error && (
-        <div
-          style={{
-            padding: "12px 16px",
-            marginBottom: 16,
-            borderRadius: "var(--radius)",
-            background: "rgba(220, 38, 38, 0.1)",
-            color: "#dc2626",
-            fontSize: 14,
-          }}
-        >
-          {error}
+      <div className="login-card">
+        <div className="page-header-center" style={{ marginBottom: 24 }}>
+          <div className="ds-h1">{t("title")}</div>
         </div>
-      )}
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        {!needsTOTP ? (
-          <>
-            <div>
-              <label style={{ display: "block", marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
-                {t("email")}
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: "var(--radius)",
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: "var(--fg1)",
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 14,
-                }}
-              />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
-                {t("password")}
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: "var(--radius)",
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: "var(--fg1)",
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 14,
-                }}
-              />
-            </div>
-          </>
-        ) : (
-          <div>
-            <label style={{ display: "block", marginBottom: 6, fontSize: 14, fontWeight: 600 }}>
-              {t("totpCode")}
-            </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={6}
-              value={totpCode}
-              onChange={(e) => setTotpCode(e.target.value)}
-              required
-              autoFocus
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: "var(--radius)",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--fg1)",
-                fontFamily: "var(--font-sans)",
-                fontSize: 14,
-                letterSpacing: 8,
-                textAlign: "center",
-              }}
-            />
-            <p className="ds-caption" style={{ marginTop: 8, color: "var(--fg2)" }}>
-              {t("totpRequired")}
-            </p>
+        {error && (
+          <div className="login-error">
+            {error}
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: "12px 20px",
-            borderRadius: "var(--radius)",
-            border: "none",
-            background: "var(--accent)",
-            color: "#fff",
-            fontFamily: "var(--font-sans)",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? t("redirecting") : t("submit")}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {!needsTOTP ? (
+            <>
+              <div className="form-field">
+                <label>{t("email")}</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="ds-input"
+                />
+              </div>
+              <div className="form-field">
+                <label>{t("password")}</label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="ds-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="btn secondary"
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    {showPassword
+                      ? (locale === "ar" ? "إخفاء" : "Hide")
+                      : (locale === "ar" ? "إظهار" : "Show")}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="form-field">
+              <label>{t("totpCode")}</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+                required
+                autoFocus
+                className="ds-input"
+                style={{ letterSpacing: 8, textAlign: "center" }}
+              />
+              <p className="ds-caption" style={{ marginTop: 8, color: "var(--fg2)" }}>
+                {t("totpRequired")}
+              </p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn primary"
+            style={{
+              justifyContent: "center",
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? t("redirecting") : t("submit")}
+          </button>
+        </form>
+      </div>
     </>
   );
 }

@@ -97,7 +97,6 @@ export default function SubmitPage() {
     }
 
     setUploadingFile(false);
-    // Reset input so the same file can be selected again
     e.target.value = "";
   }
 
@@ -141,17 +140,6 @@ export default function SubmitPage() {
     }
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 14px",
-    borderRadius: "var(--radius)",
-    border: "1px solid var(--border)",
-    background: "var(--surface)",
-    color: "var(--fg1)",
-    fontFamily: "var(--font-sans)",
-    fontSize: 14,
-  };
-
   return (
     <>
       <div className="page-header-center">
@@ -183,227 +171,204 @@ export default function SubmitPage() {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}
-      >
-        <div className="ds-h3">{t("aboutEntity")}</div>
-
-        <div>
-          <label className="ds-caption">{t("fullName")}</label>
-          <input
-            type="text"
-            value={form.entityName}
-            onChange={(e) => updateField("entityName", e.target.value)}
-            required
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <label className="ds-caption">{t("type")}</label>
-          <select
-            value={form.entityType}
-            onChange={(e) => updateField("entityType", e.target.value)}
-            style={inputStyle}
-          >
-            <option value="individual">{t("typeIndividual")}</option>
-            <option value="organization">{t("typeOrganization")}</option>
-            <option value="military_unit">{t("typeMilitaryUnit")}</option>
-            <option value="security_branch">{t("typeSecurityBranch")}</option>
-            <option value="official_body">{t("typeOfficialBody")}</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="ds-caption">{t("role")}</label>
-          <input
-            type="text"
-            value={form.entityRole}
-            onChange={(e) => updateField("entityRole", e.target.value)}
-            required
-            style={inputStyle}
-          />
-        </div>
-
-        <div className="ds-h3" style={{ marginTop: 8 }}>
-          {t("aboutAllegation")}
-        </div>
-
-        <div>
-          <label className="ds-caption">{t("description")}</label>
-          <textarea
-            value={form.allegationDescription}
-            onChange={(e) =>
-              updateField("allegationDescription", e.target.value)
-            }
-            required
-            rows={4}
-            style={{ ...inputStyle, resize: "vertical" }}
-          />
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-          }}
-        >
-          <div>
-            <label className="ds-caption">{t("period")}</label>
+      <form onSubmit={handleSubmit} style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 0 }}>
+        {/* About Entity */}
+        <div className="form-section">
+          <div className="form-section-title">{t("aboutEntity")}</div>
+          <div className="form-field">
+            <label>{t("fullName")}</label>
             <input
               type="text"
-              value={form.allegationPeriod}
-              onChange={(e) => updateField("allegationPeriod", e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label className="ds-caption">{t("location")}</label>
-            <input
-              type="text"
-              value={form.allegationLocation}
-              onChange={(e) =>
-                updateField("allegationLocation", e.target.value)
-              }
-              style={inputStyle}
-            />
-          </div>
-        </div>
-
-        <div className="ds-h3" style={{ marginTop: 8 }}>
-          {t("sources")}
-        </div>
-        {form.sourceLinks.map((link, i) => (
-          <div key={i} style={{ display: "flex", gap: 8 }}>
-            <input
-              type="url"
-              placeholder={t("sourceLink")}
-              value={link.url}
-              onChange={(e) => updateLink(i, "url", e.target.value)}
+              value={form.entityName}
+              onChange={(e) => updateField("entityName", e.target.value)}
               required
-              style={{ ...inputStyle, flex: 2 }}
-            />
-            <input
-              type="text"
-              placeholder={t("sourceTitle")}
-              value={link.title}
-              onChange={(e) => updateLink(i, "title", e.target.value)}
-              style={{ ...inputStyle, flex: 1 }}
+              className="ds-input"
             />
           </div>
-        ))}
-        <button
-          type="button"
-          onClick={addLink}
-          className="btn ghost"
-          style={{ alignSelf: "flex-start" }}
-        >
-          + {t("addSource")}
-        </button>
-
-        {/* File uploads */}
-        <div>
-          <label className="ds-caption">{t("uploadFile")}</label>
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            disabled={uploadingFile}
-            style={{
-              ...inputStyle,
-              padding: "8px 14px",
-              cursor: uploadingFile ? "not-allowed" : "pointer",
-            }}
-          />
-          {uploadingFile && (
-            <p className="ds-caption" style={{ marginTop: 4 }}>
-              {t("uploading")}
-            </p>
-          )}
-          {form.sourceFiles.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-              {form.sourceFiles.map((file, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "8px 12px",
-                    background: "var(--surface)",
-                    borderRadius: "var(--radius)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <span className="ds-body-sm">
-                    {file.originalName} ({(file.size / 1024).toFixed(1)} KB)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(i)}
-                    className="btn ghost"
-                    style={{ padding: "4px 8px", fontSize: 12 }}
-                  >
-                    {t("removeFile")}
-                  </button>
-                </div>
-              ))}
+          <div className="form-row">
+            <div className="form-field">
+              <label>{t("type")}</label>
+              <select
+                value={form.entityType}
+                onChange={(e) => updateField("entityType", e.target.value)}
+                className="ds-input"
+              >
+                <option value="individual">{t("typeIndividual")}</option>
+                <option value="organization">{t("typeOrganization")}</option>
+                <option value="military_unit">{t("typeMilitaryUnit")}</option>
+                <option value="security_branch">{t("typeSecurityBranch")}</option>
+                <option value="official_body">{t("typeOfficialBody")}</option>
+              </select>
             </div>
-          )}
-        </div>
-
-        <div className="ds-h3" style={{ marginTop: 8 }}>
-          {t("yourInfo")}
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-          }}
-        >
-          <div>
-            <label className="ds-caption">{t("email")}</label>
-            <input
-              type="email"
-              value={form.submitterEmail}
-              onChange={(e) =>
-                updateField("submitterEmail", e.target.value)
-              }
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label className="ds-caption">{t("name")}</label>
-            <input
-              type="text"
-              value={form.submitterName}
-              onChange={(e) =>
-                updateField("submitterName", e.target.value)
-              }
-              style={inputStyle}
-            />
+            <div className="form-field">
+              <label>{t("role")}</label>
+              <input
+                type="text"
+                value={form.entityRole}
+                onChange={(e) => updateField("entityRole", e.target.value)}
+                required
+                className="ds-input"
+              />
+            </div>
           </div>
         </div>
 
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            cursor: "pointer",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={form.isAnonymous}
-            onChange={(e) => updateField("isAnonymous", e.target.checked)}
-          />
-          <span className="ds-body-sm">{t("anonymous")}</span>
-        </label>
+        {/* About Allegation */}
+        <div className="form-section">
+          <div className="form-section-title">{t("aboutAllegation")}</div>
+          <div className="form-field">
+            <label>{t("description")}</label>
+            <textarea
+              value={form.allegationDescription}
+              onChange={(e) => updateField("allegationDescription", e.target.value)}
+              required
+              rows={4}
+              className="ds-input"
+              style={{ resize: "vertical" }}
+            />
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label>{t("period")}</label>
+              <input
+                type="text"
+                value={form.allegationPeriod}
+                onChange={(e) => updateField("allegationPeriod", e.target.value)}
+                className="ds-input"
+              />
+            </div>
+            <div className="form-field">
+              <label>{t("location")}</label>
+              <input
+                type="text"
+                value={form.allegationLocation}
+                onChange={(e) => updateField("allegationLocation", e.target.value)}
+                className="ds-input"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Sources */}
+        <div className="form-section">
+          <div className="form-section-title">{t("sources")}</div>
+          {form.sourceLinks.map((link, i) => (
+            <div key={i} className="form-row" style={{ marginBottom: 10 }}>
+              <input
+                type="url"
+                placeholder={t("sourceLink")}
+                value={link.url}
+                onChange={(e) => updateLink(i, "url", e.target.value)}
+                required
+                className="ds-input"
+              />
+              <input
+                type="text"
+                placeholder={t("sourceTitle")}
+                value={link.title}
+                onChange={(e) => updateLink(i, "title", e.target.value)}
+                className="ds-input"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addLink}
+            className="btn ghost"
+            style={{ alignSelf: "flex-start" }}
+          >
+            + {t("addSource")}
+          </button>
+
+          {/* File uploads */}
+          <div className="form-field" style={{ marginTop: 20 }}>
+            <label>{t("uploadFile")}</label>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              disabled={uploadingFile}
+              className="ds-input"
+              style={{ padding: "8px 14px", cursor: uploadingFile ? "not-allowed" : "pointer" }}
+            />
+            {uploadingFile && (
+              <p className="ds-caption" style={{ marginTop: 4 }}>
+                {t("uploading")}
+              </p>
+            )}
+            {form.sourceFiles.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                {form.sourceFiles.map((file, i) => (
+                  <div
+                    key={i}
+                    className="card"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "8px 12px",
+                    }}
+                  >
+                    <span className="ds-body-sm">
+                      {file.originalName} ({(file.size / 1024).toFixed(1)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="btn ghost"
+                      style={{ padding: "4px 8px", fontSize: 12 }}
+                    >
+                      {t("removeFile")}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Your Info */}
+        <div className="form-section">
+          <div className="form-section-title">{t("yourInfo")}</div>
+          <div className="form-row">
+            <div className="form-field">
+              <label>{t("email")}</label>
+              <input
+                type="email"
+                value={form.submitterEmail}
+                onChange={(e) => updateField("submitterEmail", e.target.value)}
+                className="ds-input"
+              />
+            </div>
+            <div className="form-field">
+              <label>{t("name")}</label>
+              <input
+                type="text"
+                value={form.submitterName}
+                onChange={(e) => updateField("submitterName", e.target.value)}
+                className="ds-input"
+              />
+            </div>
+          </div>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+              fontSize: 14,
+              color: "var(--fg1)",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={form.isAnonymous}
+              onChange={(e) => updateField("isAnonymous", e.target.checked)}
+            />
+            <span>{t("anonymous")}</span>
+          </label>
+        </div>
 
         <Button variant="primary" type="submit" disabled={submitting}>
           {submitting ? t("submitting") : t("submitButton")}

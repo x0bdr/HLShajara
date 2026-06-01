@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { PageShell, SkeletonCard } from "@/components";
+import { PageShell } from "@/components";
 
 interface Stats {
   published: number;
@@ -62,7 +62,9 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <p className="ds-body empty-text">{t("empty")}</p>
+        <div className="card" style={{ padding: 40, textAlign: "center" }}>
+          <p className="ds-body" style={{ color: "var(--fg2)" }}>{t("empty")}</p>
+        </div>
       )}
     </PageShell>
   );

@@ -16,30 +16,24 @@ export default async function TermsPage({
 
   return (
     <PageShell narrow>
-      <div className="ds-h1" style={{ marginBottom: 16 }}>
-        {t("title")}
+      <div className="page-header-center">
+        <div className="ds-h1">{t("title")}</div>
       </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("nature")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("nature")}</div>
         <p className="ds-body-sm">{t("natureText")}</p>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("allowedUse")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("allowedUse")}</div>
         <p className="ds-body-sm">{t("allowedUseText")}</p>
-      </section>
+      </div>
 
-      <section style={{ marginBottom: 24 }}>
-        <div className="ds-h3" style={{ marginBottom: 8 }}>
-          {t("disclaimer")}
-        </div>
+      <div className="form-section">
+        <div className="form-section-title">{t("disclaimer")}</div>
         <p className="ds-body-sm">{t("disclaimerText")}</p>
-      </section>
+      </div>
 
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
     </PageShell>
