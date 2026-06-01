@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { TIER_LABELS } from "@/lib/labels";
 
 interface SourceLink {
   url: string;
@@ -102,11 +103,11 @@ export default function ReviewerPage() {
 
   return (
     <>
-      <div className="ds-h1" style={{ marginBottom: 24 }}>{t("title")}</div>
+      <div className="ds-h1 mb-24">{t("title")}</div>
 
       {submissions.length === 0 ? (
-        <div className="card" style={{ padding: 40, textAlign: "center" }}>
-          <p className="ds-body" style={{ color: "var(--fg2)" }}>{t("empty")}</p>
+        <div className="card empty-state">
+          <p className="ds-body text-fg2">{t("empty")}</p>
         </div>
       ) : (
         <div className="reviewer-grid">
@@ -115,14 +116,14 @@ export default function ReviewerPage() {
               <div className="rc-head">
                 <div>
                   <div className="rc-name">{s.entityName}</div>
-                  <div className="rc-meta">{s.entityRole} · {s.entityType} · <span style={{ textTransform: "uppercase", fontWeight: 600 }}>{s.status}</span></div>
+                  <div className="rc-meta">{s.entityRole} · {s.entityType} · <span className="font-semibold">{s.status}</span></div>
                 </div>
                 <button className="btn primary btn-sm" onClick={() => setSelected(s)}>
                   {locale === "ar" ? "مراجعة" : "Review"}
                 </button>
               </div>
               <div className="rc-desc">{s.allegationDescription}</div>
-              <div className="ds-meta" style={{ marginBottom: 0 }}>
+              <div className="ds-meta mb-0">
                 {t("sources")}: {Array.isArray(s.sourceLinks) ? s.sourceLinks.length : 0}
               </div>
             </div>
@@ -142,12 +143,12 @@ export default function ReviewerPage() {
             </div>
 
             {/* Triage Form */}
-            <section className="form-section" style={{ marginBottom: 20 }}>
-              <div className="form-section-title" style={{ fontSize: "var(--text-lg)" }}>
+            <section className="form-section mb-20">
+              <div className="form-section-title">
                 {locale === "ar" ? "الفلترة المنظمة" : "Structured Triage"}
               </div>
 
-              <label className="form-field" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 14, cursor: "pointer" }}>
+              <label className="form-field flex-between gap-8 mb-8" style={{ fontSize: 14, cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   checked={selected.triageConfirmedActor ?? false}
@@ -156,7 +157,7 @@ export default function ReviewerPage() {
                 {locale === "ar" ? "تم تأكيد هوية الفاعل" : "Actor identity confirmed"}
               </label>
 
-              <label className="form-field" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 14, cursor: "pointer" }}>
+              <label className="form-field flex-between gap-8 mb-8" style={{ fontSize: 14, cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   checked={selected.triageConfirmedConduct ?? false}
@@ -165,7 +166,7 @@ export default function ReviewerPage() {
                 {locale === "ar" ? "تم تأكيد السلوك المحدد" : "Specific conduct confirmed"}
               </label>
 
-              <label className="form-field" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 14, cursor: "pointer" }}>
+              <label className="form-field flex-between gap-8 mb-8" style={{ fontSize: 14, cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   checked={selected.identityResolutionConfirmed ?? false}
@@ -175,7 +176,7 @@ export default function ReviewerPage() {
               </label>
 
               <div className="form-field">
-                <label style={{ display: "block", marginBottom: 4, fontSize: 14, fontWeight: 600 }}>
+                <label className="block-label mb-4" style={{ fontSize: 14, fontWeight: 600 }}>
                   {locale === "ar" ? "التصنيف" : "Category"}
                 </label>
                 <input
@@ -189,14 +190,14 @@ export default function ReviewerPage() {
             </section>
 
             {/* Source Verification */}
-            <section className="form-section" style={{ marginBottom: 20 }}>
-              <div className="form-section-title" style={{ fontSize: "var(--text-lg)" }}>
+            <section className="form-section mb-20">
+              <div className="form-section-title">
                 {locale === "ar" ? "التحقق من المصادر" : "Source Verification"}
               </div>
               {(selected.sourceLinks ?? []).map((link, i) => (
                 <div key={i} className="card" style={{ padding: 12, marginBottom: 8 }}>
                   <div className="ds-body-sm" style={{ marginBottom: 8, wordBreak: "break-all" }}>
-                    <a href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>{link.title || link.url}</a>
+                    <a href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--brand)" }}>{link.title || link.url}</a>
                   </div>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer" }}>
@@ -221,9 +222,9 @@ export default function ReviewerPage() {
                       className="ds-select"
                       style={{ padding: "4px 8px" }}
                     >
-                      <option value="A">Tier A</option>
-                      <option value="B">Tier B</option>
-                      <option value="C">Tier C</option>
+                      <option value="A">{TIER_LABELS[locale as "ar" | "en"]["A"]}</option>
+                      <option value="B">{TIER_LABELS[locale as "ar" | "en"]["B"]}</option>
+                      <option value="C">{TIER_LABELS[locale as "ar" | "en"]["C"]}</option>
                     </select>
                   </div>
                   <div style={{ marginTop: 8 }}>
@@ -244,13 +245,13 @@ export default function ReviewerPage() {
             </section>
 
             {/* Evidence & Privacy */}
-            <section className="form-section" style={{ marginBottom: 20 }}>
-              <div className="form-section-title" style={{ fontSize: "var(--text-lg)" }}>
+            <section className="form-section mb-20">
+              <div className="form-section-title">
                 {locale === "ar" ? "البوابة القانونية/الأمنية" : "Legal/Safety Gate"}
               </div>
 
               <div className="form-field">
-                <label style={{ display: "block", marginBottom: 4, fontSize: 14, fontWeight: 600 }}>
+                <label className="block-label mb-4" style={{ fontSize: 14, fontWeight: 600 }}>
                   {locale === "ar" ? "قوة الأدلة" : "Evidence Strength"}
                 </label>
                 <select

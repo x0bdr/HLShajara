@@ -27,7 +27,7 @@ export default async function MissionPage({
 
       <div className="form-section">
         <div className="form-section-title">{t("whatWeDont")}</div>
-        <ul style={{ paddingInlineStart: 20, color: "var(--fg1)", lineHeight: 1.7 }}>
+        <ul className="list-pad">
           <li>{t("dont1")}</li>
           <li>{t("dont2")}</li>
           <li>{t("dont3")}</li>

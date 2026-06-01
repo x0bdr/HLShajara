@@ -107,7 +107,7 @@ export default async function HomePage({
           <p>{legal("note")}</p>
         </div>
 
-        <div style={{ marginTop: 20 }}>
+        <div className="mt-20">
           <ArchiveHome entities={published} showHeader={false} />
         </div>
 
@@ -118,7 +118,7 @@ export default async function HomePage({
               {locale === "ar" ? "السابق" : "Previous"}
             </button>
           </Link>
-          <span className="ds-body-sm" style={{ color: "var(--fg2)" }}>
+          <span className="ds-body-sm text-fg2">
             {locale === "ar" ? `الصفحة ${page}` : `Page ${page}`}
           </span>
           <Link href={`/${locale}?page=${page + 1}`}>

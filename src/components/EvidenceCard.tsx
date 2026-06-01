@@ -1,7 +1,7 @@
 "use client";
 
 import type { Entity, Lang } from "@/lib/types";
-import { TYPE_LABELS } from "@/lib/labels";
+import { TYPE_LABELS, TIER_LABELS } from "@/lib/labels";
 import { EvidenceStrength } from "./EvidenceStrength";
 import { StatusBadge } from "./StatusBadge";
 import { useTranslations } from "next-intl";
@@ -40,7 +40,7 @@ export function EvidenceCard({
         <EvidenceStrength level={entity.evidence} lang={lang} />
       </div>
       <div className="body">
-        <div style={{ marginBottom: 10 }}>
+        <div className="mb-10">
           <StatusBadge status={entity.status} lang={lang} />
         </div>
         <div className="alle">{a?.description ?? "—"}</div>
@@ -49,7 +49,7 @@ export function EvidenceCard({
             {labels("sources")} · {nSrc}
           </span>
           <span className="tiers">
-            {a?.sources.map((s) => `Tier ${s.tier}`).join(" · ") ?? ""}
+            {a?.sources.map((s) => TIER_LABELS[lang][s.tier]).join(" · ") ?? ""}
           </span>
         </div>
       </div>

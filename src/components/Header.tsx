@@ -36,8 +36,8 @@ export function Header() {
             <Image
               src="/logo.jpeg"
               alt="حملة لستَ شجرة"
-              width={44}
-              height={44}
+              width={42}
+              height={42}
               className="site-logo"
               priority
             />

@@ -19,7 +19,7 @@ export default async function PolicyPage({
 
   return (
     <PageShell narrow>
-      <nav style={{ display: "flex", gap: 16, marginBottom: 32, flexWrap: "wrap", justifyContent: "center" }}>
+      <nav className="flex-between mb-32 gap-16 flex-wrap justify-center">
         <Link href={`/${locale}`} className="btn ghost">{nav("record")}</Link>
         <Link href={`/${locale}/mission`} className="btn ghost">{nav("mission")}</Link>
         <Link href={`/${locale}/faq`} className="btn ghost">{nav("faq")}</Link>
@@ -30,29 +30,29 @@ export default async function PolicyPage({
         <p className="ds-lead">{t("lead")}</p>
       </div>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="card" style={{ padding: 24 }}>
-          <h2 className="ds-h3" style={{ marginBottom: 12 }}>{t("principle1Title")}</h2>
+      <section className="flex-col gap-16">
+        <div className="card card-pad">
+          <h2 className="ds-h3 mb-12">{t("principle1Title")}</h2>
           <p className="ds-body">{t("principle1Text")}</p>
         </div>
 
-        <div className="card" style={{ padding: 24 }}>
-          <h2 className="ds-h3" style={{ marginBottom: 12 }}>{t("principle2Title")}</h2>
+        <div className="card card-pad">
+          <h2 className="ds-h3 mb-12">{t("principle2Title")}</h2>
           <p className="ds-body">{t("principle2Text")}</p>
         </div>
 
-        <div className="card" style={{ padding: 24 }}>
-          <h2 className="ds-h3" style={{ marginBottom: 12 }}>{t("principle3Title")}</h2>
+        <div className="card card-pad">
+          <h2 className="ds-h3 mb-12">{t("principle3Title")}</h2>
           <p className="ds-body">{t("principle3Text")}</p>
         </div>
 
-        <div className="card" style={{ padding: 24 }}>
-          <h2 className="ds-h3" style={{ marginBottom: 12 }}>{t("principle4Title")}</h2>
+        <div className="card card-pad">
+          <h2 className="ds-h3 mb-12">{t("principle4Title")}</h2>
           <p className="ds-body">{t("principle4Text")}</p>
         </div>
 
-        <div className="card" style={{ padding: 24 }}>
-          <h2 className="ds-h3" style={{ marginBottom: 12 }}>{t("enforcementTitle")}</h2>
+        <div className="card card-pad">
+          <h2 className="ds-h3 mb-12">{t("enforcementTitle")}</h2>
           <p className="ds-body">{t("enforcementText")}</p>
         </div>
       </section>

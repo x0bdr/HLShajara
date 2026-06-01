@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { EvidenceStrength, StatusBadge, LegalNote, SkeletonCard } from "@/components";
-import { TYPE_LABELS, STATUS_LABELS, EVIDENCE_LABELS } from "@/lib/labels";
+import { TYPE_LABELS, STATUS_LABELS, EVIDENCE_LABELS, TIER_LABELS } from "@/lib/labels";
 import type { Entity, Lang } from "@/lib/types";
 
 export default function EntityDetailClient({ id }: { id: string }) {
@@ -29,7 +29,7 @@ export default function EntityDetailClient({ id }: { id: string }) {
     return (
       <>
         <SkeletonCard />
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-16">
           <SkeletonCard />
         </div>
       </>
@@ -38,8 +38,8 @@ export default function EntityDetailClient({ id }: { id: string }) {
 
   if (!entity) {
     return (
-      <div className="card" style={{ padding: 40, textAlign: "center" }}>
-        <p className="ds-body" style={{ color: "var(--fg2)" }}>{t("notFound")}</p>
+      <div className="card empty-state">
+        <p className="ds-body text-fg2">{t("notFound")}</p>
       </div>
     );
   }
@@ -47,19 +47,13 @@ export default function EntityDetailClient({ id }: { id: string }) {
   return (
     <>
       {/* Case File Header */}
-      <div className="card" style={{ marginBottom: 24 }}>
-        <div style={{ padding: "22px 24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+      <div className="card mb-24">
+        <div className="case-header">
+          <div className="flex-between-start gap-16 flex-wrap mb-16">
             <div style={{ minWidth: 0 }}>
-              <div className="ds-h1" style={{ marginBottom: 6, lineHeight: 1.2 }}>
-                {entity.name}
-              </div>
-              <div style={{ fontFamily: "var(--font-sans)", fontSize: 15, color: "var(--fg2)" }}>
-                {entity.role} · {TYPE_LABELS[lang][entity.type]}
-              </div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg3)", marginTop: 8 }}>
-                {entity.id}
-              </div>
+              <div className="ds-h1 case-title">{entity.name}</div>
+              <div className="case-role">{entity.role} · {TYPE_LABELS[lang][entity.type]}</div>
+              <div className="case-id">{entity.id}</div>
             </div>
             <EvidenceStrength level={entity.evidence} lang={lang} />
           </div>
@@ -89,8 +83,8 @@ export default function EntityDetailClient({ id }: { id: string }) {
 
       {/* Allegations */}
       {entity.allegations.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <div className="ds-h3" style={{ marginBottom: 14, paddingInline: 4 }}>
+        <div className="mb-24">
+          <div className="ds-h3 mb-14" style={{ paddingInline: 4 }}>
             {locale === "ar" ? "الادّعاءات" : "Allegations"}
           </div>
           {entity.allegations.map((a, i) => (
@@ -110,9 +104,7 @@ function AllegationCard({ allegation, index, lang }: { allegation: Entity["alleg
       <div className="alle-header">
         <span className="mark">#{index + 1}</span>
         {allegation.classification && (
-          <span style={{ fontFamily: "var(--font-sans)", fontSize: 12, color: "var(--fg2)" }}>
-            {allegation.classification}
-          </span>
+          <span className="meta-label-static">{allegation.classification}</span>
         )}
       </div>
       <div className="alle-desc">{allegation.description}</div>
@@ -125,11 +117,11 @@ function AllegationCard({ allegation, index, lang }: { allegation: Entity["alleg
         <div className="alle-sources">
           <div className="alle-sources-title">{lang === "ar" ? "المصادر" : "Sources"}</div>
           {allegation.sources.map((s, j) => (
-            <div key={j} className="cite" style={{ marginBottom: 10 }}>
-              <span className="mark">Tier {s.tier}</span>
+            <div key={j} className="cite mb-10">
+              <span className="mark">{TIER_LABELS[lang][s.tier]}</span>
               <div>
                 {s.url ? (
-                  <a href={s.url} target="_blank" rel="noreferrer" className="ctxt" style={{ color: "var(--brand)", textDecoration: "none", borderBottom: "1px solid var(--green-200)" }}>
+                  <a href={s.url} target="_blank" rel="noreferrer" className="ctxt source-link">
                     {s.title}
                   </a>
                 ) : (

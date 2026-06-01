@@ -143,11 +143,7 @@ export default function LoginClient() {
             type="submit"
             disabled={loading}
             className="btn primary"
-            style={{
-              justifyContent: "center",
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
+            style={{ justifyContent: "center" }}
           >
             {loading ? t("redirecting") : t("submit")}
           </button>

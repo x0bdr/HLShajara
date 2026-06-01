@@ -65,4 +65,9 @@ export const TYPE_LABELS: Record<Lang, Record<EntityType, string>> = {
   },
 };
 
+export const TIER_LABELS: Record<Lang, Record<string, string>> = {
+  en: { A: 'Tier A', B: 'Tier B', C: 'Tier C' },
+  ar: { A: 'المستوى أ', B: 'المستوى ب', C: 'المستوى ج' },
+};
+
 export const dirFor = (lang: Lang) => (lang === 'ar' ? 'rtl' : 'ltr');

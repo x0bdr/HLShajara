@@ -65,8 +65,7 @@ export default function RecordPage() {
           placeholder={t("searchPlaceholder")}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="ds-input"
-          style={{ fontSize: 15, padding: "12px 16px" }}
+          className="archive-search"
         />
       </div>
 
@@ -104,8 +103,8 @@ export default function RecordPage() {
           ))}
         </section>
       ) : entities.length === 0 ? (
-        <div className="card" style={{ padding: 48, textAlign: "center" }}>
-          <p className="ds-body" style={{ color: "var(--fg2)" }}>{t("empty")}</p>
+        <div className="card empty-state-lg">
+          <p className="ds-body text-fg2">{t("empty")}</p>
         </div>
       ) : (
         <>

@@ -51,40 +51,15 @@ export default function ReplyPage() {
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
 
       {submitted ? (
-        <div
-          className="legal"
-          style={{
-            marginTop: 24,
-            borderColor: "var(--green-500)",
-            background: "var(--green-50)",
-          }}
-        >
-          <div className="t" style={{ color: "var(--green-700)" }}>
-            {t("successTitle")}
-          </div>
+        <div className="legal legal-success mt-24">
+          <div className="t">{t("successTitle")}</div>
           <p>{t("successText")}</p>
         </div>
       ) : (
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            marginTop: 24,
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
+        <form onSubmit={handleSubmit} className="flex-col gap-16 mt-24">
           {result && !result.ok && (
-            <div
-              className="legal"
-              style={{
-                borderColor: "var(--brick-500)",
-                background: "var(--brick-100)",
-              }}
-            >
-              <div className="t" style={{ color: "var(--brick-700)" }}>
-                Error
-              </div>
+            <div className="legal legal-error">
+              <div className="t">Error</div>
               <p>{result.message}</p>
             </div>
           )}

@@ -62,8 +62,8 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : (
-        <div className="card" style={{ padding: 40, textAlign: "center" }}>
-          <p className="ds-body" style={{ color: "var(--fg2)" }}>{t("empty")}</p>
+        <div className="card empty-state">
+          <p className="ds-body text-fg2">{t("empty")}</p>
         </div>
       )}
     </PageShell>

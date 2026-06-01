@@ -141,8 +141,8 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
       </div>
       <div className="archive-grid">
         {filtered.length === 0 ? (
-          <div className="card" style={{ gridColumn: "1 / -1", padding: 48, textAlign: "center" }}>
-            <p className="ds-body" style={{ color: "var(--fg2)", marginBottom: 12 }}>
+          <div className="card empty-state-lg" style={{ gridColumn: "1 / -1" }}>
+            <p className="ds-body text-fg2 mb-12">
               {locale === "ar" ? "لا توجد نتائج مطابقة." : "No matching results."}
             </p>
             <button

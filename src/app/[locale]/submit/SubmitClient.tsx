@@ -150,28 +150,13 @@ export default function SubmitPage() {
       <LegalNote lang={locale as "ar" | "en"}>{legal("note")}</LegalNote>
 
       {result && (
-        <div
-          className="legal"
-          style={{
-            marginTop: 16,
-            marginBottom: 16,
-            borderColor: result.ok ? "var(--green-500)" : "var(--brick-500)",
-            background: result.ok ? "var(--green-50)" : "var(--brick-100)",
-          }}
-        >
-          <div
-            className="t"
-            style={{
-              color: result.ok ? "var(--green-700)" : "var(--brick-700)",
-            }}
-          >
-            {result.ok ? t("success") : t("error")}
-          </div>
+        <div className={`legal mt-16 mb-16 ${result.ok ? "legal-success" : "legal-error"}`}>
+          <div className="t">{result.ok ? t("success") : t("error")}</div>
           <p>{result.message}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 0 }}>
+      <form onSubmit={handleSubmit} className="flex-col mt-16">
         {/* About Entity */}
         <div className="form-section">
           <div className="form-section-title">{t("aboutEntity")}</div>

@@ -31,6 +31,7 @@
   --stone-200: #E1DBCC;   /* borders */
   --stone-150: #EAE4D6;
   --stone-100: #F1ECE0;   /* subtle fills */
+  --stone-50:  #F7F5EE;   /* skeleton / subtlest */
 
   /* Warm whites — paper. */
   --paper:        #F7F3EA;  /* app background */
@@ -122,6 +123,7 @@
   --shadow-sm: 0 1px 2px rgba(27,26,22,0.05);
   --shadow:    0 1px 3px rgba(27,26,22,0.06), 0 4px 12px rgba(27,26,22,0.05);
   --shadow-md: 0 2px 6px rgba(27,26,22,0.07), 0 12px 28px rgba(27,26,22,0.07);
+  --shadow-lg: 0 4px 12px rgba(27,26,22,0.1), 0 16px 48px rgba(27,26,22,0.08);
   --inset-hair: inset 0 0 0 1px var(--border);
 
   /* ============ MOTION — calm, no bounce ============ */

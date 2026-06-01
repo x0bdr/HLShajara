@@ -1,10 +1,11 @@
 import type { Lang, Source } from '@/lib/types';
+import { TIER_LABELS } from '@/lib/labels';
 
 /** A single source citation with its tier mark. "No source, no publication." */
 export function SourceCitation({ source, lang }: { source: Source; lang: Lang }) {
   return (
     <div className="cite">
-      <span className="mark">Tier {source.tier}</span>
+      <span className="mark">{TIER_LABELS[lang][source.tier]}</span>
       <div>
         <div className="ctxt">
           {source.title}
