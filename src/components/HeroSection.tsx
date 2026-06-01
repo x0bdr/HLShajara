@@ -17,11 +17,14 @@ export function HeroSection() {
           <Image
             src="/logo.jpeg"
             alt="لست شجرة"
-            width={72}
-            height={72}
+            width={120}
+            height={120}
             className="hero-seal-img"
             priority
           />
+        </div>
+        <div className="hero-kicker">
+          {locale === "ar" ? "سجلّ موثَّق · مصادر دولية · مساءلة شعبية" : "Documented Record · International Sources · Civic Accountability"}
         </div>
         <h1 className="hero-title">
           {t("title")}

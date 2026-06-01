@@ -121,25 +121,53 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
 
         {/* Results */}
         <div className="archive-results">
-          <div className="archive-results-count">
-            {filtered.length} {locale === "ar" ? "سجلّات" : "entries"}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div className="archive-results-count">
+          {filtered.length} {locale === "ar" ? "سجلّات" : "entries"}
+        </div>
+        {(activeStatus.size + activeType.size + activeEvidence.size + (q ? 1 : 0)) > 0 && (
+          <button
+            className="btn ghost btn-sm"
+            onClick={() => {
+              setActiveStatus(new Set());
+              setActiveType(new Set());
+              setActiveEvidence(new Set());
+              setQ("");
+            }}
+          >
+            {locale === "ar" ? "مسح الفلاتر" : "Clear filters"}
+          </button>
+        )}
+      </div>
+      <div className="archive-grid">
+        {filtered.length === 0 ? (
+          <div className="card" style={{ gridColumn: "1 / -1", padding: 48, textAlign: "center" }}>
+            <p className="ds-body" style={{ color: "var(--fg2)", marginBottom: 12 }}>
+              {locale === "ar" ? "لا توجد نتائج مطابقة." : "No matching results."}
+            </p>
+            <button
+              className="btn secondary btn-sm"
+              onClick={() => {
+                setActiveStatus(new Set());
+                setActiveType(new Set());
+                setActiveEvidence(new Set());
+                setQ("");
+              }}
+            >
+              {locale === "ar" ? "مسح الفلاتر" : "Clear filters"}
+            </button>
           </div>
-          <div className="archive-grid">
-            {filtered.length === 0 ? (
-              <p className="ds-body" style={{ color: "var(--fg2)", gridColumn: "1 / -1", textAlign: "center", padding: "40px 0" }}>
-                {locale === "ar" ? "لا توجد نتائج." : "No results."}
-              </p>
-            ) : (
-              filtered.map((e) => (
-                <EvidenceCard
-                  key={e.id}
-                  entity={e}
-                  lang={locale}
-                  onOpen={() => router.push(`/${locale}/entity/${e.id}`)}
-                />
-              ))
-            )}
-          </div>
+        ) : (
+          filtered.map((e) => (
+            <EvidenceCard
+              key={e.id}
+              entity={e}
+              lang={locale}
+              onOpen={() => router.push(`/${locale}/entity/${e.id}`)}
+            />
+          ))
+        )}
+      </div>
         </div>
       </div>
     </section>

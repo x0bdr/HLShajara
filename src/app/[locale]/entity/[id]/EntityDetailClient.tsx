@@ -128,7 +128,13 @@ function AllegationCard({ allegation, index, lang }: { allegation: Entity["alleg
             <div key={j} className="cite" style={{ marginBottom: 10 }}>
               <span className="mark">Tier {s.tier}</span>
               <div>
-                <div className="ctxt">{s.title}</div>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noreferrer" className="ctxt" style={{ color: "var(--brand)", textDecoration: "none", borderBottom: "1px solid var(--green-200)" }}>
+                    {s.title}
+                  </a>
+                ) : (
+                  <div className="ctxt">{s.title}</div>
+                )}
                 <div className="meta">{s.publisher}{s.date ? ` · ${s.date}` : ""}</div>
               </div>
             </div>

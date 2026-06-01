@@ -40,7 +40,9 @@ export function EvidenceCard({
         <EvidenceStrength level={entity.evidence} lang={lang} />
       </div>
       <div className="body">
-        <StatusBadge status={entity.status} lang={lang} />
+        <div style={{ marginBottom: 10 }}>
+          <StatusBadge status={entity.status} lang={lang} />
+        </div>
         <div className="alle">{a?.description ?? "—"}</div>
         <div className="srcline">
           <span className="mark">
