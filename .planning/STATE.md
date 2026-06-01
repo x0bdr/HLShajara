@@ -5,7 +5,7 @@
 See: `.planning/PROJECT.md` (updated 2026-05-31)
 
 **Core value:** Every published claim concerns a named individual or entity, backed by a credible public source. No source, no publication. No group, no identity-based targeting.
-**Current focus:** v1.2 complete — deployed to staging, awaiting UI audit re-run
+**Current focus:** v1.2 shipped + 2 editorial redesign passes. Next: UI audit re-run or v2.0 planning.
 
 ## Current Position
 
@@ -13,7 +13,7 @@ Milestone: v1.2 Frontend Polish
 Phase: All 4 phases (16–19) complete
 Plan: `.planning/v1.2-FIXING-PLAN.md`
 Status: All 12 UI requirements implemented and deployed to staging
-Last activity: 2026-05-31 — v1.2 frontend polish complete
+Last activity: 2026-06-01 — v1.2 frontend polish + 2 editorial redesign passes deployed
 
 Progress: [████████████████████] 100% v1.2
 
@@ -30,9 +30,9 @@ Progress: [████████████████████] 100% v1
 - Execution time: 1 day
 
 **Velocity (v1.2):**
-- Total phases completed: 4 (Phases 16–19)
-- Total commits: 1
-- Execution time: 1 session
+- Total phases completed: 4 (Phases 16–19) + 2 design passes
+- Total commits: 5
+- Execution time: 2 sessions
 
 ## Accumulated Context
 
@@ -59,9 +59,11 @@ See PROJECT.md Key Decisions table for full log.
 - Mobile filter toggle added to ArchiveHome (<860px).
 - Translation status labels fixed to match real DB enum values.
 - All 12 UI requirements marked Done in `v1.2-FIXING-PLAN.md`.
+- **Pass 1**: Editorial archive layout — case file entity detail, form sections, login card, reviewer cards, modal system.
+- **Pass 2**: Larger hero seal + kicker, clear filters button, clickable source links, improved empty states.
 
 ## Session Continuity
 
-Last session: 2026-05-31
-Stopped at: v1.2 deployed to staging
+Last session: 2026-06-01
+Stopped at: v1.2 + 2 design passes deployed to staging
 Resume file: `.planning/v1.2-FIXING-PLAN.md`

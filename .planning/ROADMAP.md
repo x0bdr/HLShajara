@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 Foundation** — Phases 1–9 (shipped 2026-05-31)
 - ✅ **v1.1 Hardening** — Production readiness, real data, search, 2FA (shipped 2026-05-31)
-- 🚧 **v1.2 Frontend Polish** — UI consistency, shared shell, token compliance, mobile UX (in progress)
+- ✅ **v1.2 Frontend Polish** — UI consistency, shared shell, token compliance, mobile UX (shipped 2026-05-31)
 - 📋 **v2.0 Scale** — Partner API, export tools, advanced analytics (future)
 
 ## Phases
@@ -40,10 +40,10 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 ### 🚧 v1.2 Frontend Polish (In Progress)
 
-- [ ] **Phase 16: Page Shell & Dashboard Redesign** — Shared Header+Footer wrapper, dashboard token compliance, remove inline styles
-- [ ] **Phase 17: Interactions & Pagination** — Evidence card click-through, pagination API + UI, loading skeletons, error states
-- [ ] **Phase 18: Filter UX & Mobile** — Extract shared FilterPanel, collapsible mobile filters, unify search/filter architecture
-- [ ] **Phase 19: Copy & Polish** — Translation gaps, empty states, login UX, stats bar empty state, final build verification
+- [x] **Phase 16: Page Shell & Dashboard Redesign** — Shared Header+Footer wrapper, dashboard token compliance, remove inline styles
+- [x] **Phase 17: Interactions & Pagination** — Evidence card click-through, pagination API + UI, loading skeletons, error states
+- [x] **Phase 18: Filter UX & Mobile** — Extract shared FilterPanel, collapsible mobile filters, unify search/filter architecture
+- [x] **Phase 19: Copy & Polish** — Translation gaps, empty states, login UX, stats bar empty state, final build verification
 
 ### 📋 v2.0 Scale (Future)
 
@@ -71,7 +71,9 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 | 13. Reply Processing | v1.1 | ✅ Complete | 2026-05-31 |
 | 14. Transparency Dashboard | v1.1 | ✅ Complete | 2026-05-31 |
 | 15. Data Hardening | v1.1 | ✅ Complete | 2026-05-31 |
-| 16. Page Shell & Dashboard | v1.2 | ⬜ Not started | — |
-| 17. Interactions & Pagination | v1.2 | ⬜ Not started | — |
-| 18. Filter UX & Mobile | v1.2 | ⬜ Not started | — |
-| 19. Copy & Polish | v1.2 | ⬜ Not started | — |
+| 16. Page Shell & Dashboard | v1.2 | ✅ Complete | 2026-05-31 |
+| 17. Interactions & Pagination | v1.2 | ✅ Complete | 2026-05-31 |
+| 18. Filter UX & Mobile | v1.2 | ✅ Complete | 2026-05-31 |
+| 19. Copy & Polish | v1.2 | ✅ Complete | 2026-05-31 |
+| 19b. Editorial Redesign Pass 1 | v1.2 | ✅ Complete | 2026-05-31 |
+| 19c. Editorial Redesign Pass 2 | v1.2 | ✅ Complete | 2026-05-31 |
