@@ -14,21 +14,25 @@ sanctions advocacy — while supporting victims and memory. It is bilingual (Ara
 Every published claim concerns a **named individual or entity** and is backed by a
 **credible public source**. No source, no publication. No group, no identity-based targeting.
 
-## Current Milestone: v1.3 Outreach & Analytics
+## Current Milestone: v1.4 Report Submission Wizard
 
-**Goal:** Expand platform reach with a publications channel, enable supporter engagement via social login, and implement analytics for evidence-based growth decisions.
+**Goal:** Replace the single-page submission form with a lawful, source-gated, card-driven wizard — one step per page, choice cards that auto-advance, a persistent Back, and a final review-before-submit screen. Every entry is a **named actor + documented conduct + ≥2 credible public sources**. Bilingual EN/AR + RTL.
 
 **Target features:**
-- Publications page — curated posts, press releases, campaign statements in AR/EN
-- Twitter/X OAuth login — supporters can sign in with Twitter to show solidarity
-- Google Tag Manager — page-view, event, and conversion tracking
-- Admin publication editor — create, edit, schedule posts
-- Publication i18n — full Arabic/English content parity
+- Card-driven wizard shell — one step per page, auto-advancing choice cards, persistent Back, progress indicator, draft persistence + browser-history
+- Choice steps — actor class, entity subtype, conduct type, role-in-act (accessible radio-card groups, auto-advance)
+- Input steps — identity (coarse location), describe act, evidence (≥2 sources + non-public lead note), media, submitter (anonymity default-on)
+- Review-before-submit — summary with edit-back, affirmation gate, rejection-code → bilingual message mapping
+- i18n EN/AR parity + RTL + accessibility across the full flow
+- Backend follow-ups — `conductType` enum + triage, `leadNote`, per-source `sourceType`, flip `isAnonymous` default, video metadata stripping
+
+**Design contract:** `.planning/UI-SPEC.md` — guardrails S1–S8 (no phone/plate/address/map-pin/social, no sect/identity, no loyalty/opinion, no profession-target categories; coarse location only; source-first; anonymity default). Supersedes the rejected 8-sector boycott draft (see `.planning/reviews/2026-06-14_report-form-taxonomy-review.html`).
 
 **Shipped:**
 - v1.0 Foundation (2026-05-31) — see `.planning/milestones/v1.0-ROADMAP.md`
 - v1.1 Hardening (2026-05-31) — all 17 requirements code-complete and deployed
 - v1.2 Frontend Polish (2026-06-01) — UI consistency, editorial redesign, homepage overhaul
+- v1.3 Outreach & Analytics (2026-06-01) — publications, Twitter/X OAuth, Google Tag Manager
 
 **Stack:** Next.js 16 + React 19 + TypeScript + Tailwind CSS + next-intl | PostgreSQL 16 +
 Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + PM2)
@@ -86,19 +90,22 @@ Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + 
 - ✓ **UI-11** — Stats bar empty state (show — instead of 0)
 - ✓ **UI-12** — Login UX improvements (show password, visible labels, error styling)
 
-### Active (v1.3)
+### Validated (v1.3)
 
-- [ ] **PUB-01** — Publications schema + API (title, slug, body, excerpt, cover image, publishedAt, locale, status)
-- [ ] **PUB-02** — Public publications page (`/[locale]/publications`) with card grid
-- [ ] **PUB-03** — Individual publication page (`/[locale]/publications/[slug]`) with full content
-- [ ] **PUB-04** — Admin publication editor in dashboard (create, edit, publish, unpublish)
-- [ ] **PUB-05** — Publications i18n — full AR/EN content parity
-- [ ] **AUTH-04** — Twitter/X OAuth provider in Better Auth
-- [ ] **AUTH-05** — OAuth callback page and error handling
-- [ ] **AUTH-06** — Link/unlink social accounts in user profile
-- [ ] **ANALYTICS-01** — Google Tag Manager container script injection
-- [ ] **ANALYTICS-02** — Custom data-layer events (page view, submit click, publication read)
-- [ ] **ANALYTICS-03** — GTM ID configurable via env var
+- ✓ **PUB-01** — Publications schema + API (title, slug, body, excerpt, cover image, publishedAt, locale, status)
+- ✓ **PUB-02** — Public publications page (`/[locale]/publications`) with card grid
+- ✓ **PUB-03** — Individual publication page (`/[locale]/publications/[slug]`) with full content
+- ✓ **PUB-04** — Admin publication editor in dashboard (create, edit, publish, unpublish)
+- ✓ **PUB-05** — Publications i18n — full AR/EN content parity
+- ✓ **PUB-06** — Publication slugs unique per locale
+- ✓ **AUTH-04** — Twitter/X OAuth provider in Better Auth
+- ✓ **AUTH-05** — OAuth callback page and error handling
+- ✓ **AUTH-06** — OAuth users get default role "submitter"
+- ✓ **AUTH-07** — Link/unlink social accounts in user profile
+- ✓ **ANALYTICS-01** — Google Tag Manager container script injection
+- ✓ **ANALYTICS-02** — Custom data-layer events (page view, submit click, publication read, record filter)
+- ✓ **ANALYTICS-03** — GTM ID configurable via env var
+- ✓ **ANALYTICS-04** — No PII sent to GTM — aggregate-only events
 
 ### Out of Scope
 
@@ -152,7 +159,8 @@ Drizzle ORM | Better Auth 1.4.7 | Sharp 0.34.5 | Staging on test-sanad (nginx + 
 | Staging on test-sanad | Existing infrastructure; serverful deployment | ✅ v1.0 |
 | Email-OTP for 2FA (v1.1) | TOTP plugin unavailable in Better Auth v1.4.7 | ✅ v1.1 |
 | v1.2 = Frontend Polish milestone | UI audit score 16/24; user-facing inconsistency is blocking | ✅ v1.2 |
-| v1.3 = Outreach & Analytics | Publications channel, social login, GTM for growth evidence | — v1.3 |
+| v1.3 = Outreach & Analytics | Publications channel, social login, GTM for growth evidence | ✅ v1.3 |
+| v1.4 = Report Submission Wizard | Replace single-page form with lawful card-driven multi-step intake (named actor + conduct + ≥2 sources); supersedes the rejected 8-sector boycott draft | 🚧 v1.4 |
 
 ## Evolution
 
@@ -173,4 +181,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-*Last updated: 2026-05-31 — v1.2 Frontend Polish initialized*
+*Last updated: 2026-06-14 — v1.4 Report Submission Wizard initialized*

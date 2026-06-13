@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v1.4
+milestone_name: Report Submission Wizard
+status: planning
+last_updated: "2026-06-13T23:28:26.884Z"
+last_activity: 2026-06-13
+progress:
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+---
+
 # Project State
 
 ## Project Reference
@@ -9,27 +24,27 @@ See: `.planning/PROJECT.md` (updated 2026-06-01)
 
 ## Current Position
 
-Milestone: v1.3 Outreach & Analytics
-Phase: Phase 24–27 initialization
-Plan: `.planning/REQUIREMENTS.md`
-Status: Planning complete, execution starting
-Last activity: 2026-06-01 — v1.3 milestone planning + requirements defined
-
-Progress: [░░░░░░░░░░░░░░░░░░░░] 0% v1.3
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-13 — Milestone v1.4 started
 
 ## Performance Metrics
 
 **Velocity (v1.0):**
+
 - Total phases completed: 9
 - Total commits: 28
 - Execution time: 1 day
 
 **Velocity (v1.1):**
+
 - Total phases completed: 6 (Phases 10–15)
 - Total commits: 12
 - Execution time: 1 day
 
 **Velocity (v1.2):**
+
 - Total phases completed: 4 (Phases 16–19) + 2 design passes
 - Total commits: 5
 - Execution time: 2 sessions
@@ -54,9 +69,18 @@ See PROJECT.md Key Decisions table for full log.
 - Twitter OAuth requires Twitter Developer Portal app registration (callback URL: `/api/auth/callback/twitter`).
 - GTM container ID will be injected via `NEXT_PUBLIC_GTM_ID` env var; no tracking if absent.
 - All analytics events are aggregate-only — no PII sent to GTM.
+- Database migration for `posts` table generated at `drizzle/0000_posts_table.sql` — apply to production DB.
+- Admin publication editor accessible at `/{locale}/admin/publications` (reviewer+ role required).
+- Profile page accessible at `/{locale}/profile` with social account link/unlink.
 
 ## Session Continuity
 
 Last session: 2026-06-01
-Stopped at: v1.3 milestone planning complete, starting implementation
+Stopped at: v1.3 execution complete, all 14 requirements validated
 Resume file: `.planning/REQUIREMENTS.md`
+
+## v1.3 Velocity
+
+- Total phases completed: 4 (Phases 24–27)
+- Total commits: TBD
+- Execution time: 1 session
