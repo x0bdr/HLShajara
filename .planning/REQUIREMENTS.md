@@ -59,7 +59,37 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| _filled by roadmap_ | | |
+| WIZ-01 | Phase 28 | Pending |
+| WIZ-02 | Phase 28 | Pending |
+| WIZ-03 | Phase 28 | Pending |
+| WIZ-04 | Phase 28 | Pending |
+| WIZ-05 | Phase 28 | Pending |
+| WIZ-06 | Phase 28 | Pending |
+| EV-05 | Phase 28 | Pending |
+| STEP-01 | Phase 29 | Pending |
+| STEP-03 | Phase 29 | Pending |
+| STEP-02 | Phase 30 | Pending |
+| STEP-04 | Phase 30 | Pending |
+| STEP-05 | Phase 30 | Pending |
+| EV-01 | Phase 30 | Pending |
+| EV-02 | Phase 30 | Pending |
+| EV-03 | Phase 30 | Pending |
+| EV-04 | Phase 30 | Pending |
+| REV-01 | Phase 31 | Pending |
+| REV-02 | Phase 31 | Pending |
+| REV-03 | Phase 31 | Pending |
+| REV-04 | Phase 31 | Pending |
+| INTL-01 | Phase 32 | Pending |
+| INTL-02 | Phase 32 | Pending |
+| INTL-03 | Phase 32 | Pending |
+| BE-01 | Phase 33 | Pending |
+| BE-02 | Phase 33 | Pending |
+| BE-03 | Phase 33 | Pending |
+| BE-04 | Phase 33 | Pending |
+| BE-05 | Phase 33 | Pending |
+| BE-06 | Phase 33 | Pending |
+
+**Coverage:** 24/24 v1.4 requirements mapped to exactly one phase. No orphans, no duplicates. (EV-05's `screens.ts` foundation lands in Phase 28; its per-step inline application is exercised by Phases 29–31 but the requirement is owned once, in Phase 28.)
 
 ---
 *Created: 2026-06-14 for v1.4 Report Submission Wizard milestone*
