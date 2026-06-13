@@ -91,7 +91,12 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
   3. The progress row shows done / current / upcoming pills, a "Step N of M" count, and completed pills are tappable to jump back.
   4. Choosing the Individual branch skips the entity-subtype step, and deep-linking to a later step with incomplete data redirects to the first incomplete step.
   5. `src/lib/screens.ts` exposes the eight server screens in server order (`NO_SOURCE`→`WEAK_SOURCE`→`GROUP_TARGET`→`INCITEMENT`→`HATE_TONE`→`INNOCENT_PARTY`→`PRIVATE_TARGETING`→`MISMATCH`) and a street-level location blocker, ready for downstream steps to consume.
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 28-01-PLAN.md — Lift pure validation screens into `src/lib/screens.ts` (EV-05) + refactor `persist.ts` to re-import + parity regression check
+- [ ] 28-02-PLAN.md — WIZARD/STEPPER CSS section (tokens only, logical props, brass check, reduced-motion)
+- [ ] 28-03-PLAN.md — Wizard engine: reducer (bound to SubmitInput) + step registry/branching + sessionStorage draft + shell i18n keys
+- [ ] 28-04-PLAN.md — Chrome components: WizardProgress (pills + Arabic-Indic counter), WizardNav (Back/Next), WizardPanel (focus + aria-live)
+- [ ] 28-05-PLAN.md — Scaffold ChoiceStep/InputStep + WizardClient root (routing/draft/history/branching) + page swap + live human-verify
 **UI hint**: yes
 
 ### Phase 29: Choice Steps
@@ -189,7 +194,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 | 25. Admin Publication Editor | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 26. Social Authentication | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 27. Analytics & GTM | v1.3 | — | ✅ Complete | 2026-06-01 |
-| 28. Wizard Foundation | v1.4 | 0/0 | Not started | - |
+| 28. Wizard Foundation | v1.4 | 0/5 | Planned | - |
 | 29. Choice Steps | v1.4 | 0/0 | Not started | - |
 | 30. Input & Evidence Steps | v1.4 | 0/0 | Not started | - |
 | 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
