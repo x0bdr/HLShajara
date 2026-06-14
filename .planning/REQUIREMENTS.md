@@ -9,10 +9,10 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 ### Wizard shell & navigation (WIZ)
 - [x] **WIZ-01**: User progresses through the form one step per page (a single step renders at a time in `.page-container-narrow`), not a single scroll.
 - [x] **WIZ-02**: On a choice step, the user taps a card to select; selection shows a confirm state then auto-advances to the next step (instant under `prefers-reduced-motion`). No "Next" button on choice steps.
-- [ ] **WIZ-03**: User can go Back from every step except the first; browser Back/Forward navigate steps correctly.
+- [x] **WIZ-03**: User can go Back from every step except the first; browser Back/Forward navigate steps correctly.
 - [x] **WIZ-04**: User sees a progress indicator (step N of M, completed/current/upcoming); completed steps are tappable to jump back.
-- [ ] **WIZ-05**: User's in-progress draft survives refresh and is restorable (sessionStorage); step is reflected in the URL (`?step=`); an unsaved-draft guard warns before leaving.
-- [ ] **WIZ-06**: Choosing "individual" skips the entity-subtype step; deep-linking to a later step with incomplete data redirects to the first incomplete step.
+- [x] **WIZ-05**: User's in-progress draft survives refresh and is restorable (sessionStorage); step is reflected in the URL (`?step=`); an unsaved-draft guard warns before leaving.
+- [x] **WIZ-06**: Choosing "individual" skips the entity-subtype step; deep-linking to a later step with incomplete data redirects to the first incomplete step.
 
 ### Submission steps (STEP)
 - [ ] **STEP-01**: User selects actor class (individual / entity) and, for entities, a subtype card mapping to exactly one of the 5 `entityType` enums.
@@ -61,10 +61,10 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 |-------------|-------|--------|
 | WIZ-01 | Phase 28 | Complete |
 | WIZ-02 | Phase 28 | Complete |
-| WIZ-03 | Phase 28 | Pending |
+| WIZ-03 | Phase 28 | Complete |
 | WIZ-04 | Phase 28 | Complete |
-| WIZ-05 | Phase 28 | In Progress (engine: persistence.ts + reducer in 28-03; routing/guard wired in 28-05) |
-| WIZ-06 | Phase 28 | In Progress (engine: registry branching/reachability in 28-03; deep-link redirect wired in 28-05) |
+| WIZ-05 | Phase 28 | Complete |
+| WIZ-06 | Phase 28 | Complete |
 | EV-05 | Phase 28 | Complete |
 | STEP-01 | Phase 29 | Pending |
 | STEP-03 | Phase 29 | Pending |

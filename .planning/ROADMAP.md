@@ -64,7 +64,7 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 
 Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1–S8** (no PII/identity/loyalty/profession-target fields; coarse location only; source-first; anonymity default-on; nothing published on submit).
 
-- [ ] **Phase 28: Wizard Foundation** — Stepper shell, state machine, `?step=` routing, draft persistence, browser-history, shared client-validation library
+- [x] **Phase 28: Wizard Foundation** — Stepper shell, state machine, `?step=` routing, draft persistence, browser-history, shared client-validation library (completed 2026-06-14)
 - [ ] **Phase 29: Choice Steps** — Accessible auto-advancing card groups: actor class, entity subtype, conduct type, role-in-act
 - [ ] **Phase 30: Input & Evidence Steps** — Identity, describe-act, evidence (≥2 sources + lead note), media, submitter (anon default)
 - [ ] **Phase 31: Review, Submit & Confirmation** — Summary with edit-back, affirmation gate, `/api/submit` wiring, rejection-code → bilingual mapping
@@ -96,7 +96,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 - [x] 28-02-PLAN.md — WIZARD/STEPPER CSS section (tokens only, logical props, brass check, reduced-motion)
 - [x] 28-03-PLAN.md — Wizard engine: reducer (bound to SubmitInput) + step registry/branching + sessionStorage draft + shell i18n keys
 - [x] 28-04-PLAN.md — Chrome components: WizardProgress (pills + Arabic-Indic counter), WizardNav (Back/Next), WizardPanel (focus + aria-live)
-- [ ] 28-05-PLAN.md — Scaffold ChoiceStep/InputStep + WizardClient root (routing/draft/history/branching) + page swap + live human-verify
+- [x] 28-05-PLAN.md — Scaffold ChoiceStep/InputStep + WizardClient root (routing/draft/history/branching) + page swap + live human-verify
 **UI hint**: yes
 
 ### Phase 29: Choice Steps
@@ -194,7 +194,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 | 25. Admin Publication Editor | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 26. Social Authentication | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 27. Analytics & GTM | v1.3 | — | ✅ Complete | 2026-06-01 |
-| 28. Wizard Foundation | v1.4 | 4/5 | In Progress|  |
+| 28. Wizard Foundation | v1.4 | 5/5 | Complete   | 2026-06-14 |
 | 29. Choice Steps | v1.4 | 0/0 | Not started | - |
 | 30. Input & Evidence Steps | v1.4 | 0/0 | Not started | - |
 | 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
