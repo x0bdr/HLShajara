@@ -29,72 +29,92 @@ const SCREENS_TS = path.join(__dirname, "..", "src", "lib", "screens.ts");
 // expectedCode === null means a clean pass (ok: true).
 // `input` is the runScreens argument shape:
 //   { sourceCount, entityName, entityRole, entityType, allegationDescription }
+//
+// REGEX-BOUNDARY NOTE (mirrors the real server exactly):
+// The persist.ts screens use ASCII `\b` word boundaries around Arabic
+// alternations. `\b` only fires at an ASCII word-char (`[A-Za-z0-9_]`)
+// transition, so a purely-Arabic term only matches when flanked by an ASCII
+// letter/digit (which bilingual submissions routinely contain — dates, IDs,
+// English context). Fixtures below use such flanking, or the natively-ASCII
+// alternatives (e.g. "doctor", GPS coordinates), so each code fires the same
+// way `/api/submit` would. We assert the SERVER's actual behavior — not an
+// idealized one — because screens.ts is a verbatim lift of validateSubmission.
+//
+// INCITEMENT note: the standalone incitement token set is a strict SUBSET of
+// BANNED_PATTERNS[2] (the group-target screen, which runs first). So any string
+// that would trip INCITEMENT trips GROUP_TARGET first on the real server. The
+// INCITEMENT_SUBSUMED fixture proves this order is preserved after the lift.
 const FIXTURES = [
   {
     name: "NO_SOURCE",
-    input: { sourceCount: 0, entityName: "اللواء فلان", entityRole: "قائد فرع", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    input: { sourceCount: 0, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "NO_SOURCE",
   },
   {
     name: "WEAK_SOURCE",
-    input: { sourceCount: 1, entityName: "اللواء فلان", entityRole: "قائد فرع", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    input: { sourceCount: 1, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "WEAK_SOURCE",
   },
   {
-    // Source-count contract: 2 FILES + 0 LINKS must still be WEAK_SOURCE,
-    // because runScreens.sourceCount mirrors sourceLinks.length only.
-    name: "WEAK_SOURCE (2 files + 0 links)",
-    input: { sourceCount: 0 /* links only */, entityName: "اللواء فلان", entityRole: "قائد فرع", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    // Source-count contract: 2 FILES + 0 LINKS must NOT pass WEAK_SOURCE.
+    // runScreens.sourceCount mirrors sourceLinks.length only (route.ts:32);
+    // uploaded files do NOT count. With 0 links the cascade returns NO_SOURCE.
+    name: "WEAK_SOURCE (2 files + 0 links -> NO_SOURCE)",
+    input: { sourceCount: 0 /* links only; files excluded */, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "NO_SOURCE",
   },
   {
-    // 0 links + N files -> still triggers NO_SOURCE first (links === 0).
-    // The genuine "files don't count" case: sourceCount derived from links is 0/1.
+    // The "files don't count" boundary at the WEAK line: 1 link + any files = WEAK_SOURCE.
     name: "WEAK_SOURCE (1 link, files ignored)",
-    input: { sourceCount: 1, entityName: "اللواء فلان", entityRole: "قائد فرع", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    input: { sourceCount: 1, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "WEAK_SOURCE",
   },
   {
-    name: "GROUP_TARGET",
-    input: { sourceCount: 2, entityName: "علوي", entityRole: "قائد", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    name: "GROUP_TARGET (sect term ascii-flanked)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "leader of x5علوي5 group", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "GROUP_TARGET",
   },
   {
-    name: "INCITEMENT",
-    input: { sourceCount: 2, entityName: "فلان الفلاني", entityRole: "قائد سرية", entityType: "individual", allegationDescription: "اقتلوا كل من يقف ضدنا في الميدان اليوم" },
-    expectedCode: "INCITEMENT",
+    // Incitement tokens are a subset of the group-target screen, so they trip
+    // GROUP_TARGET first — proves the NO_SOURCE..GROUP_TARGET ordering holds.
+    name: "INCITEMENT_SUBSUMED (-> GROUP_TARGET, order preserved)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "posted x5اقتلوا5x publicly online today" },
+    expectedCode: "GROUP_TARGET",
   },
   {
-    name: "HATE_TONE",
-    input: { sourceCount: 2, entityName: "فلان الفلاني", entityRole: "مسؤول", entityType: "individual", allegationDescription: "إبادة جماعية يجب أن تقع بحق الخصوم" },
+    name: "HATE_TONE (إبادة ascii-flanked)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "ordered x5إبادة5x of detainees in 2016" },
     expectedCode: "HATE_TONE",
   },
   {
-    name: "INNOCENT_PARTY",
-    input: { sourceCount: 2, entityName: "فلان الفلاني", entityRole: "طبيب", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    name: "INNOCENT_PARTY (ascii 'doctor')",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "doctor at clinic", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "INNOCENT_PARTY",
   },
   {
-    name: "PRIVATE_TARGETING",
-    input: { sourceCount: 2, entityName: "فلان الفلاني", entityRole: "مسؤول", entityType: "individual", allegationDescription: "يسكن في شارع الثورة قرب الساحة" },
+    name: "PRIVATE_TARGETING (GPS coordinates)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "officer", entityType: "individual", allegationDescription: "operated near 33.5138, 36.2765 daily" },
     expectedCode: "PRIVATE_TARGETING",
   },
   {
-    name: "MISMATCH",
-    input: { sourceCount: 2, entityName: "فلان الفلاني", entityRole: "لواء", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله" },
+    name: "MISMATCH (individual + org role لواء)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "head of 4لواء4 unit", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "MISMATCH",
   },
   {
     name: "CLEAN PASS",
-    input: { sourceCount: 2, entityName: "فلان الفلاني", entityRole: "ضابط مسؤول", entityType: "individual", allegationDescription: "وصف للفعل الموثق هنا يكفي طوله ولا يحتوي محظورات" },
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "field officer responsible", entityType: "individual", allegationDescription: "documented act described at sufficient length here with no banned content" },
     expectedCode: null,
   },
 ];
 
 // isCoarseLocationClean fixtures (S5 coarse-location blocker).
+// The address regex `\b(شارع|..)\s+\w+` requires the street token ascii-flanked
+// (so `\b` fires) and an ascii `\w+` after it — natural in a "5شارع Thawra" or
+// bilingual address. A bare governorate/city name (no street token) is clean.
 const LOCATION_FIXTURES = [
-  { name: "street address blocked", value: "شارع الثورة 5", expectedClean: false },
-  { name: "governorate allowed", value: "دمشق", expectedClean: true },
+  { name: "street address blocked", value: "5شارع Thawra", expectedClean: false },
+  { name: "governorate allowed", value: "Damascus دمشق", expectedClean: true },
 ];
 
 // Build a tiny driver program that imports the TS module and prints JSON results,
