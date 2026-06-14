@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { submissions, entities, allegations, sources, allegationSources } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { validatePublication, withAudit } from "@/db/persist";
-import { getSession, unauthorizedResponse, forbiddenResponse, require2FA } from "@/lib/session";
+import { getSession, unauthorizedResponse, forbiddenResponse, require2FA, getInternalUserId } from "@/lib/session";
 import { hasRole, canPublish } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 // v1.4 H1: strip the wizard's interim encodings before they reach the PUBLIC record.
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Invalid action" }, { status: 400 });
     }
 
-    const actorId = Number(session.user.id);
+    const actorId = await getInternalUserId(session);
     const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     if (action === "publish" && !canPublish(actorRole)) {

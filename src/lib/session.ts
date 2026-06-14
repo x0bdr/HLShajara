@@ -1,6 +1,9 @@
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { users } from "@/db/schema";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 
 export async function getSession() {
   const h = await headers();
@@ -33,4 +36,38 @@ export function require2FA(session: Awaited<ReturnType<typeof getSession>>): boo
   const isStaff = staffRoles.includes(role);
   if (!isStaff) return true; // Non-staff don't need 2FA
   return (session.user as UserWith2FA).twoFactorEnabled === true;
+}
+
+/**
+ * Map the Better Auth string user id to the internal numeric `users.id`.
+ * Upserts by email so the audit/submission tables always get a valid integer actor.
+ */
+export async function getInternalUserId(
+  session: NonNullable<Awaited<ReturnType<typeof getSession>>>
+): Promise<number> {
+  const email = session.user.email;
+  const existing = await db.query.users.findFirst({
+    where: eq(users.email, email),
+  });
+  if (existing) {
+    if (existing.role !== session.user.role) {
+      const [updated] = await db
+        .update(users)
+        .set({ role: (session.user.role ?? existing.role) as "submitter" | "reviewer" | "senior_reviewer" | "admin" })
+        .where(eq(users.id, existing.id))
+        .returning();
+      return updated.id;
+    }
+    return existing.id;
+  }
+  const [created] = await db
+    .insert(users)
+    .values({
+      email,
+      name: session.user.name ?? null,
+      role: (session.user.role ?? "submitter") as unknown as "submitter" | "reviewer" | "senior_reviewer" | "admin",
+      is2faEnabled: (session.user as UserWith2FA).twoFactorEnabled === true,
+    })
+    .returning();
+  return created.id;
 }

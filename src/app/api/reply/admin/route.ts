@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { replies, entities } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { withAudit } from "@/db/persist";
-import { getSession, forbiddenResponse, require2FA } from "@/lib/session";
+import { getSession, forbiddenResponse, require2FA, getInternalUserId } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Invalid action" }, { status: 400 });
     }
 
-    const actorId = Number(session.user.id);
+    const actorId = await getInternalUserId(session);
     const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     const reply = await db.query.replies.findFirst({

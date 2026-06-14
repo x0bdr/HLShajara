@@ -5,7 +5,7 @@ import { submissions } from "@/db/schema";
 import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
 import { triageFromConduct } from "@/lib/constants/conduct";
-import { getSession } from "@/lib/session";
+import { getSession, getInternalUserId } from "@/lib/session";
 import { rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     const session = await getSession();
     const isAnonymous = data.isAnonymous || !session;
-    const actorId = session ? Number(session.user.id) : 0;
+    const actorId = session ? await getInternalUserId(session) : 0;
     const actorRole = (session?.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     const [submission] = await withAudit(

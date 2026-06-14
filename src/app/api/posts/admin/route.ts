@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { getSession, forbiddenResponse } from "@/lib/session";
+import { getSession, forbiddenResponse, getInternalUserId } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { withAudit } from "@/db/persist";
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Slug already exists for this locale" }, { status: 409 });
     }
 
-    const actorId = Number(session.user.id);
+    const actorId = await getInternalUserId(session);
     const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     const [post] = await withAudit(
@@ -150,7 +150,7 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const actorId = Number(session.user.id);
+    const actorId = await getInternalUserId(session);
     const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     const updateData: Partial<typeof posts.$inferInsert> & { updatedAt: Date } = {
@@ -203,7 +203,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ ok: false, message: "Post ID required" }, { status: 400 });
     }
 
-    const actorId = Number(session.user.id);
+    const actorId = await getInternalUserId(session);
     const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
     await withAudit(
