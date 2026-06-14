@@ -20,7 +20,7 @@ const REDIRECTED_PATHS = new Set([
   "entity",
 ]);
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const segments = pathname.split("/").filter(Boolean);
   const locale = segments[0];
@@ -31,7 +31,7 @@ export default function middleware(request: NextRequest) {
   }
 
   const response = intlMiddleware(request);
-  response.headers.set("x-middleware", "active");
+  response.headers.set("x-proxy", "active");
   return response;
 }
 
