@@ -7,10 +7,10 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 ## v1.4 Requirements
 
 ### Wizard shell & navigation (WIZ)
-- [ ] **WIZ-01**: User progresses through the form one step per page (a single step renders at a time in `.page-container-narrow`), not a single scroll.
-- [ ] **WIZ-02**: On a choice step, the user taps a card to select; selection shows a confirm state then auto-advances to the next step (instant under `prefers-reduced-motion`). No "Next" button on choice steps.
+- [x] **WIZ-01**: User progresses through the form one step per page (a single step renders at a time in `.page-container-narrow`), not a single scroll.
+- [x] **WIZ-02**: On a choice step, the user taps a card to select; selection shows a confirm state then auto-advances to the next step (instant under `prefers-reduced-motion`). No "Next" button on choice steps.
 - [ ] **WIZ-03**: User can go Back from every step except the first; browser Back/Forward navigate steps correctly.
-- [ ] **WIZ-04**: User sees a progress indicator (step N of M, completed/current/upcoming); completed steps are tappable to jump back.
+- [x] **WIZ-04**: User sees a progress indicator (step N of M, completed/current/upcoming); completed steps are tappable to jump back.
 - [ ] **WIZ-05**: User's in-progress draft survives refresh and is restorable (sessionStorage); step is reflected in the URL (`?step=`); an unsaved-draft guard warns before leaving.
 - [ ] **WIZ-06**: Choosing "individual" skips the entity-subtype step; deep-linking to a later step with incomplete data redirects to the first incomplete step.
 
@@ -59,10 +59,10 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WIZ-01 | Phase 28 | Pending |
-| WIZ-02 | Phase 28 | Pending |
+| WIZ-01 | Phase 28 | Complete |
+| WIZ-02 | Phase 28 | Complete |
 | WIZ-03 | Phase 28 | Pending |
-| WIZ-04 | Phase 28 | Pending |
+| WIZ-04 | Phase 28 | Complete |
 | WIZ-05 | Phase 28 | Pending |
 | WIZ-06 | Phase 28 | Pending |
 | EV-05 | Phase 28 | Complete |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Report Submission Wizard
 status: executing
-stopped_at: v1.4 roadmap created — Phases 28–33 defined, 24/24 requirements mapped, v2.0 placeholders renumbered to 34–37
-last_updated: "2026-06-14T00:09:14.540Z"
+stopped_at: Completed 28-02-PLAN.md — WIZARD/STEPPER CSS section in hlshajara.css (tokens-only, logical props, sanctioned brass check, reduced-motion). 2/5 Phase 28 plans done.
+last_updated: "2026-06-14T00:15:06.770Z"
 last_activity: 2026-06-14
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: `.planning/PROJECT.md` (updated 2026-06-14)
 ## Current Position
 
 Phase: 28 (wizard-foundation) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
-Progress: [██░░░░░░░░] 20%
+Progress: [████░░░░░░] 40%
 Last activity: 2026-06-14
 
 ## Performance Metrics
@@ -61,6 +61,7 @@ Last activity: 2026-06-14
 | Phase | Plan | Duration | Tasks | Files | Commits |
 |-------|------|----------|-------|-------|---------|
 | 28 | 01 | ~12 min | 2 | 3 | 88bcffe (test), 75be711 (feat), bc01155 (refactor) |
+| Phase 28 P02 | ~10 min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -69,9 +70,11 @@ Last activity: 2026-06-14
 See PROJECT.md Key Decisions table for full log.
 
 **Phase 28 (28-01):**
+
 - `src/lib/screens.ts` is a **verbatim (byte-identical) lift** of the persist.ts regex arrays + screen* bodies; persist.ts now re-imports from it → one source of truth, client/server cannot drift (EV-05).
 - `runScreens` `sourceCount` mirrors `sourceLinks.length` ONLY — uploaded files do NOT count toward WEAK_SOURCE (matches `route.ts:32`). Documented in screens.ts + asserted by parity fixture. Phase 30 must wire the evidence step accordingly.
 - Parity regression (`scripts/screens-parity-check.js`) drives the TS lib via Node 24 `--experimental-strip-types` instead of installing a test framework (package installs avoided).
+- [Phase ?]: Phase 28 (28-02): WIZARD/STEPPER CSS is token-only + logical-props-only; brass (--brass-500) sanctioned ONLY on .choice-card .check; reduced-motion override disables wizard slide + card lift + auto-advance so downstream wizard components ship zero inline color/layout styles.
 
 ### v1.4 Architecture Notes
 
@@ -98,7 +101,7 @@ See PROJECT.md Key Decisions table for full log.
 
 ## Session Continuity
 
-Last session: 2026-06-14T00:09:14.534Z
+Last session: 2026-06-14T00:14:49.873Z
 Stopped at: Completed 28-01-PLAN.md — shared validation screens lib (`src/lib/screens.ts`) + persist.ts refactor + parity regression. 1/5 Phase 28 plans done.
-Resume file: `.planning/phases/28-wizard-foundation/28-02-PLAN.md`
+Resume file: None
 Next command: `/gsd:execute-phase 28` (resume at plan 28-02 — WIZARD/STEPPER CSS)
