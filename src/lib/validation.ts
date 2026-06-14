@@ -12,6 +12,7 @@ import {
   submissions,
   users,
 } from "@/db/schema";
+import { conductTypes, roleInConductTypes } from "@/lib/constants/conduct";
 
 /* ---------- ENTITY ---------- */
 
@@ -63,16 +64,24 @@ export const submitSchema = z.object({
   allegationPeriod: z.string().max(100).optional(),
   allegationLocation: z.string().max(200).optional(),
   allegationClassification: z.string().max(100).optional(),
+  // Phase 33 (BE-01): first-class conduct slug (closed 14-set via shared const) —
+  // drives auto-populated triageCategory on intake. Optional/additive.
+  conductType: z.enum(conductTypes).optional(),
+  // Phase 33 (BE-06): first-class role-in-conduct (closed 7-set via shared const).
+  roleInConduct: z.enum(roleInConductTypes).optional(),
   // Reviewer-only lead note (non-public, never a source, never folded into the description).
-  // Fork-point prerequisite: accepted here so the wizard can submit it; the /api/submit insert
-  // deliberately does NOT write it yet (accept-but-ignore). Phase 33 (BE-02) adds the column +
-  // persistence and starts writing it.
+  // Phase 33 (BE-02): /api/submit now PERSISTS this (was accept-but-ignore); it is still
+  // NEVER returned on any public path, NEVER counted as a source, NEVER folded into
+  // allegationDescription.
   leadNote: z.string().max(5000).optional(),
   sourceLinks: z
     .array(
       z.object({
         url: z.string().url(),
         title: z.string().min(1).max(500).optional(),
+        // Phase 33 (BE-03): per-source provenance tag (closed 6-set). Optional —
+        // a sourceLinks item without sourceType still parses.
+        sourceType: z.enum(["un","court","sanctions","hr","journalism","official"]).optional(),
       })
     )
     .min(1, "At least one source is required"),

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { submissions } from "@/db/schema";
 import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
+import { triageFromConduct } from "@/lib/constants/conduct";
 import { getSession, unauthorizedResponse } from "@/lib/session";
 import { rateLimitResponse } from "@/lib/rate-limit";
 
@@ -59,6 +60,18 @@ export async function POST(request: Request) {
             allegationPeriod: data.allegationPeriod ?? null,
             allegationLocation: data.allegationLocation ?? null,
             allegationClassification: data.allegationClassification ?? null,
+            // Phase 33 (BE-01/BE-06): persist first-class conduct/role slugs.
+            conductType: data.conductType ?? null,
+            roleInConduct: data.roleInConduct ?? null,
+            // Phase 33 (BE-01): auto-populate the triage bucket from conductType
+            // (deterministic; manual_review fallback). Reviewers can still override
+            // via /api/review, which wins post-intake.
+            triageCategory: data.conductType ? triageFromConduct(data.conductType) : null,
+            // Phase 33 (BE-02): persist the reviewer-only lead note. It is NEVER
+            // returned on any public path, NEVER counted as a source (sourceCount
+            // below is sourceLinks.length only), NEVER folded into allegationDescription.
+            leadNote: data.leadNote ?? null,
+            // per-source sourceType (BE-03) rides through the JSONB unchanged.
             sourceLinks: data.sourceLinks,
             sourceFiles: data.sourceFiles ?? [],
             submitterEmail: data.submitterEmail ?? null,

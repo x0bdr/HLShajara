@@ -5,6 +5,7 @@ import path from "path";
 import sharp from "sharp";
 import { getSession, unauthorizedResponse } from "@/lib/session";
 import { scanBuffer } from "@/lib/clamav";
+import { isFfmpegAvailable, stripVideoMetadata } from "@/lib/media-metadata";
 import { rateLimitResponse } from "@/lib/rate-limit";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
@@ -16,6 +17,15 @@ const IMAGE_TYPES = new Set([
   "image/webp",
   "image/tiff",
   "image/avif",
+]);
+
+// Phase 33 (BE-05): video MIME types whose metadata is stripped via ffmpeg before
+// storage. Conservative set; extend deliberately. NOTE: video uploads require the
+// ffmpeg system binary — when absent the branch below fails closed (503).
+const VIDEO_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
 ]);
 
 export async function POST(request: Request) {
@@ -55,6 +65,36 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error("Sharp processing error:", err);
         // Fall through to save original if Sharp fails
+      }
+    } else if (VIDEO_TYPES.has(file.type)) {
+      // Phase 33 (BE-05): strip container/stream metadata from videos via
+      // `ffmpeg -map_metadata -1` BEFORE the malware scan and hash. ffmpeg is a
+      // required system binary for video uploads — if it is unavailable, or if the
+      // strip fails, FAIL CLOSED with 503 (never store a video with intact metadata).
+      if (!(await isFfmpegAvailable())) {
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "FFMPEG_UNAVAILABLE",
+            message:
+              "Video uploads are temporarily unavailable (the video processor is not installed). Please try again later or upload an image/document.",
+          },
+          { status: 503 }
+        );
+      }
+      try {
+        buffer = Buffer.from(await stripVideoMetadata(buffer, path.extname(file.name)));
+      } catch (err) {
+        console.error("Video metadata strip error:", err);
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "FFMPEG_UNAVAILABLE",
+            message:
+              "Video could not be processed safely and was not stored. Please try again later.",
+          },
+          { status: 503 }
+        );
       }
     }
 
