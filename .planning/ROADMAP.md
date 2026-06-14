@@ -127,7 +127,12 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
   3. The description step requires ≥20 characters and surfaces GROUP_TARGET / PRIVATE_TARGETING / INNOCENT_PARTY / INCITEMENT / HATE_TONE warnings inline in server order, guiding the submitter to rephrase toward conduct.
   4. Supporting media is labeled supporting-only and non-public with safety guidance, and a personal social link is rejected; anonymity is ON by default and enabling it disables and clears name/email (S7).
   5. No input exists anywhere for phone, car plate, home/street address, map pin, personal social handle, sect/identity, loyalty/opinion, or profession-target category (S1–S4 verified absent).
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 30-01-PLAN.md — Pure step-logic layer (location compose, idempotent source-type token, per-step screen runners, ≥2 source count, requires predicates) + registry input steps + leadNote contract + EN/AR keys
+- [ ] 30-02-PLAN.md — Identity (Step 2: name/role/country/coarse-city, S5 block, inline MISMATCH) + Describe (Step 5: textarea, live counter, server-ordered screen warnings)
+- [ ] 30-03-PLAN.md — Evidence keystone (Step 6: typed source rows, ≥2-links gate, up-front rule, lead note) + Media (Step 7: /api/upload images/docs, no video, social-link rejection)
+- [ ] 30-04-PLAN.md — About-you (Step 8: anonymity default-ON that disables + clears name/email)
+- [ ] 30-05-PLAN.md — Wire the five input steps into WizardClient render dispatch + blocking live EN/AR human-verify
 **UI hint**: yes
 
 ### Phase 31: Review, Submit & Confirmation
@@ -140,7 +145,10 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
   2. Submit stays disabled until the affirmation checkbox is checked and at least 2 sources are present, with an inline message explaining why when it is disabled.
   3. Submitting posts to `/api/submit`, shows a confirmation with a reference id and a "what happens next" note (nothing public yet), and clears the saved draft (S8).
   4. A server rejection maps to a plain bilingual message and returns the submitter to the exact step that caused it.
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 31-01-PLAN.md — rejection-routing map + EN/AR review/submit/confirmation i18n keys + parity gate
+  - [ ] 31-02-PLAN.md — ReviewStep: six-group read-only summary, Edit links, affirmation + two-source gates
+  - [ ] 31-03-PLAN.md — wire review/submit/confirmation into WizardClient (POST + success panel + rejection routing)
 **UI hint**: yes
 
 ### Phase 32: i18n, RTL & Accessibility
@@ -205,7 +213,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 | 27. Analytics & GTM | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 28. Wizard Foundation | v1.4 | 5/5 | Complete   | 2026-06-14 |
 | 29. Choice Steps | v1.4 | 0/0 | Not started | - |
-| 30. Input & Evidence Steps | v1.4 | 0/0 | Not started | - |
+| 30. Input & Evidence Steps | v1.4 | 0/5 | Not started | - |
 | 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
 | 32. i18n, RTL & Accessibility | v1.4 | 0/3 | Planned | - |
 | 33. Backend Support | v1.4 | 0/3 | Planned | - |
