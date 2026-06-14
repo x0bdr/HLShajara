@@ -47,7 +47,7 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
 
   return (
     <div className="flex-col">
-      <div className="form-section-title">{t("anonTitle")}</div>
+      <div className="t">{t("anonTitle")}</div>
 
       <label className="form-field" htmlFor="anon-toggle">
         <span className="flex-between">

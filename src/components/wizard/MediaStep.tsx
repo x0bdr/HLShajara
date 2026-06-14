@@ -82,7 +82,7 @@ export function MediaStep({ form, dispatch }: MediaStepProps) {
 
   return (
     <div className="flex-col">
-      <div className="form-section-title">{t("mediaTitle")}</div>
+      <div className="t">{t("mediaTitle")}</div>
 
       <div className="legal mb-16">
         <p>{t("mediaSafety")}</p>
