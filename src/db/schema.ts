@@ -19,6 +19,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { conductTypes, roleInConductTypes } from "@/lib/constants/conduct";
 
 /* ---------- ENUMS ---------- */
 
@@ -105,6 +106,12 @@ export const postStatusEnum = pgEnum("post_status", [
   "published",
   "archived",
 ]);
+
+// Phase 33 (BE-01/BE-06): closed conduct/role sets — slugs imported from the
+// shared anti-drift const so the DB enum, Zod, and the wizard cannot drift.
+export const conductTypeEnum = pgEnum("conduct_type", conductTypes);
+
+export const roleInConductEnum = pgEnum("role_in_conduct", roleInConductTypes);
 
 /* ---------- TABLES ---------- */
 
@@ -213,11 +220,22 @@ export const submissions = pgTable(
     allegationPeriod: varchar("allegation_period", { length: 100 }),
     allegationLocation: varchar("allegation_location", { length: 200 }),
     allegationClassification: varchar("allegation_classification", { length: 100 }),
+    // Phase 33 (BE-01): first-class conduct slug; triageCategory is auto-derived
+    // from this on intake. Nullable/additive — historical rows stay untouched.
+    conductType: conductTypeEnum("conduct_type"),
+    // Phase 33 (BE-06): first-class role-in-conduct (closed 7-role set). Nullable.
+    roleInConduct: roleInConductEnum("role_in_conduct"),
+    // Phase 33 (BE-02): reviewer-only lead note — persisted but NEVER returned on
+    // any public path, NEVER counted as a source, NEVER folded into
+    // allegationDescription. Nullable/additive.
+    leadNote: text("lead_note"),
     sourceLinks: jsonb("source_links").notNull().default("[]"),
     sourceFiles: jsonb("source_files").default("[]"),
     submitterEmail: varchar("submitter_email", { length: 255 }),
     submitterName: varchar("submitter_name", { length: 255 }),
-    isAnonymous: boolean("is_anonymous").notNull().default(false),
+    // Phase 33 (BE-04): default flipped to true for NEW rows only (no backfill;
+    // existing rows keep their recorded value — the audit trail is not rewritten).
+    isAnonymous: boolean("is_anonymous").notNull().default(true),
     ipHash: varchar("ip_hash", { length: 64 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
