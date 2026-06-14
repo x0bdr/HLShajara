@@ -4,7 +4,7 @@
  * Pure, framework-free config module. NO JSX, NO React, NO `"use client"`.
  *
  * The new flow is linear (no branching):
- *   report-category → location-info → entity-type-name → report-details →
+ *   report-category → entity-type-name → location-info → report-details →
  *   experience → media-evidence → about-you → review
  */
 
@@ -50,16 +50,16 @@ export const STEPS = [
     requires: (form) => form.reportCategory.trim().length > 0,
   },
   {
-    id: "location-info",
-    archetype: "input",
-    titleKey: "q_locationInfo",
-    requires: requiresLocationInfo,
-  },
-  {
     id: "entity-type-name",
     archetype: "input",
     titleKey: "q_entityTypeName",
     requires: requiresEntityTypeName,
+  },
+  {
+    id: "location-info",
+    archetype: "input",
+    titleKey: "q_locationInfo",
+    requires: requiresLocationInfo,
   },
   {
     id: "report-details",

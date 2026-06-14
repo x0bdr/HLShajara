@@ -44,6 +44,12 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
     dispatch({ type: "SET_METADATA", field: "taxiNumber", value: "" });
     dispatch({ type: "SET_METADATA", field: "appName", value: "" });
     dispatch({ type: "SET_METADATA", field: "propertyType", value: "" });
+    dispatch({ type: "SET_METADATA", field: "partnerName", value: "" });
+    dispatch({ type: "SET_METADATA", field: "investorName", value: "" });
+    dispatch({ type: "SET_METADATA", field: "receptionInfo", value: "" });
+    dispatch({ type: "SET_METADATA", field: "labourInfo", value: "" });
+    dispatch({ type: "SET_METADATA", field: "supportDataInfo", value: "" });
+    dispatch({ type: "SET_METADATA", field: "clubName", value: "" });
   }
 
   function setOrgType(value: string) {

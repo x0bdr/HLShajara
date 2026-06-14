@@ -135,7 +135,7 @@ function run() {
 
   check("STEPS id-order is the v1.5 8-step flow", () =>
     assert.deepEqual(o.stepIds, [
-      "report-category", "location-info", "entity-type-name", "report-details",
+      "report-category", "entity-type-name", "location-info", "report-details",
       "experience", "media-evidence", "about-you", "review",
     ]));
   check("composeLocation joins with em-dash", () => assert.equal(o.locFull, "Syria — Homs"));

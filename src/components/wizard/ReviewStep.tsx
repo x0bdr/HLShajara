@@ -216,6 +216,30 @@ export function ReviewStep({
           <span className="k">{t("detailsPropertyType")}</span>
           <span className="v">{displayValue(meta.propertyType)}</span>
         </div>
+        <div className="review-row">
+          <span className="k">{t("detailsPartnerName")}</span>
+          <span className="v">{displayValue(meta.partnerName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsInvestorName")}</span>
+          <span className="v">{displayValue(meta.investorName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsReceptionInfo")}</span>
+          <span className="v">{displayValue(meta.receptionInfo)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsLabourInfo")}</span>
+          <span className="v">{displayValue(meta.labourInfo)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsSupportDataInfo")}</span>
+          <span className="v">{displayValue(meta.supportDataInfo)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsClubName")}</span>
+          <span className="v">{displayValue(meta.clubName)}</span>
+        </div>
       </div>
 
       {/* Experience */}
@@ -329,8 +353,14 @@ export function ReviewStep({
               <span className="v">{displayValue(form.submitterName)}</span>
             </div>
             <div className="review-row">
-              <span className="k">{t("email")}</span>
-              <span className="v">{displayValue(form.submitterEmail)}</span>
+              <span className="k">{t("reviewContactMethods")}</span>
+              <span className="v">
+                {(meta.contactMethods ?? []).length === 0
+                  ? displayValue("")
+                  : (meta.contactMethods ?? [])
+                      .map((m) => `${t(`contactType_${m.type}`)}: ${m.value}`)
+                      .join(" · ")}
+              </span>
             </div>
           </>
         ) : null}

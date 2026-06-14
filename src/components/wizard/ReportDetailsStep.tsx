@@ -1,27 +1,49 @@
 "use client";
 
 /**
- * ReportDetailsStep — Step 4 of the v1.5 category-based wizard (نوع البلاغ).
+ * ReportDetailsStep — Step 4 of the v1.5 category-based wizard (تفاصيل البلاغ).
  *
- * Shows only the free-text fields that are relevant to the subtype chosen in
- * Step 3 (e.g. car fields for taxi/private-car, person fields for individuals).
+ * Shows:
+ *  1. Category-specific detail flags (multi-select cards) so the user can mark
+ *     which parties are involved: owner, partner, investor, reception/front desk,
+ *     labour/employees, supportive data, etc.
+ *  2. Free-text fields that adapt to the selected flags.
+ *  3. Subtype-driven fields (e.g. car/plate fields for taxis) when relevant.
  */
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
-import { getSubTypeConfig, type DetailFieldId } from "@/lib/wizard/category-config";
+import { getCategoryConfig, getSubTypeConfig, type DetailFieldId } from "@/lib/wizard/category-config";
+import { getIconByName } from "@/lib/wizard/icon-map";
+import { CardSelect } from "./CardSelect";
 
 interface ReportDetailsStepProps {
   form: SubmitInput;
   dispatch: React.Dispatch<WizardAction>;
 }
 
+const FLAG_FIELDS: Record<
+  string,
+  { field: keyof ReportMetadata; labelKey: string }
+> = {
+  owner: { field: "ownerName", labelKey: "detailsOwnerName" },
+  partner: { field: "partnerName", labelKey: "detailsPartnerName" },
+  investor: { field: "investorName", labelKey: "detailsInvestorName" },
+  reception: { field: "receptionInfo", labelKey: "detailsReceptionInfo" },
+  labour: { field: "labourInfo", labelKey: "detailsLabourInfo" },
+  support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
+  club_name: { field: "clubName", labelKey: "detailsClubName" },
+};
+
 export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const t = useTranslations("submit");
+  const locale = useLocale();
   const meta = form.reportMetadata ?? {};
+  const categoryConfig = getCategoryConfig(form.reportCategory);
   const subTypeConfig = getSubTypeConfig(form.reportCategory, meta.orgType);
   const visibleFields = new Set<DetailFieldId>(subTypeConfig?.detailFields ?? []);
+  const selectedFlags = new Set(meta.detailFlags ?? []);
 
   function setDetail(field: keyof ReportMetadata, value: string) {
     dispatch({ type: "SET_METADATA", field, value });
@@ -31,9 +53,66 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
     return visibleFields.has(field);
   }
 
+  function toggleFlag(value: string, selected: boolean) {
+    const current = meta.detailFlags ?? [];
+    const next = selected
+      ? [...new Set([...current, value])]
+      : current.filter((v) => v !== value);
+    dispatch({ type: "SET_METADATA", field: "detailFlags", value: next });
+
+    if (!selected) {
+      const mapping = FLAG_FIELDS[value];
+      if (mapping) {
+        dispatch({ type: "SET_METADATA", field: mapping.field, value: "" });
+      }
+    }
+  }
+
+  const flagOptions = (categoryConfig?.detailFlags ?? []).map((flag) => {
+    const Icon = getIconByName(flag.iconName);
+    return {
+      value: flag.value,
+      title: locale === "ar" ? flag.labelAr : flag.labelEn ?? flag.labelAr,
+      icon: Icon ? <Icon size={20} /> : null,
+    };
+  });
+
+  const adaptiveFields = Array.from(selectedFlags)
+    .map((flag) => ({ flag, mapping: FLAG_FIELDS[flag] }))
+    .filter(
+      (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
+        !!item.mapping && !visibleFields.has(item.mapping.field as DetailFieldId),
+    );
+
   return (
     <div className="flex-col">
       <p className="ds-caption">{t("detailsHint")}</p>
+
+      {flagOptions.length > 0 && (
+        <div className="form-field">
+          <label>{t("detailsFlags")}</label>
+          <CardSelect
+            ariaLabel={t("detailsFlags")}
+            mode="multi"
+            selected={meta.detailFlags ?? []}
+            options={flagOptions}
+            onChange={toggleFlag}
+          />
+        </div>
+      )}
+
+      {adaptiveFields.map(({ flag, mapping }) => (
+        <div className="form-field" key={flag}>
+          <label htmlFor={`flag-field-${flag}`}>{t(mapping.labelKey)}</label>
+          <input
+            id={`flag-field-${flag}`}
+            type="text"
+            className="ds-input"
+            value={(meta[mapping.field] as string | undefined) ?? ""}
+            onChange={(e) => setDetail(mapping.field, e.target.value)}
+          />
+        </div>
+      ))}
 
       {show("ownerName") && (
         <div className="form-field">

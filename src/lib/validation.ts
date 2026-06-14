@@ -29,6 +29,24 @@ export const reportCategories = [
 
 export type ReportCategory = (typeof reportCategories)[number];
 
+export const contactMethodTypes = [
+  "x",
+  "facebook",
+  "instagram",
+  "telegram",
+  "whatsapp",
+  "email",
+] as const;
+
+export type ContactMethodType = (typeof contactMethodTypes)[number];
+
+export const contactMethodSchema = z.object({
+  type: z.enum(contactMethodTypes),
+  value: z.string().max(255),
+});
+
+export type ContactMethod = z.infer<typeof contactMethodSchema>;
+
 /** Category-specific metadata captured by the new wizard. */
 export const reportMetadataSchema = z.object({
   country: z.string().max(100).optional(),
@@ -54,10 +72,17 @@ export const reportMetadataSchema = z.object({
   taxiNumber: z.string().max(100).optional(),
   appName: z.string().max(100).optional(),
   propertyType: z.string().max(100).optional(),
+  partnerName: z.string().max(255).optional(),
+  investorName: z.string().max(255).optional(),
+  receptionInfo: z.string().max(255).optional(),
+  labourInfo: z.string().max(255).optional(),
+  supportDataInfo: z.string().max(500).optional(),
+  clubName: z.string().max(255).optional(),
   supportingDocuments: z.array(z.string().max(100)).optional(),
   detailFlags: z.array(z.string().max(100)).optional(),
   mediaNotes: z.string().max(2000).optional(),
   mediaLink: z.string().url().or(z.literal("")).optional(),
+  contactMethods: z.array(contactMethodSchema).optional(),
 });
 
 export type ReportMetadata = z.infer<typeof reportMetadataSchema>;

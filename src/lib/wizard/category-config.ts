@@ -53,6 +53,7 @@ export interface CategoryConfig {
 
 const COMMON_FLAGS = {
   owner: { value: "owner", labelAr: "المالك / الشركاء", iconName: "UserCog" },
+  partner: { value: "partner", labelAr: "شريك / شركاء", iconName: "Handshake" },
   reception: { value: "reception", labelAr: "استقبال / مكتب أمامي", iconName: "Headphones" },
   labour: { value: "labour", labelAr: "عمال / موظفون", iconName: "Users" },
   supportData: { value: "support_data", labelAr: "أي بيانات داعمة", iconName: "FileText" },
@@ -425,9 +426,12 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
       },
     ],
     detailFlags: [
-      { value: "owner", labelAr: "المالك / بيانات داعمة", iconName: "UserCog" },
-      { value: "people", labelAr: "أشخاص", iconName: "Users" },
-      { value: "org", labelAr: "جهة", iconName: "Building2" },
+      COMMON_FLAGS.owner,
+      COMMON_FLAGS.partner,
+      COMMON_FLAGS.investor,
+      COMMON_FLAGS.reception,
+      COMMON_FLAGS.labour,
+      COMMON_FLAGS.supportData,
     ],
   },
   {
@@ -532,7 +536,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerName", "reportedPersonName", "reportedPersonPosition"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.reception, COMMON_FLAGS.labour, COMMON_FLAGS.clubName, COMMON_FLAGS.investor, COMMON_FLAGS.student],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.partner, COMMON_FLAGS.reception, COMMON_FLAGS.labour, COMMON_FLAGS.clubName, COMMON_FLAGS.investor, COMMON_FLAGS.student, COMMON_FLAGS.supportData],
   },
   {
     id: "real_estate",
