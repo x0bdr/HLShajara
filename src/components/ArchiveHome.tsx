@@ -113,14 +113,6 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
               onToggle: () => toggle(setActiveEvidence, String(s)),
             }))}
           />
-          <div className="filter-notice">
-            <span className="filter-notice-mark">✕</span>
-            <span>
-              {locale === "ar"
-                ? "الفلترة حسب الطائفة أو الدين أو العرق أو العائلة غير متاحة بالتصميم."
-                : "Filtering by sect, religion, ethnicity, or family is unavailable by design."}
-            </span>
-          </div>
         </aside>
 
         {/* Results */}
