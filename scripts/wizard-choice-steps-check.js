@@ -216,21 +216,22 @@ function run() {
   // actor-class → identity (not conduct). The branch-SKIP semantics for
   // entity-subtype are unchanged; only the next/visible-count totals grow by the
   // four input steps that now interleave (identity + describe/evidence/media/
-  // about-you). Individual: 9 steps minus the skipped entity-subtype = 8.
+  // about-you) plus the terminal review step (Phase 31). Individual: 10 steps
+  // minus the skipped entity-subtype = 9.
   check("Individual branch: nextStep(actor-class) = identity (input Step 2)", () =>
     assert.equal(o.indivNext, "identity"));
   check("Individual branch: entity-subtype NOT counted", () =>
     assert.equal(o.indivSubtypeCounted, false));
-  check("Individual branch: visibleStepCount = 8 (subtype excluded)", () =>
-    assert.equal(o.indivVisibleCount, 8));
+  check("Individual branch: visibleStepCount = 9 (subtype excluded, review counted)", () =>
+    assert.equal(o.indivVisibleCount, 9));
   check("Individual branch: prevStep(conduct) = identity (subtype skipped, identity inserted)", () =>
     assert.equal(o.indivPrevFromConduct, "identity"));
   check("Entity branch: nextStep(actor-class) = entity-subtype", () =>
     assert.equal(o.entityNext, "entity-subtype"));
   check("Entity branch: entity-subtype IS counted", () =>
     assert.equal(o.entitySubtypeCounted, true));
-  check("Entity branch: visibleStepCount = 9 (all steps counted)", () =>
-    assert.equal(o.entityVisibleCount, 9));
+  check("Entity branch: visibleStepCount = 10 (all steps + review counted)", () =>
+    assert.equal(o.entityVisibleCount, 10));
 
   // (c) encode/strip
   o.roundTrip.forEach((r) => {

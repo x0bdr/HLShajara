@@ -5,12 +5,13 @@
  * Gates the behavior contract of the two Phase-30 pure-logic touch points:
  *   - src/lib/wizard/step-logic.ts (composeLocation, prefixSourceType,
  *     evidenceSourceCount, screenMediaLink, the five `requires` predicates)
- *   - src/lib/wizard/registry.ts  (the EXACT nine-step UI-SPEC §3 flow order,
- *     with `identity` inserted BETWEEN entity-subtype and conduct)
+ *   - src/lib/wizard/registry.ts  (the EXACT ten-step UI-SPEC §3 flow order,
+ *     with `identity` inserted BETWEEN entity-subtype and conduct, and the
+ *     terminal `review` step appended by Phase 31)
  *
  * Asserts (Plan 30-01 acceptance):
  *   (a) STEPS id-order is EXACTLY
- *       actor-class,entity-subtype,identity,conduct,role-in-act,describe,evidence,media,about-you
+ *       actor-class,entity-subtype,identity,conduct,role-in-act,describe,evidence,media,about-you,review
  *       — fails loudly if `identity` is not at index 2 (before conduct).
  *   (b) composeLocation: em-dash join, country-only when city empty, "" when both empty.
  *   (c) prefixSourceType: idempotent (re-apply never double-prefixes) + empty-slug passthrough.
@@ -177,11 +178,11 @@ function run() {
 
   const WANT_ORDER = [
     "actor-class", "entity-subtype", "identity", "conduct", "role-in-act",
-    "describe", "evidence", "media", "about-you",
+    "describe", "evidence", "media", "about-you", "review",
   ];
 
-  // (a) EXACT order — identity at index 2, before conduct.
-  check("STEPS id-order is EXACTLY the nine-step UI-SPEC §3 flow order", () =>
+  // (a) EXACT order — identity at index 2, before conduct; review terminal.
+  check("STEPS id-order is EXACTLY the ten-step UI-SPEC §3 flow order", () =>
     assert.deepEqual(o.stepIds, WANT_ORDER));
   check("identity sits at index 2 (before conduct)", () =>
     assert.equal(o.stepIds.indexOf("identity"), 2));
