@@ -161,6 +161,20 @@ export const STEPS = [
     titleKey: "q_aboutYou",
     requires: requiresAboutYou,
   },
+  {
+    // Step 9 — review (TERMINAL). Appended by Phase 31 (Plan 31-01 Task 4); NOT
+    // registered by Phase 29/30. `archetype: "input"` so it does NOT auto-advance
+    // — it is a terminal page the submitter dwells on, and WizardClient renders
+    // <ReviewStep> for it instead of the Choice/Input scaffolds. No `requires`
+    // (nothing follows it to gate; the affirmation + ≥2-source gate is enforced
+    // in ReviewStep/handleSubmit, not via registry reachability), no `branchWhen`
+    // (always shown + counted), no `completionGate`. After this, `nextStep` from
+    // `about-you` returns `"review"` and `state.currentStep === "review"` is a
+    // valid, reachable branch.
+    id: "review",
+    archetype: "input",
+    titleKey: "reviewStepTitle",
+  },
 ] as const satisfies ReadonlyArray<StepDef>;
 
 /** Union of the literal step ids — the type `state.ts` imports. */
