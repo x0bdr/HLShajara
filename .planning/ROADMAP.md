@@ -6,7 +6,7 @@
 - ✅ **v1.1 Hardening** — Production readiness, real data, search, 2FA (shipped 2026-05-31)
 - ✅ **v1.2 Frontend Polish** — UI consistency, shared shell, token compliance, mobile UX (shipped 2026-05-31)
 - ✅ **v1.3 Outreach & Analytics** — Publications, Twitter/X OAuth, GTM (shipped 2026-06-01)
-- 🚧 **v1.4 Report Submission Wizard** — Phases 28–33 (in progress)
+- 🟢 **v1.4 Report Submission Wizard** — Phases 28–33 (code-complete 2026-06-14; pending staging EN/AR E2E sign-off)
 - 📋 **v2.0 Scale** — Partner API, export tools, advanced analytics (future)
 
 ## Phases
@@ -65,11 +65,11 @@ See `.planning/milestones/v1.0-ROADMAP.md` for full details.
 Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1–S8** (no PII/identity/loyalty/profession-target fields; coarse location only; source-first; anonymity default-on; nothing published on submit).
 
 - [x] **Phase 28: Wizard Foundation** — Stepper shell, state machine, `?step=` routing, draft persistence, browser-history, shared client-validation library (completed 2026-06-14)
-- [ ] **Phase 29: Choice Steps** — Accessible auto-advancing card groups: actor class, entity subtype, conduct type, role-in-act
-- [ ] **Phase 30: Input & Evidence Steps** — Identity, describe-act, evidence (≥2 sources + lead note), media, submitter (anon default)
-- [ ] **Phase 31: Review, Submit & Confirmation** — Summary with edit-back, affirmation gate, `/api/submit` wiring, rejection-code → bilingual mapping
-- [ ] **Phase 32: i18n, RTL & Accessibility** — Full EN/AR `submit` key parity, RTL correctness, keyboard/screen-reader, reduced motion
-- [ ] **Phase 33: Backend Support** — `conductType` enum + triage, `leadNote`, per-source `sourceType`, anon default flip, video metadata stripping, `roleInConduct`
+- [x] **Phase 29: Choice Steps** — Accessible auto-advancing card groups: actor class, entity subtype, conduct type, role-in-act (completed 2026-06-14)
+- [x] **Phase 30: Input & Evidence Steps** — Identity, describe-act, evidence (≥2 sources + lead note), media, submitter (anon default) (completed 2026-06-14)
+- [x] **Phase 31: Review, Submit & Confirmation** — Summary with edit-back, affirmation gate, `/api/submit` wiring, rejection-code → bilingual mapping (completed 2026-06-14)
+- [x] **Phase 32: i18n, RTL & Accessibility** — Full EN/AR `submit` key parity, RTL correctness, keyboard/screen-reader, reduced motion (completed 2026-06-14)
+- [x] **Phase 33: Backend Support** — `conductType` enum + triage, `leadNote`, per-source `sourceType`, anon default flip, video metadata stripping, `roleInConduct` (completed 2026-06-14)
 
 ### 📋 v2.0 Scale (Future)
 
@@ -212,8 +212,8 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 | 26. Social Authentication | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 27. Analytics & GTM | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 28. Wizard Foundation | v1.4 | 5/5 | Complete   | 2026-06-14 |
-| 29. Choice Steps | v1.4 | 0/0 | Not started | - |
-| 30. Input & Evidence Steps | v1.4 | 0/5 | Not started | - |
-| 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
-| 32. i18n, RTL & Accessibility | v1.4 | 0/3 | Planned | - |
-| 33. Backend Support | v1.4 | 0/3 | Planned | - |
+| 29. Choice Steps | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |
+| 30. Input & Evidence Steps | v1.4 | 5/5 | ✅ Complete | 2026-06-14 |
+| 31. Review, Submit & Confirmation | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |
+| 32. i18n, RTL & Accessibility | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |
+| 33. Backend Support | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |

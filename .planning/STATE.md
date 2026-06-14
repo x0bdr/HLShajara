@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Report Submission Wizard
-status: executing
-stopped_at: Completed 28-04-PLAN.md — wizard chrome components (`src/components/wizard/{WizardProgress,WizardNav,WizardPanel}.tsx`) consuming Plan 02 WIZARD CSS + Plan 03 engine; aria-current/aria-live/focus-to-heading + Arabic-Indic counter; zero new deps/i18n keys. 4/5 Phase 28 plans done.
-last_updated: "2026-06-14T00:38:53.581Z"
+status: code_complete_pending_e2e
+stopped_at: v1.4 ALL phases (28–33) code-complete + integrated on master. Built via two parallel lanes — frontend chain 29→30→31→32 (main tree) + backend 33 (isolated worktree, merged at c3ad335). Multi-model review (0 Critical) + i18n-checker passed; 8 review fixes applied (9cc1f12). All gates green (tsc, check:i18n 318 keys, next build, 7 wizard gate scripts). Remaining: human EN/AR staging E2E sign-off + recorded deferred follow-ups.
+last_updated: "2026-06-14T11:00:00.000Z"
 last_activity: 2026-06-14
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
-  percent: 17
+  completed_phases: 6
+  total_plans: 17
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -25,11 +25,20 @@ See: `.planning/PROJECT.md` (updated 2026-06-14)
 
 ## Current Position
 
-Phase: 28 (wizard-foundation) — EXECUTING
-Plan: 5 of 5
-Status: 28-05 auto-tasks done — awaiting human-verify checkpoint (live wizard shell)
-Progress: [████████░░] 80%
+Milestone v1.4 (Report Submission Wizard): Phases 28–33 ALL code-complete + integrated on master.
+Progress: [██████████] 100% (6/6 phases, 17/17 plans)
+Status: code-complete; pending human EN/AR staging E2E sign-off before milestone close.
 Last activity: 2026-06-14
+
+**v1.4 delivery (this session):** built in two parallel lanes — frontend wizard chain 29→30→31→32
+(main tree, sequential) + backend Phase 33 (isolated git worktree, concurrent, merged at `c3ad335`).
+40 commits since the Phase-28 close. All 5 phases planned in parallel up front; cross-phase
+registry-order bug (identity vs conduct) and Phase-31 step-slug/registration blockers caught at
+plan-check and fixed before execution. Multi-model review (Claude+Codex+Kimi, 0 Critical) + i18n-checker
+clean; 8 review fixes applied (`9cc1f12`) incl. publish-path interim-token stripping (protects the public
+record). Guardrails S1–S8 verified structurally intact; `leadNote` proven never-public; evidence gate
+links-only client+server. Gates green: tsc, check:i18n (318 keys / 163 submit, EN/AR parity), next build,
+all 7 wizard gate scripts.
 
 ## Performance Metrics
 
@@ -116,6 +125,27 @@ See PROJECT.md Key Decisions table for full log.
 - **Shared validation:** client screens live in `src/lib/screens.ts` (Phase 28) and mirror `persist.ts` server screens in server order so client and server cannot drift.
 - **CSS:** new `/* ===== WIZARD / STEPPER ===== */` block in `src/components/hlshajara.css`, tokens only — no new colors, no Tailwind utilities. Brass reserved for evidence-strength; the card check mark is the only sanctioned brass use in the wizard.
 - **This supersedes** the rejected 8-sector boycott taxonomy (see `.planning/reviews/2026-06-14_report-form-taxonomy-review.html`); reintroducing any S1–S4 field is rejected at design review, not negotiated.
+
+### v1.4 Deferred Follow-ups (recorded at milestone code-complete, 2026-06-14)
+
+1. **Human EN/AR staging E2E sign-off (BLOCKS milestone close).** Walk the full wizard on staging
+   (`event.staging.sanadais.com`) in both locales — auto-advance feel + reduced-motion, Back/branch +
+   browser history + refresh-restore, deep-link redirect, identity-as-Step-2 order, S5 street-level block,
+   live screen warnings, 2-source links-only gate, anonymity default-ON clear, submit success (ref id) +
+   each rejection-code → correct step routing, RTL mirroring + Arabic-Indic counters, keyboard + screen-reader.
+2. **Apply migrations to prod** (`drizzle/0000_posts_table.sql` + `drizzle/0001_backend_support_fields.sql`)
+   — additive-only; **back up first** (owner: data-dept/operator). Not applied in this session.
+3. **Install `ffmpeg`** on hosts that will enable video uploads (`/api/upload` fails closed `FFMPEG_UNAVAILABLE`
+   and video stays UI-hidden until then — BE-05).
+4. **Interim→first-class swap-off** (the deferred §8 work): wire the wizard to send first-class `conductType`
+   + `roleInConduct` so the Phase-33 columns populate and `triageCategory` auto-fires, then retire the
+   interim `allegationClassification`-slug / `entityRole`-clause / `[TYPE:]`-title encodings. Until then the
+   publish path defensively strips the interim tokens (`9cc1f12`) so the public record stays clean; the
+   columns are currently dead (review H2).
+5. **Minor review items (Low):** map-byte MIME sniffing on `/api/upload` (review L9), return `NO_SOURCE`/
+   `WEAK_SOURCE` instead of `VALIDATION_ERROR` for a 0-link direct API submit (L8), drop redundant
+   double-strip in role encode (L10).
+6. **Not pushed:** all v1.4 commits are local on `master` — route through release-manager when ready to push.
 
 ### Blockers/Concerns
 
