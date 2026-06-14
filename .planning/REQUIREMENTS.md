@@ -63,8 +63,8 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 | WIZ-02 | Phase 28 | Complete |
 | WIZ-03 | Phase 28 | Pending |
 | WIZ-04 | Phase 28 | Complete |
-| WIZ-05 | Phase 28 | Pending |
-| WIZ-06 | Phase 28 | Pending |
+| WIZ-05 | Phase 28 | In Progress (engine: persistence.ts + reducer in 28-03; routing/guard wired in 28-05) |
+| WIZ-06 | Phase 28 | In Progress (engine: registry branching/reachability in 28-03; deep-link redirect wired in 28-05) |
 | EV-05 | Phase 28 | Complete |
 | STEP-01 | Phase 29 | Pending |
 | STEP-03 | Phase 29 | Pending |
