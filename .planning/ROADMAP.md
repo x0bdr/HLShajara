@@ -150,7 +150,10 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1â€
   2. In Arabic the wizard is RTL-correct: progress and chevrons mirror, no Arabic uppercase/letter-spacing, machine strings stay LTR, and the step counter shows Arabic-Indic digits.
   3. The full flow is keyboard-operable end to end, focus moves to the step heading on each change, and steps are announced to screen readers via an aria-live region.
   4. Reduced motion disables slide/auto-advance delay, and all text/token pairs meet WCAG AA contrast (errors never color-only).
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 32-01-PLAN.md â€” Full EN/AR submit-namespace parity (~70 keys) + standalone check:i18n parity gate; no machine/interim token as a value (INTL-01)
+- [ ] 32-02-PLAN.md â€” RTL audit/fix: logical props only, .ds-mono LTR, eyebrow resets, mirrored pills/chevrons, Arabic-Indic counters + wizard-rtl-check gate (INTL-02)
+- [ ] 32-03-PLAN.md â€” a11y audit/harden: radiogroup keyboard, focus-to-h2, single aria-live, aria-current, labelled inputs/aria-describedby, reduced-motion, 44px/AA + wizard-a11y-check gate (INTL-03)
 **UI hint**: yes
 
 ### Phase 33: Backend Support
@@ -201,5 +204,5 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1â€
 | 29. Choice Steps | v1.4 | 0/0 | Not started | - |
 | 30. Input & Evidence Steps | v1.4 | 0/0 | Not started | - |
 | 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
-| 32. i18n, RTL & Accessibility | v1.4 | 0/0 | Not started | - |
+| 32. i18n, RTL & Accessibility | v1.4 | 0/3 | Planned | - |
 | 33. Backend Support | v1.4 | 0/3 | Planned | - |
