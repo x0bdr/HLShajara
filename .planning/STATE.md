@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Report Submission Wizard
 status: executing
-stopped_at: Completed 28-04-PLAN.md — wizard chrome components (WizardProgress pills + Arabic-Indic Step N of M counter, WizardNav Back+conditional Next, WizardPanel focus-to-heading + aria-live announcer) consuming Plan 02 CSS + Plan 03 engine; zero new deps, zero new i18n keys. 4/5 Phase 28 plans done.
-last_updated: "2026-06-14T00:48:00.000Z"
+stopped_at: Completed 28-04-PLAN.md — wizard chrome components (`src/components/wizard/{WizardProgress,WizardNav,WizardPanel}.tsx`) consuming Plan 02 WIZARD CSS + Plan 03 engine; aria-current/aria-live/focus-to-heading + Arabic-Indic counter; zero new deps/i18n keys. 4/5 Phase 28 plans done.
+last_updated: "2026-06-14T00:38:53.581Z"
 last_activity: 2026-06-14
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 17
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: `.planning/PROJECT.md` (updated 2026-06-14)
 
 Phase: 28 (wizard-foundation) — EXECUTING
 Plan: 5 of 5
-Status: Ready to execute
+Status: 28-05 auto-tasks done — awaiting human-verify checkpoint (live wizard shell)
 Progress: [████████░░] 80%
 Last activity: 2026-06-14
 
@@ -64,6 +64,7 @@ Last activity: 2026-06-14
 | Phase 28 P02 | ~10 min | 2 tasks | 1 files |
 | 28 | 03 | ~16 min | 3 | 6 | 4387f0d (test), abb9a2f (feat), 886ef62 (feat), b2b312d (feat) |
 | 28 | 04 | ~14 min | 3 | 3 | 172b37b (feat), c383a83 (feat), d95b553 (feat) |
+| 28 | 05 | ~6 min | 3 auto (+ checkpoint pending) | 4 | a05195e (feat), b760869 (feat), f748529 (feat) |
 
 ## Accumulated Context
 
@@ -98,6 +99,16 @@ See PROJECT.md Key Decisions table for full log.
 - `t(step.titleKey as never)` is the sanctioned next-intl dynamic-key escape — `titleKey` is a runtime registry string; the cast is the only zero-dep option without a generated typed-key map.
 - **No new i18n keys** added (the 5 consumed keys — back/next/stepCounter/scaffoldChoiceTitle/scaffoldInputLabel — shipped in 28-03; EN+AR parity verified). **No new dependencies** (T-28-SC honored). TDD Task 1 verified via tsc + grep gates (no test framework installed; JSX can't run under `--experimental-strip-types`); full a11y/interaction testing is Phase 32's remit.
 
+**Phase 28 (28-05):**
+
+- `ChoiceStep` names its `role="radiogroup"` via `aria-label` (the resolved step title), NOT `aria-labelledby` — the step `<h2>` lives in the sibling `WizardPanel` (a Plan-04 file) and carries no id, so a self-contained label avoids a dangling ref and keeps WizardPanel untouched.
+- Scaffold choice options are the `entityType` individual-vs-organization toggle so the registry branch-skip runs live: "individual" skips the input step (`branchWhen`), "organization" surfaces it — neutral, never an S1-S4 category.
+- `WizardClient` default-exports (matching the `page.tsx` default-import analog) and also named-exports.
+- `page.tsx` wraps `<WizardClient/>` in `<Suspense fallback={null}>` — `useSearchParams` (`?step=`) requires a Suspense boundary under `generateStaticParams` static prerender; `/en|ar/submit` now build as **SSG**. (Deviation Rule 3 — build gate.)
+- Auto-advance delay = 200ms (mirrors `--dur`), immediate under `prefers-reduced-motion` (`matchMedia`, SSR-guarded). `?step=` is the single source of truth → free browser Back/Forward; unknown/unreachable id `router.replace`s to `firstIncompleteStep` (WIZ-06).
+- S1-S4 absence greps initially tripped on doc comments that *named* the banned tokens (and the word "mapping" → `map.?pin`); reworded comments to categorical phrasing so the gate passes without weakening the constraint (Deviation Rule 3).
+- **28-05 ends on a BLOCKING human-verify checkpoint** — 3 auto-tasks committed (a05195e/b760869/f748529), `next build` clean, but the plan is NOT complete until a human exercises the live wizard shell and types "approved". Plan counter NOT advanced; ROADMAP `28-05` NOT yet `[x]`.
+
 ### v1.4 Architecture Notes
 
 - **Design contract:** `.planning/UI-SPEC.md` is authoritative for this milestone. Guardrails S1–S8 (no PII/identity/loyalty/profession-target fields; coarse location; source-first; anonymity default-on; nothing published on submit) are product requirements enforced in the UI in addition to the server screens.
@@ -123,7 +134,7 @@ See PROJECT.md Key Decisions table for full log.
 
 ## Session Continuity
 
-Last session: 2026-06-14T00:48:00.000Z
-Stopped at: Completed 28-04-PLAN.md — wizard chrome components (`src/components/wizard/{WizardProgress,WizardNav,WizardPanel}.tsx`) consuming Plan 02 WIZARD CSS + Plan 03 engine; aria-current/aria-live/focus-to-heading + Arabic-Indic counter; zero new deps/i18n keys. 4/5 Phase 28 plans done.
+Last session: 2026-06-14T00:38:53.574Z
+Stopped at: 28-05 auto-tasks DONE — ChoiceStep + InputStep scaffolds (a05195e), WizardClient root wiring ?step= routing/draft/history/branching/beforeunload/submit (b760869), page.tsx swap to WizardClient + Suspense (f748529); `next build` passes, /en|ar/submit are SSG; S1-S4 fields verified absent. BLOCKING human-verify checkpoint (Task 4) PENDING — plan completes on "approved".
 Resume file: None
-Next command: `/gsd:execute-phase 28` (resume at plan 28-05 — Scaffold ChoiceStep/InputStep + WizardClient root: routing/draft/history/branching + page swap + live human-verify)
+Next command: Human verifies the live wizard shell — `npm run dev` then exercise `http://localhost:3000/en/submit` + `/ar/submit` against the 10-item §13 checklist (auto-advance + reduced-motion, Back + browser history, refresh-restore, beforeunload, deep-link redirect, RTL + Arabic-Indic counter, S1-S4 absence). On "approved": advance plan counter, mark 28-05 in ROADMAP, final metadata commit.
