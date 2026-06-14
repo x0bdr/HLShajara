@@ -64,11 +64,11 @@ const initialForm: SubmitInput = {
 
 export const initialWizardState: WizardState = {
   form: initialForm,
-  currentStep: "scaffold-choice",
+  currentStep: "actor-class",
   dirty: false,
-  visited: ["scaffold-choice"],
+  visited: ["actor-class"],
   // Nothing is actively completed at start — the seeded `entityType` is NOT a
-  // user selection, so `scaffold-choice` stays incomplete until confirmed.
+  // user selection, so `actor-class` stays incomplete until confirmed.
   completed: [],
 };
 
@@ -103,7 +103,7 @@ export type WizardAction =
   | { type: "REMOVE_FILE"; index: number }
   | { type: "GOTO_STEP"; step: StepId }
   | { type: "COMPLETE_STEP"; step: StepId }
-  | { type: "INVALIDATE_DOWNSTREAM" }
+  | { type: "INVALIDATE_SUBTYPE"; entityType: SubmitInput["entityType"] }
   | { type: "RESTORE_DRAFT"; draft: Partial<Record<string, unknown>> }
   | { type: "RESET" };
 
@@ -201,19 +201,22 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
       };
 
     /**
-     * Clear the answers that depend on the actor-class branch when the upstream
-     * choice changes (UI-SPEC §2.6) — conduct classification and role are the
-     * entityType-dependent downstream answers in the scaffold flow. The
-     * presentational layer dispatches this when the branch actually changes.
+     * Switch the actor class on Back and invalidate ONLY the orphaned
+     * entity-subtype answer (UI-SPEC §2.6, CONTEXT Success Criterion 4). The
+     * entity-subtype IS `entityType` itself, so the orphan-clear writes the
+     * freshly-chosen actor class — leaving the entity branch for "individual"
+     * resolves entityType to "individual"; switching back to an entity branch
+     * resets it to that branch and re-requires the Step-1b pick. Conduct
+     * (`allegationClassification`) and role (`entityRole`) are BRANCH-INDEPENDENT
+     * and preserved BYTE-IDENTICAL — minimal invalidation, no downstream nuke.
      */
-    case "INVALIDATE_DOWNSTREAM":
+    case "INVALIDATE_SUBTYPE":
       return {
         ...state,
         dirty: true,
         form: {
           ...state.form,
-          allegationClassification: "",
-          entityRole: "",
+          entityType: action.entityType,
         },
       };
 
@@ -237,18 +240,18 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
         ...state,
         dirty: false,
         form: { ...state.form, ...safe },
-        completed: state.completed.includes("scaffold-choice")
+        completed: state.completed.includes("actor-class")
           ? state.completed
-          : [...state.completed, "scaffold-choice"],
+          : [...state.completed, "actor-class"],
       };
     }
 
     case "RESET":
       return {
         form: { ...initialForm, sourceLinks: [{ url: "", title: "" }], sourceFiles: [] },
-        currentStep: "scaffold-choice",
+        currentStep: "actor-class",
         dirty: false,
-        visited: ["scaffold-choice"],
+        visited: ["actor-class"],
         completed: [],
       };
 

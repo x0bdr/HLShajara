@@ -1,21 +1,28 @@
 /**
- * Wizard step registry + branching/reachability (Plan 28-03, WIZ-06).
+ * Wizard step registry + branching/reachability (Plan 28-03 WIZ-06; Plan 29-01
+ * STEP-01 + STEP-03 — the four real choice steps).
  *
  * Pure, framework-free config module. NO JSX, NO React, NO `"use client"`.
  * Mirrors the `as const` typed-config style of `src/i18n/navigation.ts`.
  *
- * For Phase 28 the registry wires ONLY the two SCAFFOLD steps that prove both
- * archetypes — one `choice` step and one `input` step. Phases 29–31 append the
- * real 9 numbered steps; the branching/reachability/visible-count contract they
- * extend is encoded here now so the engine is correct before the content lands.
+ * Phase 29 replaces the two Phase-28 SCAFFOLD steps with the four REAL choice
+ * steps in UI-SPEC §4 order — `actor-class` → `entity-subtype` → `conduct` →
+ * `role-in-act`. The Individual branch SKIPS (and does not count) `entity-subtype`
+ * via `branchWhen: (f) => f.entityType === "individual"`. Phase 30 inserts the
+ * input steps (identity, describe, evidence, media, about-you) between these; the
+ * branching/reachability/visible-count contract they extend is already encoded by
+ * the generic helpers below, unchanged in signature.
  *
- * The `WizardState` import is type-only, so this module strips to zero runtime
- * dependencies and stays free of the (intentional) `state.ts ↔ registry.ts`
- * circular TYPE reference (`state.ts` imports `StepId` from here; this file
- * imports `WizardState` from there — both erased at runtime).
+ * The `WizardState` import is type-only, so it is erased at runtime (the
+ * intentional `state.ts ↔ registry.ts` circular TYPE reference: `state.ts`
+ * imports `StepId` from here; this file imports `WizardState` from there). The
+ * `ROLE_CLAUSE_TOKEN` import is a runtime VALUE — `encoding.ts` is itself
+ * runtime-pure (zero imports), so the registry stays drivable directly under
+ * Node `--experimental-strip-types`.
  */
 
 import type { WizardState } from "./state";
+import { ROLE_CLAUSE_TOKEN } from "./encoding";
 
 /* ---------- STEP DEFINITIONS ---------- */
 
@@ -43,39 +50,69 @@ export interface StepDef {
   readonly completionGate?: boolean;
   /**
    * If present and TRUE for the current form, this step is SKIPPED (branch
-   * skip) and does NOT increment the visible "Step N of M" count. Phase 29's
-   * entity-subtype step ("1b") sets `branchWhen: (f) => f.entityType === "individual"`.
-   * NOTE: the scaffold-input step is NOT branch-skipped — only the future
-   * entity-subtype step is — so it carries no `branchWhen` here.
+   * skip) and does NOT increment the visible "Step N of M" count. The
+   * `entity-subtype` step ("1b") sets `branchWhen: (f) => f.entityType === "individual"`
+   * so the Individual branch hides AND uncounts it (UI-SPEC §3); no other step
+   * carries a `branchWhen`.
    */
   readonly branchWhen?: (form: WizardState["form"]) => boolean;
 }
 
 /**
  * Ordered step list. `as const` so `StepId` can be derived from the literal ids.
- * Phase 28 scaffold: a `choice` step then an `input` step — BOTH always shown and
- * counted, so the normal forward flow reads "Step 1 of 2" then "Step 2 of 2".
  *
- * The choice step uses `completionGate` (not `branchWhen`) to demonstrate the
- * reachability contract: its `entityType` value is seeded, so it counts as
- * complete only once actively confirmed. The branch-SKIP contract (where a step
- * is hidden AND uncounted) belongs to Phase 29's entity-subtype step, not to the
- * scaffold-input — putting `branchWhen` on the only input step would hide it and
- * miscount the flow as "Step 0 of 1".
+ * Phase 29 registers the four REAL choice steps in UI-SPEC §4 order:
+ *   actor-class → entity-subtype → conduct → role-in-act.
+ *
+ * All four are `choice` archetype (Step 2 input + the rest are Phase 30). Each
+ * carries `completionGate: true` so a SEEDED value never auto-satisfies the
+ * reachability gate — only an explicit confirm (id in `state.completed`) does.
+ * `requires` predicates additionally gate on the form value once confirmed so a
+ * Back-edit that clears the value re-locks downstream steps.
+ *
+ * Branch rule: `entity-subtype` is SKIPPED + UNCOUNTED on the Individual branch
+ * (`entityType === "individual"`); on an entity branch it is required and counted.
  */
 export const STEPS = [
   {
-    id: "scaffold-choice",
+    // Step 1 — actor class (individual vs entity). entityType is seeded
+    // ("individual") so the gate must be an explicit confirm, not the seed.
+    id: "actor-class",
     archetype: "choice",
-    titleKey: "scaffoldChoiceTitle",
-    // Seeded `entityType` must not auto-satisfy the gate — require an explicit pick.
+    titleKey: "q_actorClass",
     completionGate: true,
   },
   {
-    id: "scaffold-input",
-    archetype: "input",
-    titleKey: "scaffoldInputLabel",
-    requires: (form) => form.entityName.trim().length > 0,
+    // Step 1b — entity subtype. Skipped + uncounted on the Individual branch.
+    // Required to resolve entityType to one of the four entity enum literals.
+    id: "entity-subtype",
+    archetype: "choice",
+    titleKey: "q_entitySubtype",
+    completionGate: true,
+    branchWhen: (form) => form.entityType === "individual",
+    requires: (form) =>
+      form.entityType === "organization" ||
+      form.entityType === "military_unit" ||
+      form.entityType === "security_branch" ||
+      form.entityType === "official_body",
+  },
+  {
+    // Step 3 — conduct type. Confirmed value writes a CONDUCT_SLUGS slug to
+    // allegationClassification (Plan 29-03); the gate is a non-empty slug.
+    id: "conduct",
+    archetype: "choice",
+    titleKey: "q_conduct",
+    completionGate: true,
+    requires: (form) => (form.allegationClassification ?? "").trim().length > 0,
+  },
+  {
+    // Step 4 — role-in-act. Confirmed value appends the ROLE_CLAUSE_TOKEN clause
+    // to entityRole (Plan 29-03); the gate is the clause token's presence.
+    id: "role-in-act",
+    archetype: "choice",
+    titleKey: "q_roleInAct",
+    completionGate: true,
+    requires: (form) => form.entityRole.includes(ROLE_CLAUSE_TOKEN),
   },
 ] as const satisfies ReadonlyArray<StepDef>;
 

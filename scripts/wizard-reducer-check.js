@@ -9,7 +9,8 @@
  *   - ADD_SOURCE appends an empty {url,title} row; REMOVE_SOURCE removes by index
  *   - ADD_FILE / REMOVE_FILE mutate sourceFiles immutably
  *   - GOTO_STEP sets currentStep
- *   - INVALIDATE_DOWNSTREAM clears entityType-dependent answers on branch change
+ *   - INVALIDATE_SUBTYPE rewrites entityType to the new actor class while
+ *     preserving the branch-independent conduct/role answers
  *   - RESTORE_DRAFT shallow-merges only known SubmitInput keys (never untrusted keys)
  *   - RESET returns a value deep-equal to initialWizardState
  *
@@ -69,13 +70,16 @@ const s5 = wizardReducer(s4, { type: "REMOVE_FILE", index: 0 });
 out.removeFileLen = s5.form.sourceFiles.length;
 
 // GOTO_STEP
-const s6 = wizardReducer(s1, { type: "GOTO_STEP", step: "scaffold-input" });
+const s6 = wizardReducer(s1, { type: "GOTO_STEP", step: "conduct" });
 out.gotoStep = s6.currentStep;
 
-// INVALIDATE_DOWNSTREAM (branch change clears entityType-dependent answers)
-const dirty = wizardReducer(s1, { type: "SET_FIELD", field: "allegationClassification", value: "torture" });
-const inv = wizardReducer(dirty, { type: "INVALIDATE_DOWNSTREAM" });
-out.invalidatedClassification = inv.form.allegationClassification; // expect ""
+// INVALIDATE_SUBTYPE (actor-class switch invalidates ONLY the orphaned subtype:
+// entityType is rewritten to the new actor class; conduct + role are PRESERVED)
+const withType = wizardReducer(s1, { type: "SET_FIELD", field: "entityType", value: "organization" });
+const dirty = wizardReducer(withType, { type: "SET_FIELD", field: "allegationClassification", value: "torture" });
+const inv = wizardReducer(dirty, { type: "INVALIDATE_SUBTYPE", entityType: "individual" });
+out.invalidatedSubtype = inv.form.entityType; // expect "individual"
+out.preservedClassification = inv.form.allegationClassification; // expect "torture" (preserved)
 
 // RESTORE_DRAFT — only known SubmitInput keys merged, untrusted dropped
 const s7 = wizardReducer(initialWizardState, {
@@ -143,9 +147,11 @@ function run() {
   check("ADD_FILE appends file", () => assert.equal(o.addFileLen, 1));
   check("ADD_FILE immutable", () => assert.equal(o.addFileImmutable, 0));
   check("REMOVE_FILE by index", () => assert.equal(o.removeFileLen, 0));
-  check("GOTO_STEP sets currentStep", () => assert.equal(o.gotoStep, "scaffold-input"));
-  check("INVALIDATE_DOWNSTREAM clears classification", () =>
-    assert.equal(o.invalidatedClassification, ""));
+  check("GOTO_STEP sets currentStep", () => assert.equal(o.gotoStep, "conduct"));
+  check("INVALIDATE_SUBTYPE rewrites entityType to new actor class", () =>
+    assert.equal(o.invalidatedSubtype, "individual"));
+  check("INVALIDATE_SUBTYPE preserves conduct (branch-independent)", () =>
+    assert.equal(o.preservedClassification, "torture"));
   check("RESTORE_DRAFT merges known key", () => assert.equal(o.restoreKnown, "Restored"));
   check("RESTORE_DRAFT drops untrusted keys", () => assert.equal(o.restoreUnknownDropped, true));
   check("RESET deep-equals initial", () => assert.deepEqual(o.reset, o.initial));
