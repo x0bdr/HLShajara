@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Report Submission Wizard
-status: code_complete_pending_e2e
+status: shipped_to_staging_e2e_passed
 stopped_at: v1.4 ALL phases (28–33) code-complete + integrated on master. Built via two parallel lanes — frontend chain 29→30→31→32 (main tree) + backend 33 (isolated worktree, merged at c3ad335). Multi-model review (0 Critical) + i18n-checker passed; 8 review fixes applied (9cc1f12). All gates green (tsc, check:i18n 318 keys, next build, 7 wizard gate scripts). Remaining: human EN/AR staging E2E sign-off + recorded deferred follow-ups.
 last_updated: "2026-06-14T11:00:00.000Z"
 last_activity: 2026-06-14
@@ -126,15 +126,37 @@ See PROJECT.md Key Decisions table for full log.
 - **CSS:** new `/* ===== WIZARD / STEPPER ===== */` block in `src/components/hlshajara.css`, tokens only — no new colors, no Tailwind utilities. Brass reserved for evidence-strength; the card check mark is the only sanctioned brass use in the wizard.
 - **This supersedes** the rejected 8-sector boycott taxonomy (see `.planning/reviews/2026-06-14_report-form-taxonomy-review.html`); reintroducing any S1–S4 field is rejected at design review, not negotiated.
 
-### v1.4 Deferred Follow-ups (recorded at milestone code-complete, 2026-06-14)
+### v1.4 Shipped to STAGING + E2E PASSED (2026-06-14)
 
-1. **Human EN/AR staging E2E sign-off (BLOCKS milestone close).** Walk the full wizard on staging
-   (`event.staging.sanadais.com`) in both locales — auto-advance feel + reduced-motion, Back/branch +
-   browser history + refresh-restore, deep-link redirect, identity-as-Step-2 order, S5 street-level block,
-   live screen warnings, 2-source links-only gate, anonymity default-ON clear, submit success (ref id) +
-   each rejection-code → correct step routing, RTL mirroring + Arabic-Indic counters, keyboard + screen-reader.
-2. **Apply migrations to prod** (`drizzle/0000_posts_table.sql` + `drizzle/0001_backend_support_fields.sql`)
-   — additive-only; **back up first** (owner: data-dept/operator). Not applied in this session.
+**v1.4 is deployed and verified on `staging.hlshajara.com`** (live commit `3bcb56a`). The bilingual EN/AR
+staging E2E (qa-dept, chrome-devtools) is **GO** — all 14 checklist items pass in both locales, incl. real
+submit round-trips (DB rows created), rejection routing, RTL/a11y. Staging E2E found + we fixed 4 bugs the
+static gates missed: entity branch was unreachable (`1c9e367`), valid submit 400'd on empty source titles
+(`d9c8289`), refresh lost the step (`fd4b3cd`), and the **Arabic safety classifiers were silently dead**
+(ASCII `\b` boundaries — `3bcb56a` Unicode-aware fix + `screens-arabic-check.js` corpus; this closed a real
+S2–S4 hole for the platform's primary language). Deploy path: push to `master` (the CI `deploy-staging.yml`
+SSH step is broken — missing `STAGING_SSH_*` secrets — so deploy-ops deployed manually to test-sanad
+`/var/www/hlshajarah` under x0bdr's pm2 + applied migration `0001` to the staging DB after a backup).
+
+### v1.4 Deferred Follow-ups
+
+1. ✅ **DONE — staging E2E sign-off**: automated bilingual E2E passed (GO). PROD verification still pending a
+   prod deploy (see #2).
+2. **Deploy to PRODUCTION + apply migrations to the prod DB** (`drizzle/0000` + `0001`, additive; **back up
+   first**; owner: data-dept/deploy-ops). Only STAGING is deployed + migrated so far.
+2b. **Fix CI auto-deploy**: set GitHub repo secrets `STAGING_SSH_HOST` / `STAGING_SSH_USER` (`x0bdr`) /
+   `STAGING_SSH_KEY` / `STAGING_SSH_PORT` (`2222`) so `deploy-staging.yml` works (it has failed since v1.3).
+   The deploy must target x0bdr's pm2 (`sudo -u x0bdr PM2_HOME=/home/x0bdr/.pm2`) and restore gitignored
+   `ecosystem.config.js` + `.env.local`. Also remove root's pm2 hlshajarah entry permanently.
+2c. **Reconcile the drizzle journal on staging**: deploy-ops applied `0001` via direct `psql` (idempotent),
+   so `__drizzle_migrations` does not reflect it — a future `drizzle-kit migrate` could replay. data-dept to
+   reconcile before relying on drizzle-kit on staging. Stale server migration set preserved under
+   `/var/www/hlshajarah/backups/predeploy_untracked_20260614_092453/drizzle_server/`.
+2d. **EN banned-pattern coverage** (security-dept): the Arabic classifier `\b` hole is fixed; the EN list is
+   thin *by design* (curated EN + human review per PROJECT.md). Expand EN coverage if desired (not a regression).
+2e. **Staging test rows**: QA created `pending` submissions id 2–10 (fake test data) — purge from the staging
+   DB when convenient (not published; harmless).
+3. **Apply migrations to prod** — folded into #2 above.
 3. **Install `ffmpeg`** on hosts that will enable video uploads (`/api/upload` fails closed `FFMPEG_UNAVAILABLE`
    and video stays UI-hidden until then — BE-05).
 4. **Interim→first-class swap-off** (the deferred §8 work): wire the wizard to send first-class `conductType`
