@@ -110,7 +110,10 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
   3. Conduct type and role-in-act are each chosen from a closed card set with one-line definitions; there is no card for sect, loyalty, opinion, or profession/sector (S2–S4 verified absent).
   4. Returning via Back re-renders a choice step with the previously chosen card already selected and focused; switching an upstream branch invalidates orphaned downstream answers and shows a one-line notice.
   5. The whole card group is keyboard-operable as a radio group (Arrow to move, Enter/Space to confirm) with `aria-checked` state.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 29-01-PLAN.md — Registry rework to the 4 real choice steps (1/1b/3/4) + branch-skip rule, pure interim-encoding module (14 conduct + 7 role slugs, role-clause token + encode/strip), reducer orphan-only invalidation; tsc + standalone Node driver
+- [ ] 29-02-PLAN.md — Full EN+AR `submit` keys for all 4 choice steps (verbatim UI-SPEC §3 names: q_actorClass/actor*, q_entitySubtype, q_conduct + 14×conduct_*+_def, q_roleInAct + 7×role_*) + standalone EN↔AR parity check wired as `check:i18n`
+- [ ] 29-03-PLAN.md — Wire WizardClient to render the 4 real choice steps with interim-encoding dispatch (slug→allegationClassification, clause→entityRole, enum→entityType), Back select+focus / no-re-advance / re-confirm-advances, branch-switch orphan invalidation aria-live notice, Other hand-off; full `next build`
 **UI hint**: yes
 
 ### Phase 30: Input & Evidence Steps
