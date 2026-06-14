@@ -45,6 +45,7 @@ import {
   initialWizardState,
   type WizardState,
 } from "@/lib/wizard/state";
+import type { SubmitInput } from "@/lib/validation";
 import {
   STEPS,
   type StepId,
@@ -103,6 +104,53 @@ function prefersReducedMotion(): boolean {
 /** Whether a step id is a known registry step. */
 function isKnownStep(id: string): id is StepId {
   return STEPS.some((s) => s.id === id);
+}
+
+/** A string that is non-empty after trimming. */
+function hasText(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
+/**
+ * Build the /api/submit payload from the wizard form, OMITTING every optional
+ * string that is empty/whitespace rather than sending it as "" (BLOCKER 2). The
+ * server schema marks these `.min(1).optional()` / `.email()`, so an explicit ""
+ * is REJECTED (e.g. an untitled source link 400s "sourceLinks: Too small"). The
+ * Zod contract already accepts the key being ABSENT, so dropping empties — never
+ * sending "" — is the correct client-side fix (validation.ts is the shared
+ * contract and stays untouched). Required strings (entityName, entityRole,
+ * allegationDescription, source url) are passed through verbatim; their own
+ * gates already block empty values upstream.
+ */
+function buildSubmitPayload(form: SubmitInput): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    entityName: form.entityName,
+    entityType: form.entityType,
+    entityRole: form.entityRole,
+    allegationDescription: form.allegationDescription,
+    sourceFiles: form.sourceFiles,
+    isAnonymous: form.isAnonymous,
+    sourceLinks: form.sourceLinks.map((link) => {
+      const row: Record<string, unknown> = { url: link.url };
+      if (hasText(link.title)) row.title = link.title.trim();
+      // `sourceType` is `.optional()` with no empty-string union member — only
+      // send it when it's a real slug (interim encoding keeps it on the title for
+      // now, but guard regardless so a future first-class field never sends "").
+      const sourceType = (link as { sourceType?: unknown }).sourceType;
+      if (hasText(sourceType)) row.sourceType = sourceType.trim();
+      return row;
+    }),
+  };
+  // Top-level optionals: omit when empty/whitespace (each is `.optional()` or
+  // `.email().or(literal(""))` — but "" round-trips cleaner as absent).
+  if (hasText(form.allegationPeriod)) payload.allegationPeriod = form.allegationPeriod.trim();
+  if (hasText(form.allegationLocation)) payload.allegationLocation = form.allegationLocation.trim();
+  if (hasText(form.allegationClassification))
+    payload.allegationClassification = form.allegationClassification.trim();
+  if (hasText(form.leadNote)) payload.leadNote = form.leadNote.trim();
+  if (hasText(form.submitterEmail)) payload.submitterEmail = form.submitterEmail.trim();
+  if (hasText(form.submitterName)) payload.submitterName = form.submitterName.trim();
+  return payload;
 }
 
 interface SubmitResult {
@@ -404,7 +452,9 @@ export function WizardClient() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state.form),
+        // Omit empty optional strings so the server schema's `.min(1).optional()`
+        // fields never 400 on an "" (BLOCKER 2 — untitled sources are valid).
+        body: JSON.stringify(buildSubmitPayload(state.form)),
       });
       data = await res.json();
     } catch {
