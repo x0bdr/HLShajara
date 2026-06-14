@@ -26,7 +26,7 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 - [ ] **EV-02**: User can add an optional, clearly-labeled non-public "lead note" that never counts as a source and can never publish on its own (replaces personal-experience-as-evidence).
 - [ ] **EV-03**: User can optionally attach supporting media, labeled as supporting-only and non-public, with safety guidance (metadata stripped, no faces of victims/children/bystanders).
 - [ ] **EV-04**: The form contains NO field for phone, car plate, home/street address, map pin, personal social handle, sect/identity, loyalty/opinion, or profession-target category (S1–S4 — verified absent by design).
-- [ ] **EV-05**: Client-side validation mirrors the server screens (`NO_SOURCE`/`WEAK_SOURCE`/`GROUP_TARGET`/`INCITEMENT`/`HATE_TONE`/`INNOCENT_PARTY`/`PRIVATE_TARGETING`/`MISMATCH`) in server order; street-level location input is blocked inline.
+- [x] **EV-05**: Client-side validation mirrors the server screens (`NO_SOURCE`/`WEAK_SOURCE`/`GROUP_TARGET`/`INCITEMENT`/`HATE_TONE`/`INNOCENT_PARTY`/`PRIVATE_TARGETING`/`MISMATCH`) in server order; street-level location input is blocked inline.
 
 ### Review & submit (REV)
 - [ ] **REV-01**: User reviews a complete summary of everything that will be sent (optional fields show "—") with an Edit link back to each step.
@@ -65,7 +65,7 @@ Scope: Replace the single-page `/submit` form with a lawful, source-gated, card-
 | WIZ-04 | Phase 28 | Pending |
 | WIZ-05 | Phase 28 | Pending |
 | WIZ-06 | Phase 28 | Pending |
-| EV-05 | Phase 28 | Pending |
+| EV-05 | Phase 28 | Complete |
 | STEP-01 | Phase 29 | Pending |
 | STEP-03 | Phase 29 | Pending |
 | STEP-02 | Phase 30 | Pending |

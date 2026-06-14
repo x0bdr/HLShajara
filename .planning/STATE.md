@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Report Submission Wizard
-status: planning
-last_updated: "2026-06-14T00:00:00.000Z"
+status: executing
+stopped_at: v1.4 roadmap created — Phases 28–33 defined, 24/24 requirements mapped, v2.0 placeholders renumbered to 34–37
+last_updated: "2026-06-14T00:09:14.540Z"
 last_activity: 2026-06-14
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 5
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -20,15 +21,15 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-06-14)
 
 **Core value:** Every published claim concerns a named individual or entity, backed by a credible public source. No source, no publication. No group, no identity-based targeting.
-**Current focus:** v1.4 Report Submission Wizard — lawful, source-gated, card-driven multi-step intake (named actor + conduct + ≥2 sources). Design contract: `.planning/UI-SPEC.md`.
+**Current focus:** Phase 28 — wizard-foundation
 
 ## Current Position
 
-Phase: 28 — Wizard Foundation
-Plan: — (not yet planned)
-Status: Planning (roadmap created; `/gsd:plan-phase 28` next)
-Progress: [░░░░░░] 0/6 phases (28–33)
-Last activity: 2026-06-14 — v1.4 roadmap created (Phases 28–33), v2.0 future placeholders renumbered to 34–37
+Phase: 28 (wizard-foundation) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
+Progress: [██░░░░░░░░] 20%
+Last activity: 2026-06-14
 
 ## Performance Metrics
 
@@ -55,11 +56,22 @@ Last activity: 2026-06-14 — v1.4 roadmap created (Phases 28–33), v2.0 future
 - Total phases completed: 4 (Phases 24–27)
 - Execution time: 1 session
 
+**Velocity (v1.4 — in progress):**
+
+| Phase | Plan | Duration | Tasks | Files | Commits |
+|-------|------|----------|-------|-------|---------|
+| 28 | 01 | ~12 min | 2 | 3 | 88bcffe (test), 75be711 (feat), bc01155 (refactor) |
+
 ## Accumulated Context
 
 ### Decisions
 
 See PROJECT.md Key Decisions table for full log.
+
+**Phase 28 (28-01):**
+- `src/lib/screens.ts` is a **verbatim (byte-identical) lift** of the persist.ts regex arrays + screen* bodies; persist.ts now re-imports from it → one source of truth, client/server cannot drift (EV-05).
+- `runScreens` `sourceCount` mirrors `sourceLinks.length` ONLY — uploaded files do NOT count toward WEAK_SOURCE (matches `route.ts:32`). Documented in screens.ts + asserted by parity fixture. Phase 30 must wire the evidence step accordingly.
+- Parity regression (`scripts/screens-parity-check.js`) drives the TS lib via Node 24 `--experimental-strip-types` instead of installing a test framework (package installs avoided).
 
 ### v1.4 Architecture Notes
 
@@ -75,6 +87,7 @@ See PROJECT.md Key Decisions table for full log.
 - **Phase 33 / BE-05:** video uploads are hidden in the media step (images/docs only) until `ffmpeg -map_metadata -1` video metadata stripping lands; do not enable video before then.
 - Phase 5 (Legal Release Gate): production publish of any living person remains blocked until lawyer sign-off + jurisdiction Key Decision are recorded.
 - Free-text incitement/hate-tone classifier (AR + EN): curated banned-pattern lists + human review behind a swappable interface; ML classification is a separately-researched future effort.
+- **Latent screen properties surfaced by 28-01 (pre-existing v1.0 behavior, mirrored not changed):** (1) `INCITEMENT` token set is a strict subset of the group-target screen, so it is effectively unreachable — `GROUP_TARGET` fires first. (2) The Arabic screen regexes use ASCII `\b` boundaries, so purely-Arabic terms only match when ASCII-flanked. Both are candidates for the incitement/hate-tone classifier rework; changing them now would alter `/api/submit` behavior.
 
 ### v1.3 Specific Notes (prior milestone)
 
@@ -85,7 +98,7 @@ See PROJECT.md Key Decisions table for full log.
 
 ## Session Continuity
 
-Last session: 2026-06-14
-Stopped at: v1.4 roadmap created — Phases 28–33 defined, 24/24 requirements mapped, v2.0 placeholders renumbered to 34–37
-Resume file: `.planning/ROADMAP.md`
-Next command: `/gsd:plan-phase 28`
+Last session: 2026-06-14T00:09:14.534Z
+Stopped at: Completed 28-01-PLAN.md — shared validation screens lib (`src/lib/screens.ts`) + persist.ts refactor + parity regression. 1/5 Phase 28 plans done.
+Resume file: `.planning/phases/28-wizard-foundation/28-02-PLAN.md`
+Next command: `/gsd:execute-phase 28` (resume at plan 28-02 — WIZARD/STEPPER CSS)
