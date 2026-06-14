@@ -24,7 +24,7 @@
  */
 
 import { useState, type Dispatch } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
 import {
@@ -51,6 +51,15 @@ const SOURCE_TYPE_LABEL_KEY = {
 
 export function EvidenceStep({ form, dispatch }: EvidenceStepProps) {
   const t = useTranslations("submit");
+  const locale = useLocale();
+
+  // Arabic-Indic digits in AR for the source/file counter. Bare ICU {count}/{files}
+  // default to latn under `ar`, so each count is pre-formatted via the locale
+  // numbering system before interpolation (UI-SPEC §7, INTL-02).
+  const fmt = new Intl.NumberFormat(
+    locale,
+    locale === "ar" ? { numberingSystem: "arab" } : undefined,
+  );
 
   // Per-row selected source-type slug (parallel to sourceLinks). Local UI state —
   // the slug itself has no contract field; it is encoded into the row title.
@@ -100,6 +109,7 @@ export function EvidenceStep({ form, dispatch }: EvidenceStepProps) {
               type="url"
               className="ds-input"
               placeholder={t("sourceUrl")}
+              aria-label={t("sourceUrl")}
               required
               value={link.url}
               onChange={(e) =>
@@ -125,6 +135,7 @@ export function EvidenceStep({ form, dispatch }: EvidenceStepProps) {
               type="text"
               className="ds-input"
               placeholder={t("sourceTitleField")}
+              aria-label={t("sourceTitleField")}
               value={link.title ?? ""}
               onChange={(e) =>
                 dispatch({ type: "SET_SOURCE", index: i, field: "title", value: e.target.value })
@@ -149,18 +160,19 @@ export function EvidenceStep({ form, dispatch }: EvidenceStepProps) {
 
       <p className="ds-caption mt-16">
         {t("sourceCounter", {
-          count: evidenceSourceCount(form),
-          files: form.sourceFiles.length,
+          count: fmt.format(evidenceSourceCount(form)),
+          files: fmt.format(form.sourceFiles.length),
         })}
       </p>
 
       {/* Non-public lead note — written to form.leadNote ONLY, never a source. */}
       <div className="legal mt-16">
-        <div className="t">{t("leadNote")}</div>
+        <div className="t" id="lead-note-label">{t("leadNote")}</div>
         <p>{t("leadNoteHint")}</p>
         <textarea
           className="ds-input"
           rows={3}
+          aria-labelledby="lead-note-label"
           style={{ resize: "vertical" }}
           value={form.leadNote ?? ""}
           onChange={(e) =>

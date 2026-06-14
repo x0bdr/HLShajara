@@ -259,16 +259,18 @@ export function ReviewStep({
           <span className="ds-body-sm">{t("affirm")}</span>
         </label>
 
-        {/* Gate 1 — sources < 2 (shown only when its own condition is unmet). */}
+        {/* Gate 1 — sources < 2 (shown only when its own condition is unmet).
+            role="status" is an implicit polite live region; the explicit live attr is
+            omitted so the wizard keeps exactly ONE step-announcer region (WizardPanel). */}
         {!sourcesOk ? (
-          <div className="legal legal-error mt-16" role="status" aria-live="polite">
+          <div className="legal legal-error mt-16" role="status">
             <p>{t("errSourcesGate")}</p>
           </div>
         ) : null}
 
         {/* Gate 2 — not affirmed (shown only when its own condition is unmet). */}
         {!affirmed ? (
-          <div className="legal legal-error mt-16" role="status" aria-live="polite">
+          <div className="legal legal-error mt-16" role="status">
             <p>{t("errAffirmGate")}</p>
           </div>
         ) : null}

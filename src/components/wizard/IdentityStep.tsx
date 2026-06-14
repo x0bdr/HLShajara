@@ -151,8 +151,11 @@ export function IdentityStep({ form, dispatch }: IdentityStepProps) {
         </div>
       </div>
 
+      {/* role="status" is an implicit polite live region; the explicit live
+          attribute is intentionally omitted so the wizard tree keeps exactly ONE
+          step-announcer region (the WizardPanel) — no double-announce. */}
       {!mismatch.ok && (
-        <div className="filter-notice" role="status" aria-live="polite">
+        <div className="filter-notice" role="status">
           {t("idMismatchNotice")}
         </div>
       )}
@@ -164,11 +167,13 @@ export function IdentityStep({ form, dispatch }: IdentityStepProps) {
           type="text"
           className="ds-input"
           value={city}
+          aria-invalid={cityError || undefined}
+          aria-describedby={cityError ? "id-area-error" : undefined}
           onChange={(e) => onCityChange(e.target.value)}
         />
         <p className="ds-caption">{t("idAreaHint")}</p>
         {cityError && (
-          <p className="legal-error" role="alert">
+          <p id="id-area-error" className="legal-error" role="alert">
             {t("idLocationError")}
           </p>
         )}

@@ -20,7 +20,7 @@
  */
 
 import type { Dispatch } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
 import { screenDescribeStep } from "@/lib/wizard/step-logic";
@@ -41,6 +41,15 @@ const WARN_KEY: Record<string, string> = {
 
 export function DescribeStep({ form, dispatch }: DescribeStepProps) {
   const t = useTranslations("submit");
+  const locale = useLocale();
+
+  // Arabic-Indic digits in AR (the counter is user-visible text). Bare ICU {count}
+  // defaults to latn under `ar`, so the count is pre-formatted via the locale
+  // numbering system before interpolation (UI-SPEC §7, INTL-02).
+  const fmt = new Intl.NumberFormat(
+    locale,
+    locale === "ar" ? { numberingSystem: "arab" } : undefined,
+  );
 
   const screen = screenDescribeStep(form);
   const warnKey = !screen.ok ? WARN_KEY[screen.code] : undefined;
@@ -57,6 +66,8 @@ export function DescribeStep({ form, dispatch }: DescribeStepProps) {
           required
           style={{ resize: "vertical" }}
           value={form.allegationDescription}
+          aria-describedby={warnKey ? "desc-text-error" : undefined}
+          aria-invalid={warnKey ? true : undefined}
           onChange={(e) =>
             dispatch({
               type: "SET_FIELD",
@@ -66,10 +77,10 @@ export function DescribeStep({ form, dispatch }: DescribeStepProps) {
           }
         />
         <p className="ds-caption">
-          {t("descCounter", { count: form.allegationDescription.length })}
+          {t("descCounter", { count: fmt.format(form.allegationDescription.length) })}
         </p>
         {warnKey && (
-          <p className="legal-error" role="alert">
+          <p id="desc-text-error" className="legal-error" role="alert">
             {t(warnKey as never)}
           </p>
         )}

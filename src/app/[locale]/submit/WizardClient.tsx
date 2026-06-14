@@ -499,7 +499,7 @@ export function WizardClient() {
   if (submitted) {
     return (
       <div className="wizard">
-        <div className="legal legal-success mt-16 mb-16">
+        <div className="legal legal-success mt-16 mb-16" role="status">
           <div className="t">{t("successTitle")}</div>
           <p>{t("successBody")}</p>
           <p className="mt-16">
@@ -537,7 +537,7 @@ export function WizardClient() {
           above). On a server rejection this shows t(messageKey) at the offending
           step after goTo routes the user there; the draft is NOT cleared. */}
       {result && !result.ok && (
-        <div className="legal legal-error mt-16 mb-16" role="status" aria-live="polite">
+        <div className="legal legal-error mt-16 mb-16" role="alert">
           <div className="t">{t("error")}</div>
           <p>{result.message}</p>
         </div>
@@ -551,11 +551,13 @@ export function WizardClient() {
         stepTotal={stepTotal}
       >
         {/* Transient orphan-invalidation notice (CONTEXT Success Criterion 4):
-            a one-line `.legal` block with aria-live="polite" — NOT a modal/toast.
+            a one-line `.legal` block — NOT a modal/toast. role="status" is an
+            implicit polite live region; the explicit live attr is omitted so the
+            wizard keeps exactly ONE step-announcer region (the WizardPanel).
             Shown when an actor-class switch on Back cleared the entity-subtype
             answer; clears on the next navigation/confirm. */}
         {showSubtypeNotice && (
-          <div className="legal mb-16" role="status" aria-live="polite">
+          <div className="legal mb-16" role="status">
             <p>{t("invalidateSubtypeNotice")}</p>
           </div>
         )}

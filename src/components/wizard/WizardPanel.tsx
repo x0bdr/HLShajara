@@ -11,9 +11,9 @@
  *     `<h2 tabIndex={-1}>` so keyboard + screen-reader users land on the new
  *     heading. It NEVER traps focus (the heading is the only programmatic
  *     focus target; tabbing proceeds normally).
- *  2. Live announcement — a SINGLE persistent visually-hidden
- *     `aria-live="polite"` region whose text content is updated (not remounted)
- *     to "Step N of M, <title>" on change, so assistive tech reads the new step.
+ *  2. Live announcement — a SINGLE persistent visually-hidden polite live
+ *     region whose text content is updated (not remounted) to
+ *     "Step N of M, <title>" on change, so assistive tech reads the new step.
  *
  * Security (T-28-08): renders only React text + `children` — it never injects
  * raw HTML, so any submitter-derived value passed as a child is auto-escaped by

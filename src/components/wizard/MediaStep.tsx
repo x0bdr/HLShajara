@@ -95,6 +95,7 @@ export function MediaStep({ form, dispatch }: MediaStepProps) {
           accept={ACCEPTED_TYPES}
           disabled={uploading}
           className="ds-input"
+          aria-label={t("mediaTitle")}
           style={{ cursor: uploading ? "not-allowed" : "pointer" }}
           onChange={handleFileChange}
         />
@@ -127,11 +128,13 @@ export function MediaStep({ form, dispatch }: MediaStepProps) {
           type="url"
           className="ds-input"
           value={link}
+          aria-invalid={linkError || undefined}
+          aria-describedby={linkError ? "media-link-error" : undefined}
           onChange={(e) => onLinkChange(e.target.value)}
           onBlur={(e) => onLinkChange(e.target.value)}
         />
         {linkError && (
-          <p className="legal-error" role="alert">
+          <p id="media-link-error" className="legal-error" role="alert">
             {t("mediaLinkError")}
           </p>
         )}
