@@ -206,6 +206,7 @@
     "contactType_instagram": "Instagram",
     "contactType_telegram": "Telegram",
     "contactType_whatsapp": "WhatsApp",
+    "contactType_phone": "Phone",
     "contactType_email": "Email",
     "reviewContactMethods": "Contact methods",
     "reviewStepTitle": "Review before submit",

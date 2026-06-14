@@ -4,13 +4,13 @@
  * AboutYouStep — Step 7 of the report wizard (Phase 30, STEP-05).
  *
  * Anonymity-default-on guardrail. Replaces the single optional email field with
- * a dynamic list of contact methods (X, Facebook, Instagram, Telegram, WhatsApp,
- * Email). Each method is rendered with its brand icon, a type dropdown, and a
- * free-text value input. Users may add or remove methods. Toggling anonymous ON
- * clears all contact data and disables the inputs.
+ * a dynamic list of contact methods. Adding a method is done through an
+ * icon-only dropdown; each added row shows the icon + a value input + remove.
+ *
+ * Supported methods: X, Facebook, Instagram, Telegram, WhatsApp, Phone, Email.
  */
 
-import type { Dispatch } from "react";
+import { useRef, type Dispatch } from "react";
 import { useTranslations } from "next-intl";
 import type { SubmitInput, ContactMethodType } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
@@ -26,8 +26,13 @@ const CONTACT_METHODS: { type: ContactMethodType; labelKey: string }[] = [
   { type: "instagram", labelKey: "contactType_instagram" },
   { type: "telegram", labelKey: "contactType_telegram" },
   { type: "whatsapp", labelKey: "contactType_whatsapp" },
+  { type: "phone", labelKey: "contactType_phone" },
   { type: "email", labelKey: "contactType_email" },
 ];
+
+function labelKeyFor(type: ContactMethodType): string {
+  return CONTACT_METHODS.find((m) => m.type === type)?.labelKey ?? type;
+}
 
 function ContactMethodIcon({
   type,
@@ -75,6 +80,12 @@ function ContactMethodIcon({
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
         </svg>
       );
+    case "phone":
+      return (
+        <svg {...svgProps}>
+          <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+        </svg>
+      );
     case "email":
       return (
         <svg {...svgProps}>
@@ -86,10 +97,17 @@ function ContactMethodIcon({
   }
 }
 
+function placeholderFor(type: ContactMethodType, t: (k: string) => string): string {
+  if (type === "email") return "name@example.com";
+  if (type === "phone" || type === "whatsapp") return t("contactMethodValue");
+  return "@username";
+}
+
 export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
   const t = useTranslations("submit");
   const methods = form.reportMetadata?.contactMethods ?? [];
   const disabled = form.isAnonymous;
+  const menuRef = useRef<HTMLDetailsElement>(null);
 
   function setMethods(next: typeof methods) {
     dispatch({ type: "SET_METADATA", field: "contactMethods", value: next });
@@ -106,19 +124,23 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
     }
   }
 
-  function addMethod() {
-    setMethods([...methods, { type: "email", value: "" }]);
+  function addMethod(type: ContactMethodType) {
+    if (methods.some((m) => m.type === type)) return;
+    setMethods([...methods, { type, value: "" }]);
+    menuRef.current?.removeAttribute("open");
   }
 
   function removeMethod(index: number) {
     setMethods(methods.filter((_, i) => i !== index));
   }
 
-  function updateMethod(index: number, patch: Partial<(typeof methods)[number]>) {
-    setMethods(
-      methods.map((m, i) => (i === index ? { ...m, ...patch } : m))
-    );
+  function updateMethod(index: number, value: string) {
+    setMethods(methods.map((m, i) => (i === index ? { ...m, value } : m)));
   }
+
+  const availableMethods = CONTACT_METHODS.filter(
+    (m) => !methods.some((existing) => existing.type === m.type)
+  );
 
   return (
     <div className="flex-col">
@@ -155,11 +177,6 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
       <div className="form-field" style={{ marginTop: 8 }}>
         <div className="flex-between" style={{ marginBottom: 8 }}>
           <label style={{ margin: 0 }}>{t("contactMethodsTitle")}</label>
-          {!disabled && (
-            <button type="button" className="btn ghost btn-sm" onClick={addMethod}>
-              {t("addContactMethod")}
-            </button>
-          )}
         </div>
 
         {methods.length === 0 && !disabled ? (
@@ -168,8 +185,12 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
 
         <div className="flex-col" style={{ gap: 10 }}>
           {methods.map((method, index) => (
-            <div key={index} className="form-row" style={{ alignItems: "flex-end" }}>
-              <div className="form-field" style={{ flex: "0 0 auto", minWidth: 48 }}>
+            <div key={method.type} className="form-row" style={{ alignItems: "flex-end" }}>
+              <div
+                className="form-field"
+                style={{ flex: "0 0 auto", minWidth: 48 }}
+                title={t(labelKeyFor(method.type))}
+              >
                 <div
                   className="ds-input"
                   style={{
@@ -185,56 +206,66 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
                 </div>
               </div>
 
-                <div className="form-field" style={{ flex: 1, minWidth: 130 }}>
-                  <select
-                    id={`contact-type-${index}`}
-                    className="ds-select"
-                    disabled={disabled}
-                    value={method.type}
-                    aria-label={t("contactMethod")}
-                    onChange={(e) =>
-                      updateMethod(index, { type: e.target.value as ContactMethodType })
-                    }
-                  >
-                    {CONTACT_METHODS.map((m) => (
-                      <option key={m.type} value={m.type}>
-                        {t(m.labelKey)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-field" style={{ flex: 2, minWidth: 180 }}>
-                  <input
-                    id={`contact-value-${index}`}
-                    type={method.type === "email" ? "email" : "text"}
-                    className="ds-input"
-                    disabled={disabled}
-                    value={method.value}
-                    aria-label={t("contactMethodValue")}
-                    placeholder={
-                      method.type === "email"
-                        ? "name@example.com"
-                        : method.type === "whatsapp"
-                          ? t("contactMethodValue")
-                          : "@username"
-                    }
-                    onChange={(e) => updateMethod(index, { value: e.target.value })}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  className="btn danger btn-sm"
+              <div className="form-field" style={{ flex: 1, minWidth: 180 }}>
+                <input
+                  id={`contact-value-${index}`}
+                  type={method.type === "email" ? "email" : "text"}
+                  className="ds-input"
                   disabled={disabled}
-                  onClick={() => removeMethod(index)}
-                  aria-label={t("removeContactMethod")}
-                >
-                  {t("removeContactMethod")}
-                </button>
+                  value={method.value}
+                  aria-label={`${t("contactMethodValue")} (${t(labelKeyFor(method.type))})`}
+                  placeholder={placeholderFor(method.type, t)}
+                  onChange={(e) => updateMethod(index, e.target.value)}
+                />
               </div>
+
+              <button
+                type="button"
+                className="btn danger btn-sm"
+                disabled={disabled}
+                onClick={() => removeMethod(index)}
+                aria-label={t("removeContactMethod")}
+              >
+                {t("removeContactMethod")}
+              </button>
+            </div>
           ))}
         </div>
+
+        {!disabled && availableMethods.length > 0 && (
+          <details ref={menuRef} className="contact-method-add" style={{ marginTop: 12 }}>
+            <summary className="btn ghost btn-sm" style={{ cursor: "pointer" }}>
+              {t("addContactMethod")}
+            </summary>
+            <div
+              className="contact-method-menu"
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginTop: 8,
+                padding: 10,
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                background: "var(--bg2)",
+              }}
+            >
+              {availableMethods.map((m) => (
+                <button
+                  key={m.type}
+                  type="button"
+                  className="btn ghost btn-sm"
+                  title={t(m.labelKey)}
+                  onClick={() => addMethod(m.type)}
+                  aria-label={t(m.labelKey)}
+                  style={{ padding: 8, minWidth: 40 }}
+                >
+                  <ContactMethodIcon type={m.type} size={20} />
+                </button>
+              ))}
+            </div>
+          </details>
+        )}
       </div>
 
       <p className="ds-caption">{t("anonHelp")}</p>

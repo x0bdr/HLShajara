@@ -35,6 +35,7 @@ export const contactMethodTypes = [
   "instagram",
   "telegram",
   "whatsapp",
+  "phone",
   "email",
 ] as const;
 
