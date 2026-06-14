@@ -66,6 +66,16 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
     };
   });
 
+  function entityNameLabel(): string {
+    const cat = form.reportCategory;
+    const sub = meta.orgType;
+    if (cat === "commercial" && sub === "brand") return t("etnNameBrand");
+    if (cat === "individuals") return t("etnNameIndividual");
+    if (cat === "real_estate") return t("etnNameProperty");
+    if (cat === "tourism" && (sub === "taxi" || sub === "private_car")) return t("etnNameVehicle");
+    return t("etnNameOrganization");
+  }
+
   return (
     <div className="flex-col">
       <CardSelect
@@ -95,7 +105,7 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
       )}
 
       <div className="form-field">
-        <label htmlFor="etn-name">{t("etnName")}</label>
+        <label htmlFor="etn-name">{entityNameLabel()}</label>
         <input
           id="etn-name"
           type="text"

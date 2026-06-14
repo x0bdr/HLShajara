@@ -5,6 +5,8 @@
  *
  * Captures coarse location (country required, state/city/nearest optional),
  * contact/website, social-media accounts, and an optional Google Maps link.
+ * For Syria the city/state is a dropdown of governorates; for other countries
+ * it is a free-text field.
  */
 
 import { useState, useEffect, type Dispatch } from "react";
@@ -20,20 +22,37 @@ interface LocationInfoStepProps {
 }
 
 const COUNTRIES = [
-  "Syria",
-  "Lebanon",
-  "Jordan",
-  "Turkey",
-  "Iraq",
-  "Germany",
-  "France",
-  "Netherlands",
-  "Sweden",
-  "United Kingdom",
-  "Other",
+  { value: "سوريا", label: "سوريا" },
+  { value: "لبنان", label: "لبنان" },
+  { value: "الأردن", label: "الأردن" },
+  { value: "تركيا", label: "تركيا" },
+  { value: "العراق", label: "العراق" },
+  { value: "ألمانيا", label: "ألمانيا" },
+  { value: "فرنسا", label: "فرنسا" },
+  { value: "هولندا", label: "هولندا" },
+  { value: "السويد", label: "السويد" },
+  { value: "المملكة المتحدة", label: "المملكة المتحدة" },
+  { value: "أخرى", label: "أخرى" },
 ];
 
-const DEFAULT_COUNTRY = "Syria";
+const SYRIAN_GOVERNORATES = [
+  "دمشق",
+  "ريف دمشق",
+  "حلب",
+  "حمص",
+  "حماة",
+  "اللاذقية",
+  "طرطوس",
+  "دير الزور",
+  "الرقة",
+  "الحسكة",
+  "القنيطرة",
+  "السويداء",
+  "درعا",
+  "إدلب",
+];
+
+const DEFAULT_COUNTRY = "سوريا";
 
 export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const t = useTranslations("submit");
@@ -43,6 +62,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const initialCountry = seeded[0] || meta.country || DEFAULT_COUNTRY;
   const [country, setCountry] = useState(initialCountry);
   const [city, setCity] = useState(seeded.length > 1 ? seeded.slice(1).join(" — ") : meta.city ?? "");
+  const isSyria = country === DEFAULT_COUNTRY;
 
   // Seed the composed location when the step mounts if we defaulted to Syria.
   useEffect(() => {
@@ -69,8 +89,10 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
 
   function onCountryChange(value: string) {
     setCountry(value);
+    setCity(""); // reset city when country changes
     dispatch({ type: "SET_METADATA", field: "country", value });
-    writeLocation(value, city);
+    dispatch({ type: "SET_METADATA", field: "city", value: "" });
+    writeLocation(value, "");
   }
 
   function onCityChange(value: string) {
@@ -107,8 +129,8 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           >
             <option value="">—</option>
             {COUNTRIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+              <option key={c.value} value={c.value}>
+                {c.label}
               </option>
             ))}
           </select>
@@ -116,14 +138,31 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
 
         <div className="form-field">
           <label htmlFor="loc-city">{t("locCity")}</label>
-          <input
-            id="loc-city"
-            type="text"
-            className="ds-input"
-            value={city}
-            aria-describedby="loc-city-hint"
-            onChange={(e) => onCityChange(e.target.value)}
-          />
+          {isSyria ? (
+            <select
+              id="loc-city"
+              className="ds-select"
+              value={city}
+              aria-describedby="loc-city-hint"
+              onChange={(e) => onCityChange(e.target.value)}
+            >
+              <option value="">—</option>
+              {SYRIAN_GOVERNORATES.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              id="loc-city"
+              type="text"
+              className="ds-input"
+              value={city}
+              aria-describedby="loc-city-hint"
+              onChange={(e) => onCityChange(e.target.value)}
+            />
+          )}
           <p id="loc-city-hint" className="ds-caption">{t("locCityHint")}</p>
         </div>
       </div>

@@ -417,9 +417,9 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
       },
       {
         value: "private_car",
-        labelAr: "سيارة أجرة / خاصة",
-        descriptionAr: "سيارة أجرة أو خاصة عبر تطبيق / مكتب",
-        descriptionEn: "Taxi or private car via app or office",
+        labelAr: "سيارة خاصة",
+        descriptionAr: "سيارة خاصة عبر تطبيق / مكتب",
+        descriptionEn: "Private car via app or office",
         iconName: "Car",
         detailFields: ["carType", "carPlate", "driverPhone", "driverName", "taxiNumber", "appName"],
       },
