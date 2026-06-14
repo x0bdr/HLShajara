@@ -3,11 +3,11 @@
 /**
  * MediaEvidenceStep — Step 6 of the v1.5 category-based wizard.
  *
- * Collects optional public-media link, supporting file uploads, and additional
- * notes. Sources are no longer required at intake.
+ * Collects optional public-media link, supporting file uploads (with drag-and-drop),
+ * and additional notes. Sources are no longer required at intake.
  */
 
-import { useState, type Dispatch } from "react";
+import { useRef, useState, type Dispatch } from "react";
 import { useTranslations } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
@@ -24,11 +24,12 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
   const t = useTranslations("submit");
 
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const meta = form.reportMetadata ?? {};
   const [linkError, setLinkError] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
+  async function uploadFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setUploading(true);
 
@@ -56,7 +57,30 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
     }
 
     setUploading(false);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    uploadFiles(e.target.files);
     e.target.value = "";
+  }
+
+  function onDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    void uploadFiles(e.dataTransfer.files);
+  }
+
+  function onDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function onDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
   }
 
   function onLinkChange(value: string) {
@@ -86,19 +110,36 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
       </div>
 
       <div className="form-field">
-        <label htmlFor="media-files">{t("mediaTitle")}</label>
-        <input
-          id="media-files"
-          type="file"
-          multiple
-          accept={ACCEPTED_TYPES}
-          disabled={uploading}
-          className="ds-input"
+        <label>{t("mediaTitle")}</label>
+        <div
+          className={`dropzone ${isDragging ? "dragging" : ""} ${uploading ? "uploading" : ""}`}
+          onClick={() => inputRef.current?.click()}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          role="button"
+          tabIndex={0}
           aria-label={t("mediaTitle")}
-          style={{ cursor: uploading ? "not-allowed" : "pointer" }}
-          onChange={handleFileChange}
-        />
-        {uploading && <p className="ds-caption">{t("uploading")}</p>}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept={ACCEPTED_TYPES}
+            disabled={uploading}
+            className="dropzone-input"
+            onChange={handleFileChange}
+          />
+          <div className="dropzone-icon">☁️</div>
+          <div className="dropzone-title">{uploading ? t("uploading") : t("dropzoneTitle")}</div>
+          <div className="dropzone-hint">{t("dropzoneHint")}</div>
+        </div>
 
         {form.sourceFiles.length > 0 && (
           <div className="flex-col mt-16">

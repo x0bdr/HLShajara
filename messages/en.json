@@ -189,6 +189,8 @@
     "mediaSafety": "Supporting material only — never published as-is. Metadata is stripped on upload. Do not include faces of victims, children, or bystanders.",
     "mediaLink": "Link to public media (optional)",
     "mediaLinkError": "Personal social media links are not accepted. Use a public, archival source.",
+    "dropzoneTitle": "Drag files here or click to choose",
+    "dropzoneHint": "Images, video, PDF, Word, TXT",
     "skip": "Skip",
     "anonTitle": "About you",
     "anonToggle": "Submit anonymously",
