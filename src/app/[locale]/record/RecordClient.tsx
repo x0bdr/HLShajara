@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { EvidenceCard, LegalNote, SkeletonCard } from "@/components";
+import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
 import type { Entity } from "@/lib/types";
 
 export default function RecordPage() {
@@ -19,6 +20,12 @@ export default function RecordPage() {
   const legal = useTranslations("legal");
   const locale = useLocale();
   const router = useRouter();
+
+  function trackFilter(name: string, value: string) {
+    if (value) {
+      pushDataLayer(GTM_EVENTS.RECORD_FILTER, { filter: name, value, locale });
+    }
+  }
 
   // Debounced server-side search with filters
   useEffect(() => {
@@ -70,7 +77,7 @@ export default function RecordPage() {
       </div>
 
       <div className="filter-bar">
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="ds-select">
+        <select value={status} onChange={(e) => { trackFilter("status", e.target.value); setStatus(e.target.value); }} className="ds-select">
           <option value="">{t("filterStatus")}: {t("all")}</option>
           <option value="alleged">{t("status_alleged")}</option>
           <option value="investigating">{t("status_investigating")}</option>
@@ -79,7 +86,7 @@ export default function RecordPage() {
           <option value="convicted">{t("status_convicted")}</option>
           <option value="deceased">{t("status_deceased")}</option>
         </select>
-        <select value={type} onChange={(e) => setType(e.target.value)} className="ds-select">
+        <select value={type} onChange={(e) => { trackFilter("type", e.target.value); setType(e.target.value); }} className="ds-select">
           <option value="">{t("filterType")}: {t("all")}</option>
           <option value="individual">{t("type_individual")}</option>
           <option value="organization">{t("type_organization")}</option>
@@ -87,7 +94,7 @@ export default function RecordPage() {
           <option value="security_branch">{t("type_security_branch")}</option>
           <option value="official_body">{t("type_official_body")}</option>
         </select>
-        <select value={evidence} onChange={(e) => setEvidence(e.target.value)} className="ds-select">
+        <select value={evidence} onChange={(e) => { trackFilter("evidence", e.target.value); setEvidence(e.target.value); }} className="ds-select">
           <option value="">{t("filterEvidence")}: {t("all")}</option>
           <option value="0">0 — {locale === "ar" ? "قيد المراجعة" : "Under review"}</option>
           <option value="1">1 — {locale === "ar" ? "موثّق" : "Documented"}</option>

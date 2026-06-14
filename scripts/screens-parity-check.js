@@ -5,12 +5,11 @@
  * Proves that src/lib/screens.ts `runScreens` reproduces the server's
  * `validateSubmission` (src/db/persist.ts) rejection cascade EXACTLY:
  *
- *   NO_SOURCE -> WEAK_SOURCE(<2) -> GROUP_TARGET -> INCITEMENT
- *   -> HATE_TONE -> INNOCENT_PARTY -> PRIVATE_TARGETING -> MISMATCH
+ *   GROUP_TARGET -> INCITEMENT -> HATE_TONE -> INNOCENT_PARTY
+ *   -> PRIVATE_TARGETING -> MISMATCH
  *
- * Source-count contract (mirrors route.ts:32 `sourceCount: data.sourceLinks.length`):
- *   uploaded FILES do NOT count toward WEAK_SOURCE — only sourceLinks do.
- *   Fixture: 2 files + 0 links -> WEAK_SOURCE.
+ * Sources are optional at intake, so NO_SOURCE / WEAK_SOURCE checks are no
+ * longer part of the cascade.
  *
  * Drives the TypeScript source directly via Node's `--experimental-strip-types`
  * (Node 22.6+/23+). Exits 1 on any mismatch, 0 when all fixtures pass.
@@ -45,64 +44,40 @@ const SCREENS_TS = path.join(__dirname, "..", "src", "lib", "screens.ts");
 // INCITEMENT_SUBSUMED fixture proves this order is preserved after the lift.
 const FIXTURES = [
   {
-    name: "NO_SOURCE",
-    input: { sourceCount: 0, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
-    expectedCode: "NO_SOURCE",
-  },
-  {
-    name: "WEAK_SOURCE",
-    input: { sourceCount: 1, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
-    expectedCode: "WEAK_SOURCE",
-  },
-  {
-    // Source-count contract: 2 FILES + 0 LINKS must NOT pass WEAK_SOURCE.
-    // runScreens.sourceCount mirrors sourceLinks.length only (route.ts:32);
-    // uploaded files do NOT count. With 0 links the cascade returns NO_SOURCE.
-    name: "WEAK_SOURCE (2 files + 0 links -> NO_SOURCE)",
-    input: { sourceCount: 0 /* links only; files excluded */, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
-    expectedCode: "NO_SOURCE",
-  },
-  {
-    // The "files don't count" boundary at the WEAK line: 1 link + any files = WEAK_SOURCE.
-    name: "WEAK_SOURCE (1 link, files ignored)",
-    input: { sourceCount: 1, entityName: "Person X", entityRole: "field officer", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
-    expectedCode: "WEAK_SOURCE",
-  },
-  {
     name: "GROUP_TARGET (bare Arabic sect term)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "leader of علوي group", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
+    input: { entityName: "Person X", entityRole: "leader of علوي group", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "GROUP_TARGET",
   },
   {
     // Incitement tokens are a subset of the group-target screen, so they trip
-    // GROUP_TARGET first — proves the NO_SOURCE..GROUP_TARGET ordering holds.
+    // GROUP_TARGET first — proves the GROUP_TARGET-first ordering holds.
     name: "INCITEMENT_SUBSUMED (-> GROUP_TARGET, order preserved)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "posted اقتلوا publicly online today" },
+    input: { entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "posted اقتلوا publicly online today" },
     expectedCode: "GROUP_TARGET",
   },
   {
     name: "HATE_TONE (bare Arabic إبادة)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "ordered إبادة of detainees in 2016" },
+    input: { entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "ordered إبادة of detainees in 2016" },
     expectedCode: "HATE_TONE",
   },
   {
     name: "INNOCENT_PARTY (ascii 'doctor')",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "doctor at clinic", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
+    input: { entityName: "Person X", entityRole: "doctor at clinic", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "INNOCENT_PARTY",
   },
   {
     name: "PRIVATE_TARGETING (GPS coordinates)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "officer", entityType: "individual", allegationDescription: "operated near 33.5138, 36.2765 daily" },
+    input: { entityName: "Person X", entityRole: "officer", entityType: "individual", allegationDescription: "operated near 33.5138, 36.2765 daily" },
     expectedCode: "PRIVATE_TARGETING",
   },
   {
     name: "MISMATCH (individual + org role لواء)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "head of لواء", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
+    input: { entityName: "Person X", entityRole: "head of لواء", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "MISMATCH",
   },
   {
     name: "CLEAN PASS",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "field officer responsible", entityType: "individual", allegationDescription: "documented act described at sufficient length here with no banned content" },
+    input: { entityName: "Person X", entityRole: "field officer responsible", entityType: "individual", allegationDescription: "documented act described at sufficient length here with no banned content" },
     expectedCode: null,
   },
 ];

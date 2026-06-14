@@ -1,64 +1,37 @@
 "use client";
 
 /**
- * ReviewStep — Step 9 read-only review summary (Phase 31, REV-01/REV-02).
+ * ReviewStep — terminal read-only summary for the v1.5 category-based wizard.
  *
- * A stateless presentational leaf (props-in, callbacks-out — same convention as
- * WizardProgress/WizardNav/WizardPanel). It renders SIX semantic groups in flow
- * order (Actor, Conduct, Description, Evidence, Media, You), each with a
- * `.ds-eyebrow` label and ONE Edit link that routes to the FIRST step of that
- * group via the REAL registry slug (actor-class/conduct/describe/evidence/media/
- * about-you — NEVER the friendly names actor/you, which are not registered ids).
- * Empty optionals render as the em-dash "—" sentinel via `displayValue` (never
- * hidden). The source-type `[TYPE: <slug>]` token is stripped for DISPLAY only;
- * the raw `title` is submitted verbatim by the parent (WizardClient). The lead
- * note renders in the Evidence group inside a distinct "Reviewer note (not
- * published)" sub-block. The component owns the affirmation checkbox plus the two
- * INDEPENDENT inline disabled-reason gates (sources<2, not affirmed); Submit is
- * disabled until `affirmed && sourceLinks.length >= 2 && !submitting`.
- *
- * Reuses only Phase-28 CSS (.review-group/.review-row/.review-sources/
- * .review-affirm/.ds-eyebrow/.ds-mono/.filter-badge/.legal-error/.btn ghost/
- * .btn-sm) — adds NO CSS. All submitter values bind as React text children
- * (auto-escaped, never raw-HTML-injected); logical CSS only (no physical
- * direction props).
+ * Renders seven semantic groups (Category, Location, Entity, Details, Experience,
+ * Evidence, You), each with an Edit link to the first step of that group.
  */
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components";
-import type { SubmitInput } from "@/lib/validation";
+import type { SubmitInput, ReportCategory } from "@/lib/validation";
+import { getCategoryConfig, SUPPORTING_DOCUMENT_OPTIONS } from "@/lib/wizard/category-config";
 import {
   stripSourceType,
   displayValue,
-  entityTypeLabelKey,
-  conductLabelKey,
-  displayDocumentedRole,
-  roleInActLabelKey,
 } from "./review-helpers";
 
-/* ---------- PURE HELPERS ---------- */
-// `stripSourceType` + `displayValue` live in the JSX-free sibling
-// `./review-helpers` (a `.tsx` cannot be loaded under --experimental-strip-types).
-// Re-exported here so the component's public surface keeps both names.
 export { stripSourceType, displayValue } from "./review-helpers";
 
-/** The six review groups, in flow order, with their first-of-group edit target. */
 export const REVIEW_GROUP_IDS = [
-  "actor-class",
-  "conduct",
-  "describe",
-  "evidence",
-  "media",
+  "report-category",
+  "location-info",
+  "entity-type-name",
+  "report-details",
+  "experience",
+  "media-evidence",
   "about-you",
 ] as const;
-
-/* ---------- COMPONENT ---------- */
 
 interface ReviewStepProps {
   form: SubmitInput & { leadNote?: string };
   affirmed: boolean;
   submitting: boolean;
-  /** Emits a REAL registry slug (actor-class/conduct/describe/evidence/media/about-you). */
   onEdit: (stepId: string) => void;
   onAffirmChange: (checked: boolean) => void;
   onSubmit: () => void;
@@ -73,117 +46,221 @@ export function ReviewStep({
   onSubmit,
 }: ReviewStepProps) {
   const t = useTranslations("submit");
+  const locale = useLocale();
+  const meta = form.reportMetadata ?? {};
+  const categoryConfig = getCategoryConfig(form.reportCategory as ReportCategory);
+  const categoryLabel = categoryConfig
+    ? locale === "ar"
+      ? categoryConfig.labelAr
+      : categoryConfig.labelEn
+    : displayValue(form.reportCategory);
 
-  const sourcesOk = form.sourceLinks.length >= 2;
-  const submitDisabled = submitting || !affirmed || form.sourceLinks.length < 2;
+  const subType = categoryConfig?.subTypes.find((s) => s.value === meta.orgType);
+  const subTypeLabel = subType
+    ? locale === "ar"
+      ? subType.labelAr
+      : subType.labelEn ?? subType.labelAr
+    : displayValue(meta.orgType);
 
-  // v1.4 DISPLAY-only localization. The raw slugs/enums are still SUBMITTED
-  // verbatim by the parent (WizardClient) — these only localize what the submitter
-  // SEES. A `null` key means "no localized label, show the raw value verbatim".
-  const typeKey = entityTypeLabelKey(form.entityType);
-  const typeDisplay = typeKey ? t(typeKey) : displayValue(form.entityType);
-
-  const conductKey = conductLabelKey(form.allegationClassification);
-  const conductDisplay = conductKey
-    ? t(conductKey)
-    : displayValue(form.allegationClassification);
-
-  // Documented role/title (Actor group) — clause stripped for display.
-  const documentedRoleDisplay = displayValue(displayDocumentedRole(form.entityRole));
-
-  // Role-in-act (Conduct group) — localized role label, or the stripped role
-  // verbatim when no clause / "other"/free text.
-  const roleInActKey = roleInActLabelKey(form.entityRole);
-  const roleInActDisplay = roleInActKey
-    ? t(roleInActKey)
-    : displayValue(displayDocumentedRole(form.entityRole));
+  const submitDisabled = submitting || !affirmed;
 
   return (
     <div className="flex-col">
       <div className="t">{t("reviewTitle")}</div>
 
-      {/* ---------- Actor (steps 1/1b/2; first = actor-class) ---------- */}
+      {/* Category */}
       <div className="review-group">
         <div className="head flex-between">
-          <span className="ds-eyebrow">{t("reviewGroupActor")}</span>
+          <span className="ds-eyebrow">{t("reviewGroupCategory")}</span>
           <button
             type="button"
             className="btn ghost btn-sm"
-            onClick={() => onEdit("actor-class")}
+            onClick={() => onEdit("report-category")}
           >
             {t("reviewEdit")}
           </button>
         </div>
         <div className="review-row">
-          <span className="k">{t("idName")}</span>
-          <span className="v">{displayValue(form.entityName)}</span>
+          <span className="k">{t("q_reportCategory")}</span>
+          <span className="v">{categoryLabel}</span>
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="review-group">
+        <div className="head flex-between">
+          <span className="ds-eyebrow">{t("reviewGroupLocation")}</span>
+          <button
+            type="button"
+            className="btn ghost btn-sm"
+            onClick={() => onEdit("location-info")}
+          >
+            {t("reviewEdit")}
+          </button>
         </div>
         <div className="review-row">
-          <span className="k">{t("idRole")}</span>
-          <span className="v">{documentedRoleDisplay}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("type")}</span>
-          <span className="v">{typeDisplay}</span>
+          <span className="k">{t("locCountry")}</span>
+          <span className="v">{displayValue(meta.country)}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("location")}</span>
           <span className="v">{displayValue(form.allegationLocation)}</span>
         </div>
+        <div className="review-row">
+          <span className="k">{t("locNearest")}</span>
+          <span className="v">{displayValue(meta.nearestLocation)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("locContact")}</span>
+          <span className="v">{displayValue(meta.contactPhone)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("locWebsite")}</span>
+          <span className="v">{displayValue(meta.websiteName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("locMaps")}</span>
+          <span className="v">{displayValue(meta.googleMapsLink)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("locSocial")}</span>
+          <span className="v">{displayValue(meta.socialMediaAccounts)}</span>
+        </div>
       </div>
 
-      {/* ---------- Conduct (steps 3/4; first = conduct) ---------- */}
+      {/* Entity / Person */}
       <div className="review-group">
         <div className="head flex-between">
-          <span className="ds-eyebrow">{t("reviewGroupConduct")}</span>
+          <span className="ds-eyebrow">{t("reviewGroupEntity")}</span>
           <button
             type="button"
             className="btn ghost btn-sm"
-            onClick={() => onEdit("conduct")}
+            onClick={() => onEdit("entity-type-name")}
           >
             {t("reviewEdit")}
           </button>
         </div>
         <div className="review-row">
-          <span className="k">{t("q_conduct")}</span>
-          <span className="v">{conductDisplay}</span>
+          <span className="k">{t("etnType")}</span>
+          <span className="v">{subTypeLabel}</span>
         </div>
+        {meta.orgType === "other" && (
+          <div className="review-row">
+            <span className="k">{t("etnOtherSpecify")}</span>
+            <span className="v">{displayValue(meta.orgSubTypeOther)}</span>
+          </div>
+        )}
         <div className="review-row">
-          <span className="k">{t("q_roleInAct")}</span>
-          <span className="v">{roleInActDisplay}</span>
+          <span className="k">{t("etnName")}</span>
+          <span className="v">{displayValue(form.entityName)}</span>
         </div>
       </div>
 
-      {/* ---------- Description (step 5; first = describe) ---------- */}
+      {/* Details */}
       <div className="review-group">
         <div className="head flex-between">
-          <span className="ds-eyebrow">{t("reviewGroupDescription")}</span>
+          <span className="ds-eyebrow">{t("reviewGroupDetails")}</span>
           <button
             type="button"
             className="btn ghost btn-sm"
-            onClick={() => onEdit("describe")}
+            onClick={() => onEdit("report-details")}
           >
             {t("reviewEdit")}
           </button>
         </div>
         <div className="review-row">
-          <span className="k">{t("descLabel")}</span>
+          <span className="k">{t("detailsOwnerName")}</span>
+          <span className="v">{displayValue(meta.ownerName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsReportedName")}</span>
+          <span className="v">{displayValue(meta.reportedPersonName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsReportedPhone")}</span>
+          <span className="v">{displayValue(meta.reportedPersonPhone)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsReportedPosition")}</span>
+          <span className="v">{displayValue(meta.reportedPersonPosition)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsReportedSocial")}</span>
+          <span className="v">{displayValue(meta.reportedPersonSocialMedia)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsCarType")}</span>
+          <span className="v">{displayValue(meta.carType)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsCarPlate")}</span>
+          <span className="v">{displayValue(meta.carPlate)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsDriverPhone")}</span>
+          <span className="v">{displayValue(meta.driverPhone)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsDriverName")}</span>
+          <span className="v">{displayValue(meta.driverName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsTaxiNumber")}</span>
+          <span className="v">{displayValue(meta.taxiNumber)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsAppName")}</span>
+          <span className="v">{displayValue(meta.appName)}</span>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("detailsPropertyType")}</span>
+          <span className="v">{displayValue(meta.propertyType)}</span>
+        </div>
+      </div>
+
+      {/* Experience */}
+      <div className="review-group">
+        <div className="head flex-between">
+          <span className="ds-eyebrow">{t("reviewGroupExperience")}</span>
+          <button
+            type="button"
+            className="btn ghost btn-sm"
+            onClick={() => onEdit("experience")}
+          >
+            {t("reviewEdit")}
+          </button>
+        </div>
+        <div className="review-row">
+          <span className="k">{t("expLabel")}</span>
           <span className="v">{displayValue(form.allegationDescription)}</span>
         </div>
         <div className="review-row">
-          <span className="k">{t("period")}</span>
-          <span className="v">{displayValue(form.allegationPeriod)}</span>
+          <span className="k">{t("expDocuments")}</span>
+          <span className="v">
+            {(meta.supportingDocuments ?? []).length === 0
+              ? displayValue("")
+              : (meta.supportingDocuments ?? [])
+                  .map((v) => {
+                    const opt = SUPPORTING_DOCUMENT_OPTIONS.find((o) => o.value === v);
+                    return opt
+                      ? locale === "ar"
+                        ? opt.labelAr
+                        : opt.labelEn ?? opt.labelAr
+                      : v;
+                  })
+                  .join("، ")}
+          </span>
         </div>
       </div>
 
-      {/* ---------- Evidence (step 6: sources + lead note; first = evidence) ---------- */}
+      {/* Evidence */}
       <div className="review-group">
         <div className="head flex-between">
           <span className="ds-eyebrow">{t("reviewGroupEvidence")}</span>
           <button
             type="button"
             className="btn ghost btn-sm"
-            onClick={() => onEdit("evidence")}
+            onClick={() => onEdit("media-evidence")}
           >
             {t("reviewEdit")}
           </button>
@@ -215,26 +292,6 @@ export function ReviewStep({
             )}
           </span>
         </div>
-
-        {/* Lead note — distinct non-public sub-block (display-only here). */}
-        <div className="review-row">
-          <span className="k">{t("reviewLeadNoteLabel")}</span>
-          <span className="v">{displayValue(form.leadNote)}</span>
-        </div>
-      </div>
-
-      {/* ---------- Media (step 7; first = media) ---------- */}
-      <div className="review-group">
-        <div className="head flex-between">
-          <span className="ds-eyebrow">{t("reviewGroupMedia")}</span>
-          <button
-            type="button"
-            className="btn ghost btn-sm"
-            onClick={() => onEdit("media")}
-          >
-            {t("reviewEdit")}
-          </button>
-        </div>
         <div className="review-row">
           <span className="k">{t("mediaTitle")}</span>
           <span className="v">
@@ -243,9 +300,13 @@ export function ReviewStep({
               : form.sourceFiles.map((f) => f.originalName).join(", ")}
           </span>
         </div>
+        <div className="review-row">
+          <span className="k">{t("mediaNotes")}</span>
+          <span className="v">{displayValue(meta.mediaNotes)}</span>
+        </div>
       </div>
 
-      {/* ---------- You (step 8; first = about-you) ---------- */}
+      {/* You */}
       <div className="review-group">
         <div className="head flex-between">
           <span className="ds-eyebrow">{t("reviewGroupYou")}</span>
@@ -275,7 +336,6 @@ export function ReviewStep({
         ) : null}
       </div>
 
-      {/* ---------- Affirmation + Submit + two independent inline gates ---------- */}
       <div className="review-affirm">
         <label className="flex-between" htmlFor="review-affirm-check">
           <input
@@ -287,16 +347,6 @@ export function ReviewStep({
           <span className="ds-body-sm">{t("affirm")}</span>
         </label>
 
-        {/* Gate 1 — sources < 2 (shown only when its own condition is unmet).
-            role="status" is an implicit polite live region; the explicit live attr is
-            omitted so the wizard keeps exactly ONE step-announcer region (WizardPanel). */}
-        {!sourcesOk ? (
-          <div className="legal legal-error mt-16" role="status">
-            <p>{t("errSourcesGate")}</p>
-          </div>
-        ) : null}
-
-        {/* Gate 2 — not affirmed (shown only when its own condition is unmet). */}
         {!affirmed ? (
           <div className="legal legal-error mt-16" role="status">
             <p>{t("errAffirmGate")}</p>

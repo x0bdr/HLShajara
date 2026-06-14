@@ -1,21 +1,13 @@
 #!/usr/bin/env node
 /**
- * i18n-submit-parity-check.js — standalone EN↔AR `submit`-namespace parity check
- * (no test framework, no new dependency). Wired as `npm run check:i18n`.
- *
- * Models the repo's existing standalone-check idiom (scripts/screens-parity-check.js):
- * CommonJS, node:assert, exit 1 on mismatch, exit 0 when parity holds.
+ * i18n-submit-parity-check.js — standalone EN↔AR `submit`-namespace parity check.
  *
  * Asserts:
- *   1. The EN submit key set EXACTLY equals the AR submit key set (reports any key
- *      present in one language but not the other — never English-only, never Arabic-only).
+ *   1. The EN submit key set EXACTLY equals the AR submit key set.
  *   2. No submit value is an empty string in either language.
- *   3. Every Phase-29 expected key is present in BOTH languages — the expected list
- *      is DERIVED from the same conduct/role slug tuples used in Plan 29-01
- *      (CONDUCT_SLUGS / ROLE_SLUGS) so the i18n keys and the encoding slugs cannot
- *      drift apart.
+ *   3. Every v1.5 expected key is present in BOTH languages.
  *
- * Run: node scripts/i18n-submit-parity-check.js   (or: npm run check:i18n)
+ * Run: node scripts/i18n-submit-parity-check.js   (or: npm run check:i18n:submit)
  */
 
 "use strict";
@@ -26,24 +18,35 @@ const assert = require("node:assert/strict");
 const en = require(path.join(__dirname, "..", "messages", "en.json")).submit;
 const ar = require(path.join(__dirname, "..", "messages", "ar.json")).submit;
 
-// Kept in lock-step with src/lib/wizard/encoding.ts CONDUCT_SLUGS / ROLE_SLUGS
-// (the i18n key suffix equals the slug). If those tuples change, update here.
-const CONDUCT_SLUGS = [
-  "detention", "torture", "disappearance", "killing", "sexualViolence",
-  "financing", "arms", "laundering", "propaganda", "informing",
-  "seizure", "detentionSite", "command", "other",
-];
-const ROLE_SLUGS = [
-  "perpetrator", "commander", "financier", "supplier", "informant", "owner", "other",
-];
-
-const PHASE_29_EXPECTED = [
-  "q_actorClass", "actorIndividual", "actorIndividualHint", "actorEntity", "actorEntityHint",
-  "q_entitySubtype",
-  "q_conduct",
-  ...CONDUCT_SLUGS.flatMap((s) => [`conduct_${s}`, `conduct_${s}_def`]),
-  "q_roleInAct",
-  ...ROLE_SLUGS.map((s) => `role_${s}`),
+const V15_EXPECTED = [
+  // categories
+  "catCommercial", "catIndividuals", "catEducational", "catService",
+  "catTourism", "catMedical", "catOrganizations", "catRealEstate",
+  // step titles
+  "q_reportCategory", "q_locationInfo", "q_entityTypeName", "q_reportDetails",
+  "q_experience", "q_mediaEvidence", "q_aboutYou",
+  // location info fields
+  "locCountry", "locCity", "locCityHint",
+  "locNearest", "locNearestHint",
+  "locContact", "locWebsite", "locMaps", "locMapsHint", "locMapsError", "locSocial",
+  // entity type/name fields
+  "etnType", "etnName", "etnOtherSpecify",
+  // report details fields
+  "detailsHint", "detailsFlags", "detailsOwnerName", "detailsReportedName",
+  "detailsReportedNickname", "detailsReportedPhone", "detailsReportedPosition",
+  "detailsReportedSocial", "detailsCarType", "detailsCarPlate",
+  "detailsDriverPhone", "detailsDriverName", "detailsTaxiNumber",
+  "detailsAppName", "detailsPropertyType",
+  // experience
+  "expLabel", "expHint", "expDocuments",
+  // hints
+  "hintReportCategory", "hintLocationInfo", "hintEntityType", "hintEntityName",
+  "hintExperience", "hintMediaEvidence",
+  // media/evidence
+  "mediaNotes",
+  // review groups
+  "reviewGroupCategory", "reviewGroupLocation", "reviewGroupEntity",
+  "reviewGroupDetails", "reviewGroupExperience",
 ];
 
 let failures = 0;
@@ -52,7 +55,6 @@ function fail(msg) {
   console.error(`FAIL: ${msg}`);
 }
 
-// 1. Full key-set parity (symmetric difference).
 const enKeys = new Set(Object.keys(en));
 const arKeys = new Set(Object.keys(ar));
 const enOnly = [...enKeys].filter((k) => !arKeys.has(k));
@@ -63,7 +65,6 @@ if (!enOnly.length && !arOnly.length) {
   console.log(`PASS: EN↔AR submit key sets are equal (${enKeys.size} keys each).`);
 }
 
-// 2. No empty string values in either language.
 for (const [k, v] of Object.entries(en)) {
   if (typeof v === "string" && v.trim() === "") fail(`EN submit.${k} is an empty string.`);
 }
@@ -72,13 +73,12 @@ for (const [k, v] of Object.entries(ar)) {
 }
 if (failures === 0) console.log("PASS: no empty submit values in EN or AR.");
 
-// 3. Every Phase-29 expected key present in BOTH.
-const missingEn = PHASE_29_EXPECTED.filter((k) => !(k in en));
-const missingAr = PHASE_29_EXPECTED.filter((k) => !(k in ar));
-if (missingEn.length) fail(`Phase-29 keys missing in EN: ${missingEn.join(", ")}`);
-if (missingAr.length) fail(`Phase-29 keys missing in AR: ${missingAr.join(", ")}`);
+const missingEn = V15_EXPECTED.filter((k) => !(k in en));
+const missingAr = V15_EXPECTED.filter((k) => !(k in ar));
+if (missingEn.length) fail(`v1.5 keys missing in EN: ${missingEn.join(", ")}`);
+if (missingAr.length) fail(`v1.5 keys missing in AR: ${missingAr.join(", ")}`);
 if (!missingEn.length && !missingAr.length) {
-  console.log(`PASS: all ${PHASE_29_EXPECTED.length} Phase-29 keys present in EN and AR.`);
+  console.log(`PASS: all ${V15_EXPECTED.length} v1.5 keys present in EN and AR.`);
 }
 
 if (failures > 0) {
@@ -86,7 +86,6 @@ if (failures > 0) {
   process.exit(1);
 }
 
-// Sanity: assert (so a future refactor can't silently no-op the script).
 assert.deepEqual([...enKeys].sort(), [...arKeys].sort());
 console.log("\nAll EN↔AR submit-parity checks PASSED.");
 process.exit(0);

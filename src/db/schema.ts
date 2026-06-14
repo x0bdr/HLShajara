@@ -215,6 +215,8 @@ export const submissions = pgTable(
     rejectionNote: text("rejection_note"),
     entityName: varchar("entity_name", { length: 255 }).notNull(),
     entityType: entityTypeEnum("entity_type").notNull(),
+    reportCategory: varchar("report_category", { length: 50 }).notNull(),
+    reportMetadata: jsonb("report_metadata").default("{}"),
     entityRole: varchar("entity_role", { length: 500 }).notNull(),
     allegationDescription: text("allegation_description").notNull(),
     allegationPeriod: varchar("allegation_period", { length: 100 }),

@@ -14,6 +14,54 @@ import {
 } from "@/db/schema";
 import { conductTypes, roleInConductTypes } from "@/lib/constants/conduct";
 
+/* ---------- REPORT CATEGORY (v1.5 category-based wizard) ---------- */
+
+export const reportCategories = [
+  "commercial",
+  "individuals",
+  "educational",
+  "service",
+  "tourism",
+  "medical",
+  "organizations",
+  "real_estate",
+] as const;
+
+export type ReportCategory = (typeof reportCategories)[number];
+
+/** Category-specific metadata captured by the new wizard. */
+export const reportMetadataSchema = z.object({
+  country: z.string().max(100).optional(),
+  state: z.string().max(100).optional(),
+  city: z.string().max(100).optional(),
+  nearestLocation: z.string().max(200).optional(),
+  contactPhone: z.string().max(100).optional(),
+  websiteName: z.string().max(255).optional(),
+  googleMapsLink: z.string().max(2048).optional(),
+  socialMediaAccounts: z.string().max(500).optional(),
+  orgType: z.string().max(100).optional(),
+  orgSubType: z.string().max(100).optional(),
+  orgSubTypeOther: z.string().max(255).optional(),
+  ownerName: z.string().max(255).optional(),
+  reportedPersonName: z.string().max(255).optional(),
+  reportedPersonPhone: z.string().max(100).optional(),
+  reportedPersonPosition: z.string().max(255).optional(),
+  reportedPersonSocialMedia: z.string().max(500).optional(),
+  carType: z.string().max(100).optional(),
+  carPlate: z.string().max(100).optional(),
+  driverPhone: z.string().max(100).optional(),
+  driverName: z.string().max(255).optional(),
+  taxiNumber: z.string().max(100).optional(),
+  appName: z.string().max(100).optional(),
+  propertyType: z.string().max(100).optional(),
+  supportingDocuments: z.array(z.string().max(100)).optional(),
+  detailFlags: z.array(z.string().max(100)).optional(),
+  mediaNotes: z.string().max(2000).optional(),
+  mediaLink: z.string().url().or(z.literal("")).optional(),
+});
+
+export type ReportMetadata = z.infer<typeof reportMetadataSchema>;
+
 /* ---------- ENTITY ---------- */
 
 export const insertEntitySchema = createInsertSchema(entities, {
@@ -59,6 +107,8 @@ export const submitSchema = z.object({
     "security_branch",
     "official_body",
   ]),
+  reportCategory: z.enum(reportCategories),
+  reportMetadata: reportMetadataSchema.default({}),
   entityRole: z.string().min(1).max(500),
   allegationDescription: z.string().min(20).max(10000),
   allegationPeriod: z.string().max(100).optional(),
@@ -84,7 +134,7 @@ export const submitSchema = z.object({
         sourceType: z.enum(["un","court","sanctions","hr","journalism","official"]).optional(),
       })
     )
-    .min(1, "At least one source is required"),
+    .default([]),
   sourceFiles: z
     .array(
       z.object({

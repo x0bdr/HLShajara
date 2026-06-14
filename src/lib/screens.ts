@@ -279,36 +279,20 @@ export interface RunScreensInput {
  * Reproduces `validateSubmission`'s early-return cascade in the EXACT server
  * order, returning the first failing code (or `{ ok: true }`):
  *
- *   NO_SOURCE -> WEAK_SOURCE(<2) -> GROUP_TARGET -> INCITEMENT
- *   -> HATE_TONE -> INNOCENT_PARTY -> PRIVATE_TARGETING -> MISMATCH
+ *   GROUP_TARGET -> INCITEMENT -> HATE_TONE -> INNOCENT_PARTY
+ *   -> PRIVATE_TARGETING -> MISMATCH
  *
- * Screens 3-6 run on the concatenation
+ * Sources are optional at intake, so NO_SOURCE / WEAK_SOURCE checks have been
+ * removed from this client mirror. Screens 3-6 run on the concatenation
  * `entityName + " " + entityRole + " " + allegationDescription` — the same join
  * the server uses. Client-surfaced errors therefore match what `/api/submit`
  * would return; the server remains the authoritative trust boundary.
  */
 export function runScreens(data: RunScreensInput): PersistResult<RunScreensInput> {
-  // 1. Must have at least one source
-  if ((data.sourceCount ?? 0) === 0) {
-    return {
-      ok: false,
-      code: "NO_SOURCE",
-      message: "Every allegation must have at least one credible source.",
-      field: "sources",
-    };
-  }
+  // Sources are optional at intake; publish-time validation still enforces sources.
+  void data.sourceCount;
 
-  // 1b. Weak source check: single source is inherently weak
-  if ((data.sourceCount ?? 0) < 2) {
-    return {
-      ok: false,
-      code: "WEAK_SOURCE",
-      message: "Submissions require at least two independent sources for credibility.",
-      field: "sources",
-    };
-  }
-
-  // 2. Screen free-text fields
+  // 1. Screen free-text fields
   const fieldsToScreen = [
     data.entityName,
     data.entityRole,

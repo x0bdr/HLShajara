@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageShell } from "@/components";
 import { db } from "@/db";
 import { posts } from "@/db/schema";
@@ -6,9 +6,46 @@ import { eq, and, isNotNull } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { PublicationTracker } from "@/components/PublicationTracker";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
+  setRequestLocale(locale);
+
+  const row = await db
+    .select({ title: posts.title, excerpt: posts.excerpt })
+    .from(posts)
+    .where(
+      and(
+        eq(posts.slug, slug),
+        eq(posts.locale, locale),
+        eq(posts.status, "published"),
+        isNotNull(posts.publishedAt)
+      )
+    )
+    .limit(1);
+
+  const post = row[0];
+  if (!post) {
+    return { title: "Not Found" };
+  }
+
+  return {
+    title: post.title,
+    description: post.excerpt || undefined,
+    alternates: {
+      canonical: `/${locale}/publications/${slug}`,
+      languages: {
+        ar: `/ar/publications/${slug}`,
+        en: `/en/publications/${slug}`,
+      },
+    },
+  };
 }
 
 export const dynamic = "force-dynamic";
@@ -42,6 +79,7 @@ export default async function PublicationPage({
 
   return (
     <PageShell>
+      <PublicationTracker slug={slug} locale={locale} />
       <article className="pub-article">
         <Link href={`/${locale}/publications`} className="pub-back">
           ← {t("back")}

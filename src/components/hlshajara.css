@@ -717,6 +717,52 @@
   line-height:1.5;
   margin-bottom:12px;
 }
+.reviewer-card .rc-foot {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:var(--font-sans);
+  font-size:12px;
+  color:var(--fg2);
+}
+.reviewer-card .rc-foot .dot {
+  inline-size:4px;
+  block-size:4px;
+  border-radius:50%;
+  background:var(--fg3);
+}
+
+/* ============================================================
+   REVIEWER METADATA
+   ============================================================ */
+.meta-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-family:var(--font-sans);
+  font-size:14px;
+}
+.meta-row:last-child { border-bottom:none; }
+.meta-row .meta-label {
+  color:var(--fg2);
+  font-weight:500;
+  flex-shrink:0;
+}
+.meta-row .meta-value {
+  color:var(--fg1);
+  font-weight:600;
+  text-align:end;
+  word-break:break-word;
+}
+[dir=rtl] .meta-row .meta-value { text-align:start; }
+.meta-row .meta-value.with-icon {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
 
 /* ============================================================
    MODAL
@@ -1517,8 +1563,28 @@ input[type="checkbox"]:focus-visible {
   border-color:var(--brand);
   box-shadow:var(--inset-hair), var(--shadow-md);
 }
-.choice-card .body { min-inline-size:0; flex:1; }
+.choice-card .body {
+  min-inline-size:0;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.choice-card .card-icon {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  inline-size:36px;
+  block-size:36px;
+  color:var(--brand);
+}
+.choice-card .card-icon svg {
+  inline-size:24px;
+  block-size:24px;
+}
 .choice-card .title {
+  display:block;
   font-family:var(--font-display);
   font-weight:500;
   font-size:var(--text-lg);
@@ -1526,12 +1592,12 @@ input[type="checkbox"]:focus-visible {
   color:var(--fg1);
 }
 .choice-card .desc {
+  display:block;
   font-family:var(--font-sans);
   font-weight:500;
   font-size:var(--text-sm);
   line-height:var(--leading-snug);
   color:var(--fg2);
-  margin-block-start:4px;
 }
 /* The ONE sanctioned brass use in the wizard: the selected-card check.
    Hidden until the card is selected; fades in via opacity. */

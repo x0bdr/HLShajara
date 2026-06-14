@@ -49,31 +49,11 @@ export function validateSubmission(data: {
   sourceCount?: number;
   sourceLinks?: { url: string; title?: string }[];
 }): PersistResult<typeof data> {
-  // Phase 33 (BE-02) invariant: `sourceCount` here is ALWAYS `sourceLinks.length`
-  // only. The reviewer-only `leadNote` is NEVER counted as a source (it cannot
-  // inflate sourceCount to bypass WEAK_SOURCE) and is NEVER folded into
-  // allegationDescription or any screened free-text field.
-  // 1. Must have at least one source
-  if ((data.sourceCount ?? 0) === 0) {
-    return {
-      ok: false,
-      code: "NO_SOURCE",
-      message: "Every allegation must have at least one credible source.",
-      field: "sources",
-    };
-  }
+  // Phase 33 (BE-02): sources are optional at intake. The reviewer-only `leadNote`
+  // is NEVER counted as a source and is NEVER folded into allegationDescription or
+  // any screened free-text field.
 
-  // 1b. Weak source check: single source is inherently weak
-  if ((data.sourceCount ?? 0) < 2) {
-    return {
-      ok: false,
-      code: "WEAK_SOURCE",
-      message: "Submissions require at least two independent sources for credibility.",
-      field: "sources",
-    };
-  }
-
-  // 2. Screen free-text fields
+  // 1. Screen free-text fields
   const fieldsToScreen = [
     data.entityName,
     data.entityRole,

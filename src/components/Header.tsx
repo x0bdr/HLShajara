@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
+import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
 
 export function Header() {
   const locale = useLocale();
@@ -14,6 +15,7 @@ export function Header() {
   const switchLocale = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
     const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    pushDataLayer(GTM_EVENTS.PAGE_VIEW, { locale: newLocale, action: "locale_switch" });
     router.push(newPath);
   };
 

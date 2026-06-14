@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button, LegalNote } from "@/components";
+import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
 
 interface UploadedFile {
   hash: string;
@@ -121,6 +122,12 @@ export default function SubmitPage() {
     const data = await res.json();
     setResult(data);
     setSubmitting(false);
+
+    pushDataLayer(GTM_EVENTS.SUBMIT_CLICK, {
+      success: data.ok,
+      entityType: form.entityType,
+      isAnonymous: form.isAnonymous,
+    });
 
     if (data.ok) {
       setForm({

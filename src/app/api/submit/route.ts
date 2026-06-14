@@ -55,6 +55,8 @@ export async function POST(request: Request) {
             status: "pending",
             entityName: data.entityName,
             entityType: data.entityType,
+            reportCategory: data.reportCategory,
+            reportMetadata: data.reportMetadata ?? {},
             entityRole: data.entityRole,
             allegationDescription: data.allegationDescription,
             allegationPeriod: data.allegationPeriod ?? null,

@@ -59,14 +59,14 @@ export interface RejectionRoute {
  *   MISMATCH                      → err_mismatch → identity (Step 2)
  */
 export const REJECTION_MAP: Record<RejectionCode, RejectionRoute> = {
-  NO_SOURCE: { messageKey: "err_sources", stepId: "evidence" },
-  WEAK_SOURCE: { messageKey: "err_sources", stepId: "evidence" },
-  PRIVATE_TARGETING: { messageKey: "err_private", stepId: "describe" },
-  GROUP_TARGET: { messageKey: "err_group", stepId: "describe" },
-  INNOCENT_PARTY: { messageKey: "err_innocent", stepId: "describe" },
-  INCITEMENT: { messageKey: "err_tone", stepId: "describe" },
-  HATE_TONE: { messageKey: "err_tone", stepId: "describe" },
-  MISMATCH: { messageKey: "err_mismatch", stepId: "identity" },
+  NO_SOURCE: { messageKey: "err_sources", stepId: "media-evidence" },
+  WEAK_SOURCE: { messageKey: "err_sources", stepId: "media-evidence" },
+  PRIVATE_TARGETING: { messageKey: "err_private", stepId: "experience" },
+  GROUP_TARGET: { messageKey: "err_group", stepId: "experience" },
+  INNOCENT_PARTY: { messageKey: "err_innocent", stepId: "experience" },
+  INCITEMENT: { messageKey: "err_tone", stepId: "experience" },
+  HATE_TONE: { messageKey: "err_tone", stepId: "experience" },
+  MISMATCH: { messageKey: "err_mismatch", stepId: "entity-type-name" },
 };
 
 /** Type guard: is `code` one of the eight known rejection codes? */
