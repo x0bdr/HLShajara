@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { submissions, entities, allegations, sources, allegationSources } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { submissions, entities, allegations, sources, allegationSources, users } from "@/db/schema";
+import { eq, inArray } from "drizzle-orm";
 import { validatePublication, withAudit } from "@/db/persist";
 import { getSession, unauthorizedResponse, forbiddenResponse, require2FA, getInternalUserId } from "@/lib/session";
 import { hasRole, canPublish } from "@/lib/auth";
@@ -32,7 +32,32 @@ export async function GET(request: Request) {
     orderBy: (s, { desc }) => [desc(s.createdAt)],
     limit: 50,
   });
-  return NextResponse.json({ ok: true, submissions: pending });
+
+  // Resolve reviewer names for display in the reviewer console.
+  const reviewerIds = new Set<number>();
+  for (const s of pending) {
+    if (s.reviewedBy) reviewerIds.add(s.reviewedBy);
+    if (s.secondReviewedBy) reviewerIds.add(s.secondReviewedBy);
+  }
+
+  const reviewerMap = new Map<number, string | null>();
+  if (reviewerIds.size > 0) {
+    const reviewers = await db
+      .select({ id: users.id, name: users.name })
+      .from(users)
+      .where(inArray(users.id, Array.from(reviewerIds)));
+    for (const r of reviewers) {
+      reviewerMap.set(r.id, r.name);
+    }
+  }
+
+  const submissionsWithReviewers = pending.map((s) => ({
+    ...s,
+    reviewedByName: s.reviewedBy ? (reviewerMap.get(s.reviewedBy) ?? null) : null,
+    secondReviewedByName: s.secondReviewedBy ? (reviewerMap.get(s.secondReviewedBy) ?? null) : null,
+  }));
+
+  return NextResponse.json({ ok: true, submissions: submissionsWithReviewers });
 }
 
 /* ---------- POST: review action ---------- */

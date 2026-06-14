@@ -470,7 +470,18 @@
     "empty": "No pending review requests.",
     "sources": "Sources",
     "approve": "Approve",
-    "reject": "Reject"
+    "reject": "Reject",
+    "status": "Status",
+    "status_pending": "Pending review",
+    "status_under_review": "Under review",
+    "status_verified": "First review completed",
+    "status_ready_to_publish": "Ready to publish",
+    "status_rejected": "Rejected",
+    "status_published": "Published",
+    "status_unpublished": "Unpublished",
+    "reviewedBy": "First reviewer",
+    "secondReviewedBy": "Second reviewer",
+    "notReviewed": "—"
   },
   "entity": {
     "loading": "Loading...",

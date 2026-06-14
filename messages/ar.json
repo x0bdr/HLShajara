@@ -470,7 +470,18 @@
     "empty": "لا توجد طلبات مراجعة معلّقة.",
     "sources": "المصادر",
     "approve": "موافقة",
-    "reject": "رفض"
+    "reject": "رفض",
+    "status": "الحالة",
+    "status_pending": "بانتظار المراجعة",
+    "status_under_review": "قيد المراجعة",
+    "status_verified": "تمت المراجعة الأولى",
+    "status_ready_to_publish": "جاهز للنشر",
+    "status_rejected": "مرفوض",
+    "status_published": "منشور",
+    "status_unpublished": "غير منشور",
+    "reviewedBy": "المراجعة الأولى",
+    "secondReviewedBy": "المراجعة الثانية",
+    "notReviewed": "—"
   },
   "entity": {
     "loading": "جارِ التحميل...",

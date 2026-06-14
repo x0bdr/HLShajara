@@ -74,6 +74,9 @@ interface Submission {
   privacyRechecked: boolean | null;
   isDeceased: boolean | null;
   reviewedBy: number | null;
+  reviewedByName: string | null;
+  secondReviewedBy: number | null;
+  secondReviewedByName: string | null;
 }
 
 const METADATA_LABELS_AR: Record<string, string> = {
@@ -140,6 +143,13 @@ function displayValue(value: unknown): string {
   if (Array.isArray(value) && value.length === 0) return "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
   return String(value);
+}
+
+function getStatusLabel(status: string, t: (key: string) => string): string {
+  const key = `status_${status}`;
+  const label = t(key);
+  // If no translation exists, fall back to the raw status string.
+  return label === key ? status : label;
 }
 
 function formatLabels(
@@ -325,7 +335,7 @@ export default function ReviewerPage() {
                   <div>
                     <div className="rc-name">{s.entityName}</div>
                     <div className="rc-meta">
-                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{s.status}</span>
+                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{t("status")}: {getStatusLabel(s.status, t)}</span>
                     </div>
                   </div>
                   <button className="btn primary btn-sm" onClick={() => setSelected(s)}>
@@ -338,6 +348,14 @@ export default function ReviewerPage() {
                   <span>{resolveCategoryLabel(s, tSubmit)}</span>
                   <span className="dot" />
                   {t("sources")}: {Array.isArray(s.sourceLinks) ? s.sourceLinks.length : 0}
+                  <span className="dot" />
+                  <span>{t("reviewedBy")}: {s.reviewedByName ?? t("notReviewed")}</span>
+                  {s.secondReviewedByName && (
+                    <>
+                      <span className="dot" />
+                      <span>{t("secondReviewedBy")}: {s.secondReviewedByName}</span>
+                    </>
+                  )}
                 </div>
               </div>
             );
