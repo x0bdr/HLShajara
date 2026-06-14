@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { PageShell } from "@/components";
 
 export function generateStaticParams() {
@@ -15,16 +14,9 @@ export default async function PolicyPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "policy" });
-  const nav = await getTranslations({ locale, namespace: "nav" });
 
   return (
     <PageShell narrow>
-      <nav className="flex-between mb-32 gap-16 flex-wrap justify-center">
-        <Link href={`/${locale}`} className="btn ghost">{nav("record")}</Link>
-        <Link href={`/${locale}/mission`} className="btn ghost">{nav("mission")}</Link>
-        <Link href={`/${locale}/faq`} className="btn ghost">{nav("faq")}</Link>
-      </nav>
-
       <div className="page-header-center">
         <div className="ds-h1">{t("title")}</div>
         <p className="ds-lead">{t("lead")}</p>

@@ -39,9 +39,6 @@ export function HeroSection() {
           <Link href={`/${locale}/submit`}>
             <Button variant="primary">{nav("submit")}</Button>
           </Link>
-          <Link href={`/${locale}/record`}>
-            <Button variant="secondary">{nav("record")}</Button>
-          </Link>
         </div>
       </div>
     </section>
