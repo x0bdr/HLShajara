@@ -30,15 +30,14 @@ const SCREENS_TS = path.join(__dirname, "..", "src", "lib", "screens.ts");
 // `input` is the runScreens argument shape:
 //   { sourceCount, entityName, entityRole, entityType, allegationDescription }
 //
-// REGEX-BOUNDARY NOTE (mirrors the real server exactly):
-// The persist.ts screens use ASCII `\b` word boundaries around Arabic
-// alternations. `\b` only fires at an ASCII word-char (`[A-Za-z0-9_]`)
-// transition, so a purely-Arabic term only matches when flanked by an ASCII
-// letter/digit (which bilingual submissions routinely contain — dates, IDs,
-// English context). Fixtures below use such flanking, or the natively-ASCII
-// alternatives (e.g. "doctor", GPS coordinates), so each code fires the same
-// way `/api/submit` would. We assert the SERVER's actual behavior — not an
-// idealized one — because screens.ts is a verbatim lift of validateSubmission.
+// REGEX-BOUNDARY NOTE (v1.4 Unicode-aware fix):
+// screens.ts now anchors Arabic/Latin terms with UNICODE-property boundaries
+// (`(?<![\p{L}\p{N}_]) … (?![\p{L}\p{N}_])`, `u` flag) plus a clitic-aware
+// Arabic proclitic strip (ال/و/ف/ب/ك/ل). So BARE and clitic-prefixed Arabic
+// terms now match on their own — no ASCII flanking required (the previous
+// fixtures' `x5علوي5x` flanking was a workaround for the OLD `\b` bug and is
+// REMOVED here). Fixtures use natural Arabic. Deep Arabic true/false-positive
+// coverage lives in scripts/screens-arabic-check.js.
 //
 // INCITEMENT note: the standalone incitement token set is a strict SUBSET of
 // BANNED_PATTERNS[2] (the group-target screen, which runs first). So any string
@@ -70,20 +69,20 @@ const FIXTURES = [
     expectedCode: "WEAK_SOURCE",
   },
   {
-    name: "GROUP_TARGET (sect term ascii-flanked)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "leader of x5علوي5 group", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
+    name: "GROUP_TARGET (bare Arabic sect term)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "leader of علوي group", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "GROUP_TARGET",
   },
   {
     // Incitement tokens are a subset of the group-target screen, so they trip
     // GROUP_TARGET first — proves the NO_SOURCE..GROUP_TARGET ordering holds.
     name: "INCITEMENT_SUBSUMED (-> GROUP_TARGET, order preserved)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "posted x5اقتلوا5x publicly online today" },
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "posted اقتلوا publicly online today" },
     expectedCode: "GROUP_TARGET",
   },
   {
-    name: "HATE_TONE (إبادة ascii-flanked)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "ordered x5إبادة5x of detainees in 2016" },
+    name: "HATE_TONE (bare Arabic إبادة)",
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "commander", entityType: "individual", allegationDescription: "ordered إبادة of detainees in 2016" },
     expectedCode: "HATE_TONE",
   },
   {
@@ -98,7 +97,7 @@ const FIXTURES = [
   },
   {
     name: "MISMATCH (individual + org role لواء)",
-    input: { sourceCount: 2, entityName: "Person X", entityRole: "head of 4لواء4 unit", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
+    input: { sourceCount: 2, entityName: "Person X", entityRole: "head of لواء", entityType: "individual", allegationDescription: "documented act described at sufficient length here" },
     expectedCode: "MISMATCH",
   },
   {
@@ -109,11 +108,11 @@ const FIXTURES = [
 ];
 
 // isCoarseLocationClean fixtures (S5 coarse-location blocker).
-// The address regex `\b(شارع|..)\s+\w+` requires the street token ascii-flanked
-// (so `\b` fires) and an ascii `\w+` after it — natural in a "5شارع Thawra" or
-// bilingual address. A bare governorate/city name (no street token) is clean.
+// The address regex is now Unicode-aware (`arToken(شارع|..)\s+[\p{L}\p{N}]+`),
+// so a NATURAL Arabic street address «شارع الرشيد» (and clitic «الشارع …»)
+// blocks. A bare governorate/city name (no street token) stays clean.
 const LOCATION_FIXTURES = [
-  { name: "street address blocked", value: "5شارع Thawra", expectedClean: false },
+  { name: "street address blocked", value: "شارع الرشيد", expectedClean: false },
   { name: "governorate allowed", value: "Damascus دمشق", expectedClean: true },
 ];
 

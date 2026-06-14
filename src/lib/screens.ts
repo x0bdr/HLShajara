@@ -17,15 +17,97 @@
 
 /* ---------- BANNED PATTERNS ---------- */
 
+/*
+ * UNICODE-AWARE BOUNDARIES (v1.4 word-boundary fix)
+ * -------------------------------------------------
+ * The original patterns used ASCII `\b` / `\w`, which only fire at an
+ * `[A-Za-z0-9_]` transition. Arabic script is NOT in that class, so a bare or
+ * Arabic-flanked banned term (e.g. «هذه الطائفة») never matched — the screen
+ * silently passed identity-targeting / incitement / hate text on BOTH client
+ * and server. We replace ASCII anchoring with Unicode-property boundaries
+ * (`u` flag) so the EXISTING term lists actually fire for Arabic and Latin.
+ *
+ * Token shape (see `arBoundary`):
+ *   (?<![\p{L}\p{N}_]) <optional Arabic proclitics> (?:TERMS) (?![\p{L}\p{N}_])
+ *
+ * - The lookbehind/lookahead use Unicode letter/number classes, so a term is
+ *   only matched as a standalone token, never as a substring of a longer word
+ *   (e.g. «عرق» does NOT fire inside «عرقلة» / «معرقل»). This preserves the
+ *   original `\b`-style "whole token only" intent without false positives.
+ * - Arabic is agglutinative: the definite article «ال» and the proclitics
+ *   و/ف/ب/ك/ل attach DIRECTLY to a word with no space, so «الطائفة»,
+ *   «وعلويين», «بالطائفة», «للطائفة» are the SAME banned token. The optional
+ *   `AR_PROCLITIC` cluster strips those leading clitics so clitic-prefixed
+ *   forms match, while the outer Unicode boundary still requires a real
+ *   word break before the clitic.
+ * - TRAILING forms (suffixes like «مذهبية») are intentionally left NON-matching
+ *   unless the suffixed form is itself enumerated in the list (the lists already
+ *   spell out singular/plural/gender variants, e.g. علوي/علوية/علويين). This
+ *   matches the original trailing-`\b` behavior and avoids over-blocking
+ *   legitimate derived words.
+ */
+
+// Arabic proclitics that attach with no space: و ف ب ك ل + definite article ال
+// (and the assimilated «لل» = لِ+ال). Optional, repeatable (e.g. «وبال…»).
+const AR_PROCLITIC = "(?:[وفبكل]|ال|وال|فال|بال|كال|لل|ولل)*";
+
+// Wrap an Arabic alternation as a Unicode-boundaried, clitic-aware token.
+function arToken(terms: string): string {
+  return "(?<![\\p{L}\\p{N}_])" + AR_PROCLITIC + "(?:" + terms + ")(?![\\p{L}\\p{N}_])";
+}
+
+// Wrap a Latin alternation as a Unicode-boundaried token (no Arabic clitics,
+// but boundaries are Unicode-aware so it composes with Arabic context).
+function latinToken(terms: string): string {
+  return "(?<![\\p{L}\\p{N}_])(?:" + terms + ")(?![\\p{L}\\p{N}_])";
+}
+
+// A "TOKEN region" word (after a street/region keyword): one or more Unicode
+// letters/numbers — replaces the ASCII-only `\w+`.
+const UWORD = "[\\p{L}\\p{N}]+";
+
 export const BANNED_PATTERNS = [
-  /\b(علوي|علوية|علويين|نصيري|نصيرية|نصيريين|شيعي|شيعية|شيعة|سني|سنية|سنّي|سُنّي|درزي|درزية|مسيحي|مسيحية|أيزيدي|أيزيدية|كردي|كردية|تركمان|تركماني|أرمني|شركسي|شيشاني|تشيشاني)\b/gi,
-  /\b(عائلة| clan |قبيلة|طائفة|مذهب|إثنية|عرق|منطقة \w+ية|محافظة \w+|قرية \w+|حي \w+)\b/gi,
-  /\b(اقتلوا|اضربوا|دمروا|فجّروا|حرّقوا|اغتصبوا|اذبحوا|اقتل|اضرب|دمر|فجّر|حرق|اغتصب|اذبح|يجب قتل|لابد من قتل|الموت ل|القتل ل|القضاء على)\b/gi,
-  /\b(خنازير|كلاب|قردة|جرذان|حشرات|أوبئة|وباء|طاعون|ملعون|ملعونة|نجس|نجسة|خبيث|خبيثة|وسخ|وسخة)\b/gi,
+  new RegExp(
+    arToken(
+      "علوي|علوية|علويين|نصيري|نصيرية|نصيريين|شيعي|شيعية|شيعة|سني|سنية|سنّي|سُنّي|درزي|درزية|مسيحي|مسيحية|أيزيدي|أيزيدية|كردي|كردية|تركمان|تركماني|أرمني|شركسي|شيشاني|تشيشاني"
+    ),
+    "giu"
+  ),
+  // Group nouns: Arabic clitic-aware tokens, the spaced-Latin «clan», and the
+  // region constructs («منطقة <word>», «محافظة <word>», …) which need a word
+  // AFTER the keyword.
+  new RegExp(
+    arToken("عائلة|قبيلة|طائفة|مذهب|إثنية|عرق") +
+      "|" + latinToken("clan") +
+      "|" + "(?<![\\p{L}\\p{N}_])(?:منطقة|محافظة|قرية|حي)\\s+" + UWORD,
+    "giu"
+  ),
+  new RegExp(
+    arToken(
+      "اقتلوا|اضربوا|دمروا|فجّروا|حرّقوا|اغتصبوا|اذبحوا|اقتل|اضرب|دمر|فجّر|حرق|اغتصب|اذبح"
+    ) +
+      // Multi-word incitement phrases keep an internal space; they are anchored
+      // by a Unicode word boundary at the start only (the phrase itself ends in
+      // a clitic/preposition that legitimately precedes a name).
+      "|(?<![\\p{L}\\p{N}_])(?:يجب قتل|لابد من قتل|الموت ل|القتل ل|القضاء على)",
+    "giu"
+  ),
+  new RegExp(
+    arToken(
+      "خنازير|كلاب|قردة|جرذان|حشرات|أوبئة|وباء|طاعون|ملعون|ملعونة|نجس|نجسة|خبيث|خبيثة|وسخ|وسخة"
+    ),
+    "giu"
+  ),
 ];
 
 export const HATE_PATTERNS = [
-  /\b(الموت لل|المقاومة ضد|الجهاد ضد|الانتقام من|الثأر ل|التطهير من|التخلص من|إبادة|إبادة جماعية|تطهير عرقي|تطهير طائفي|تطهير مذهبي)\b/gi,
+  // Mostly multi-word phrases; anchor at a leading Unicode boundary. The
+  // single-token «إبادة» is also covered by an internal alternation branch.
+  new RegExp(
+    "(?<![\\p{L}\\p{N}_])(?:الموت لل|المقاومة ضد|الجهاد ضد|الانتقام من|الثأر ل|التطهير من|التخلص من|إبادة جماعية|تطهير عرقي|تطهير طائفي|تطهير مذهبي)" +
+      "|" + arToken("إبادة"),
+    "giu"
+  ),
 ];
 
 /* ---------- VALIDATION RESULT ---------- */
@@ -63,27 +145,69 @@ export function screenText(text: string): {
     }
   }
 
-  // Incitement detection: calls to violence
-  incitement = /\b(اقتلوا|اضربوا|دمروا|فجّروا|حرّقوا|اغتصبوا|اذبحوا|يجب قتل|لابد من قتل|الموت ل|القتل ل|القضاء على)\b/gi.test(text);
+  // Incitement detection: calls to violence. Unicode-aware boundaries (NOT
+  // ASCII `\b`) so bare/clitic-prefixed Arabic verbs fire. NOTE (carried over
+  // from STATE.md): this token set is a strict subset of BANNED_PATTERNS[2]
+  // (the group-target screen), which runs first in the cascade — so on the real
+  // server INCITEMENT is reached only via a path GROUP_TARGET did not already
+  // claim. This fix does not change that ordering; it only makes both screens
+  // actually fire for Arabic. No `g` flag: this regex is consumed with `.test()`
+  // (stateful lastIndex would skip matches on reuse).
+  incitement = new RegExp(
+    arToken(
+      "اقتلوا|اضربوا|دمروا|فجّروا|حرّقوا|اغتصبوا|اذبحوا|اقتل|اضرب|دمر|فجّر|حرق|اغتصب|اذبح"
+    ) + "|(?<![\\p{L}\\p{N}_])(?:يجب قتل|لابد من قتل|الموت ل|القتل ل|القضاء على)",
+    "iu"
+  ).test(text);
 
   return { banned, incitement, hateTone, matches: [...new Set(matches)] };
 }
 
 /* ---------- ADDITIONAL PATTERN SETS ---------- */
 
+// All patterns below are consumed via `.test()` (`.some(p => p.test(...))`), so
+// they intentionally carry NO `g` flag — a stateful `lastIndex` would skip
+// matches across reuse of the shared module-level objects.
 export const INNOCENT_PROFESSIONS = [
-  /\b(طفل|طفلة|أطفال|طفول|civilian|مدني|مدنية|doctor|طبيب|طبيبة|teacher|معلم|معلمة|nurse|ممرض|ممرضة|journalist|صحفي|صحفية|student|طالب|طالبة|hospital|مستشفى|school|مدرسة|clinic|عيادة|university|جامعة|researcher|باحث|باحثة|activist|ناشط|ناشطة|aid worker|عامل إغاثة)\b/gi,
+  new RegExp(
+    arToken(
+      "طفل|طفلة|أطفال|طفول|مدني|مدنية|طبيب|طبيبة|معلم|معلمة|ممرض|ممرضة|صحفي|صحفية|طالب|طالبة|مستشفى|مدرسة|عيادة|جامعة|باحث|باحثة|ناشط|ناشطة"
+    ) +
+      "|" +
+      latinToken(
+        "civilian|doctor|teacher|nurse|journalist|student|hospital|school|clinic|university|researcher|activist"
+      ) +
+      // multi-word Latin/Arabic phrases keep an internal space; leading boundary.
+      "|(?<![\\p{L}\\p{N}_])(?:aid worker|عامل إغاثة)",
+    "iu"
+  ),
 ];
 
 export const ORG_TERMS = [
-  /\b(division|فرقة|brigade|لواء|regiment|فوج|battalion|كتيبة|committee|لجنة|ministry|وزارة|council|مجلس|organization|منظمة|party|حزب|force|قوة| apparatus|جهاز|branch|فرع)\b/gi,
+  new RegExp(
+    arToken(
+      "فرقة|لواء|فوج|كتيبة|لجنة|وزارة|مجلس|منظمة|حزب|قوة|جهاز|فرع"
+    ) +
+      "|" +
+      latinToken(
+        "division|brigade|regiment|battalion|committee|ministry|council|organization|party|force|apparatus|branch"
+      ),
+    "iu"
+  ),
 ];
 
 export const PRIVATE_DATA_PATTERNS = [
-  /\b\d{4,}\s*[-–]\s*\d{4,}\s*[-–]\s*\d{2,}/, // phone numbers
-  /\b\d{1,3}\.\d{1,6},\s*\d{1,3}\.\d{1,6}\b/, // GPS coordinates
-  /\b(شارع|ساحة|حي|منطقة|بناية|طابق|شقة|زقاق|عمارة)\s+\w+/i, // addresses
-  /\b(facebook\.com|instagram\.com|twitter\.com|x\.com|tiktok\.com)\/[^\s]+/i, // social media handles
+  /(?<![\d.])\d{4,}\s*[-–]\s*\d{4,}\s*[-–]\s*\d{2,}/, // phone numbers
+  /(?<![\d.])\d{1,3}\.\d{1,6},\s*\d{1,3}\.\d{1,6}(?![\d])/, // GPS coordinates
+  // Street-address: clitic-aware Arabic street tokens followed by a word.
+  // Unicode-aware so «شارع الرشيد» / «الشارع …» fire (ASCII `\w+` could not).
+  new RegExp(arToken("شارع|ساحة|حي|منطقة|بناية|طابق|شقة|زقاق|عمارة|حارة") + "\\s+" + UWORD, "iu"),
+  // Latin street tokens in real addresses, e.g. «12 Al-Rasheed Street».
+  new RegExp(
+    latinToken("street|st|avenue|ave|road|rd|boulevard|blvd") + "|" +
+      "(?<![\\p{L}\\p{N}_])(?:facebook\\.com|instagram\\.com|twitter\\.com|x\\.com|tiktok\\.com)/[^\\s]+",
+    "iu"
+  ),
 ];
 
 export function screenInnocentParty(text: string): boolean {
@@ -97,13 +221,20 @@ export function screenPrivateTargeting(text: string): boolean {
 export function screenMismatch(entityType: string, entityRole: string): boolean {
   const role = entityRole.toLowerCase();
   if (entityType === "individual") {
-    // Individual should not have organizational role descriptors
-    return /\b(فرقة|لواء|فوج|كتيبة|لجنة|وزارة|مجلس|منظمة|حزب|قوة|جهاز|مؤسسة)\b/.test(role);
+    // Individual should not have organizational role descriptors.
+    // Unicode-aware, clitic-aware so «الفرقة»/«واللواء» fire (ASCII `\b` could not).
+    return new RegExp(
+      arToken("فرقة|لواء|فوج|كتيبة|لجنة|وزارة|مجلس|منظمة|حزب|قوة|جهاز|مؤسسة"),
+      "iu"
+    ).test(role);
   }
   if (entityType === "organization" || entityType === "military_unit" || entityType === "security_branch" || entityType === "official_body") {
-    // Organization should not have a single-person job title
-    return /\b(ضابط|عقيد|عميد|لواء|عميد|عميد|نقيب|ملازم|رقيب|جندي|مدير|رئيس|وزير|نائب|سكرتير|مساعد|مستشار)\b/.test(role) &&
-      !/\b(رئيس|مدير|قائد|مسؤول)\b/.test(role);
+    // Organization should not have a single-person job title.
+    return new RegExp(
+      arToken("ضابط|عقيد|عميد|لواء|نقيب|ملازم|رقيب|جندي|مدير|رئيس|وزير|نائب|سكرتير|مساعد|مستشار"),
+      "iu"
+    ).test(role) &&
+      !new RegExp(arToken("رئيس|مدير|قائد|مسؤول"), "iu").test(role);
   }
   return false;
 }

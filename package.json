@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "check:i18n": "node scripts/i18n-parity-check.js",
-    "check:i18n:submit": "node scripts/i18n-submit-parity-check.js"
+    "check:i18n:submit": "node scripts/i18n-submit-parity-check.js",
+    "check:screens": "node scripts/screens-parity-check.js",
+    "check:screens:arabic": "node scripts/screens-arabic-check.js"
   },
   "dependencies": {
     "better-auth": "^1.4.7",
