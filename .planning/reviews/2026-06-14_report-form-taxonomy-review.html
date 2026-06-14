@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HLShajara — Report Submission Taxonomy: Constraint &amp; Safety Audit</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e7e9ee; --muted:#9aa3b2;
+    --line:#2a2f3a; --crit:#e5484d; --high:#f5a524; --med:#e3c000; --low:#7c8694;
+    --good:#30a46c; --accent:#5b8def; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px 80px}
+  header.top{background:linear-gradient(135deg,#11141b,#1a1f2b);border-bottom:1px solid var(--line);
+    padding:34px 0 28px;margin-bottom:8px}
+  header.top .wrap{padding-bottom:0}
+  .eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--muted)}
+  h1{font-size:27px;margin:8px 0 6px;line-height:1.25}
+  .sub{color:var(--muted);font-size:14px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:12.5px;color:var(--muted)}
+  .meta b{color:var(--ink);font-weight:600}
+  .verdict{margin:22px 0 8px;border:1px solid var(--crit);background:rgba(229,72,77,.08);
+    border-radius:12px;padding:18px 20px}
+  .verdict h2{margin:0 0 6px;font-size:18px;color:#ff8d90}
+  .verdict p{margin:6px 0;color:#f0d6d7}
+  h2.section{font-size:20px;margin:40px 0 6px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:16px;margin:26px 0 4px}
+  p{margin:10px 0}
+  .lead{color:var(--muted)}
+  code,.path{font-family:var(--mono);font-size:12.5px;background:#0c0e13;border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;color:#cbd3e1}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 8px;border-radius:999px;vertical-align:middle}
+  .b-crit{background:rgba(229,72,77,.16);color:#ff9498;border:1px solid var(--crit)}
+  .b-high{background:rgba(245,165,36,.14);color:#f6bd5c;border:1px solid var(--high)}
+  .b-med{background:rgba(227,192,0,.13);color:#e7d24e;border:1px solid var(--med)}
+  .b-low{background:rgba(124,134,148,.16);color:#aab3c0;border:1px solid var(--low)}
+  .b-good{background:rgba(48,163,108,.15);color:#5fd39b;border:1px solid var(--good)}
+  .finding{background:var(--panel);border:1px solid var(--line);border-left-width:4px;border-radius:10px;
+    padding:14px 18px;margin:14px 0}
+  .finding.crit{border-left-color:var(--crit)}
+  .finding.high{border-left-color:var(--high)}
+  .finding.med{border-left-color:var(--med)}
+  .finding.low{border-left-color:var(--low)}
+  .finding h4{margin:0 0 8px;font-size:15.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .finding h4 .id{color:var(--muted);font-family:var(--mono);font-size:12px}
+  .kv{margin:8px 0;font-size:14px}
+  .kv .lab{color:var(--muted);font-weight:600;display:inline-block;min-width:108px;vertical-align:top}
+  .ar{direction:rtl;unicode-bidi:isolate;font-size:14px}
+  blockquote{margin:10px 0;padding:8px 14px;border-left:3px solid var(--line);background:var(--panel2);
+    border-radius:0 8px 8px 0;color:#cdd4df}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--ink);font-weight:600}
+  td .path{font-size:11.5px}
+  .yes{color:var(--good);font-weight:700}.no{color:var(--low)}
+  .pill-row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+  .note{color:var(--muted);font-size:13px}
+  .fix{background:rgba(48,163,108,.06);border:1px solid rgba(48,163,108,.3);border-radius:8px;
+    padding:10px 14px;margin-top:8px}
+  .fix b{color:#5fd39b}
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+  ol.flow li{position:relative;padding:12px 14px 12px 52px;margin:10px 0;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px}
+  ol.flow li:before{counter-increment:s;content:counter(s);position:absolute;left:12px;top:12px;
+    width:28px;height:28px;border-radius:50%;background:var(--accent);color:#06101f;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:14px}
+  ol.flow li b{color:var(--ink)}
+  .check li{margin:6px 0}
+  .foot{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:12.5px}
+  a{color:var(--accent)}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin:16px 0}
+  .toc a{display:inline-block;margin:3px 14px 3px 0;font-size:13.5px;text-decoration:none}
+  .small{font-size:12.5px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">HLShajara · لستَ شجرة — Internal Review Artifact</div>
+    <h1>“New Report” Submission Taxonomy — Constraint &amp; Safety Audit</h1>
+    <div class="sub">Multi-model review of the proposed 8-sector report form, grounded against the platform’s codified hard constraints.</div>
+    <div class="meta">
+      <span><b>Date:</b> 2026-06-14</span>
+      <span><b>Scope:</b> proposed report taxonomy + <span class="path">full specs.JPG</span> + <span class="path">CONCEPT.md</span> + live i18n copy</span>
+      <span><b>Method:</b> Claude workflow (7 agents, repo-grounded) + Codex gpt-5.5 (high) + Kimi — independent, then synthesized</span>
+      <span><b>Models concur:</b> 3 / 3 → <b style="color:#ff9498">do not ship as designed</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="verdict">
+    <h2>Verdict — Reject as designed; one finding overrides all others</h2>
+    <p><b>The form is the intake front-end for a sect-based collective-punishment program.</b> The project’s own concept layer (<span class="path">CONCEPT.md</span>), README, the campaign poster (<span class="path">full specs.JPG</span>), and the <em>live</em> bilingual site copy define the campaign as targeting <b>the Alawite community as a sect</b> — “the nurturing environment / البيئة الحاضنة” — and call to boycott their shops, taxis, schools, universities, <b>hospitals</b>, and even “humanitarian dealings.” The 8 report sectors map one-to-one onto that poster’s “Social Isolation Domains” grid.</p>
+    <p>This is <b>collective punishment by identity</b>. It directly contradicts the platform’s own charter (“no group, no identity-based targeting”) and the anti-discrimination logic its <b>code already enforces</b> (<code>DATA-01</code> identity-free schema, <code>GROUP_TARGET</code> / <code>INNOCENT_PARTY</code> screens). It is ethically indefensible and legally fatal. <b>No partial salvage of this framing is possible — it must be removed.</b></p>
+    <p class="small">Below: (1) the overriding finding with evidence; (2) the form-level findings; (3) the multi-model consensus matrix; (4) the lawful redesign that fits your existing schema; (5) a live-contamination remediation checklist.</p>
+  </div>
+
+  <div class="toc">
+    <a href="#c0">▸ CRITICAL-0 · Collective-punishment program</a>
+    <a href="#form">▸ Form-level findings</a>
+    <a href="#matrix">▸ Consensus matrix</a>
+    <a href="#salvage">▸ Lawful redesign</a>
+    <a href="#remediation">▸ Remediation checklist</a>
+    <a href="#strong">▸ What’s already strong</a>
+  </div>
+
+  <!-- ============ CRITICAL 0 ============ -->
+  <h2 class="section" id="c0">1 · The overriding finding</h2>
+
+  <div class="finding crit">
+    <h4><span class="badge b-crit">Critical-0</span> The campaign targets a religious community, not named perpetrators <span class="id">mission · legal · charter · code</span></h4>
+
+    <div class="kv"><span class="lab">What it is</span> A “documentation, accountability <b>and popular boycott</b>” campaign whose declared targets are <b>the Alawites (“النصيريون”) as “the nurturing environment of the former regime,”</b> plus the Druze and “the rest of the collaborating and sympathising minorities.” Accountability for named perpetrators is folded into a sect-wide social/economic exclusion program.</div>
+
+    <div class="kv"><span class="lab">Evidence</span> (verbatim, from your repo — for removal, not endorsement):</div>
+    <table>
+      <tr><th>Location</th><th>Content</th></tr>
+      <tr><td><span class="path">CONCEPT.md</span> :47, :73, :76 (EN)</td><td>“a … <b>popular boycott campaign</b> … against … <b>the Alawite community as the nurturing environment</b>” · “<b>Boycotting the Alawites</b> and exercising social pressure against them” · “The targets in this campaign are the <b>Alawites</b> as the <b>nurturing environment</b>.”</td></tr>
+      <tr><td><span class="path">CONCEPT.md</span> :61 (EN)</td><td>“<b>Stopping commercial and humanitarian dealings with them</b> as the nurturing environment…”</td></tr>
+      <tr><td><span class="path">full specs.JPG</span> (poster)</td><td><span class="ar">“لمقاطعة الأقليات المُجرمة” · “عزل اجتماعي سني للدروز والنصيرية العلوية وباقي الأقليات المتعاونة والمتعاطفة”</span> · “Social Isolation Domains” grid → boycott their <b>hospitals (المشافي), schools, universities, students, taxis, shops, rentals</b>.</td></tr>
+      <tr><td><b>LIVE:</b> <span class="path">messages/ar.json</span> :52 · <span class="path">messages/en.json</span> :52 (FAQ a1)</td><td>“…and its security, military, <b>and Nusayri apparatus as its nurturing environment</b>.” — already shipped to the public site.</td></tr>
+      <tr><td><span class="path">README.md</span> :3</td><td>Same “Nusayri … nurturing environment” framing in the repo’s front matter.</td></tr>
+    </table>
+
+    <div class="kv"><span class="lab">Self-contradiction</span> The same files disavow exactly this: <span class="path">CONCEPT.md</span> :41/:77 — “<em>never against any sect … No collective accusation, no boycott on the basis of … religious identity.</em>” And <span class="path">messages/*.json</span> a2 / principle1 — “<em>We do not collect or publish any data on sectarian … identity; the data model structurally prevents any field that could be used for group targeting.</em>” The body names the sect; the disclaimer denies it. <b>The “nurturing environment” doctrine <em>is</em> the collective accusation the disclaimer disavows.</b></div>
+
+    <div class="kv"><span class="lab">Harm</span> Naming an entire religious minority as a target and calling for the boycott of their hospitals, schools, livelihoods, and humanitarian access punishes the uninvolved — children, the poor, civilians, and people who are themselves regime victims — for the sect they were born into. That is the same identity-based persecution logic the regime itself ran. It harms innocents and converts a defensible accountability archive into documented sectarian incitement.</div>
+
+    <div class="kv"><span class="lab">Constraint broken</span> Core Value “No group, no identity-based targeting”; <code>DATA-01</code> identity-free schema (<span class="path">src/db/schema.ts</span>); <code>GROUP_TARGET</code> + <code>BANNED_PATTERNS</code> which already auto-reject submissions containing <span class="ar">علوي/نصيري/طائفة</span> (<span class="path">src/db/persist.ts:18–22</span>); <code>INNOCENT_PARTY</code> (<span class="path">persist.ts:83–100</span>). <b>The platform’s own intake engine would reject the campaign’s core thesis.</b></div>
+
+    <div class="kv"><span class="lab">Legal</span> Collapses the “political opinion / Art. 13” free-expression cover the project relies on (opinion is protected; organising sect-wide economic/medical exclusion is not). It is special-category processing (political/religious) and, framed as denial of commerce, education, healthcare and humanitarian access to a group, reads as advocacy of discrimination/persecution — an existential hosting, platform-policy, and litigation exposure.</div>
+
+    <div class="fix"><b>Fix — non-negotiable:</b> Remove the collective-punishment / “nurturing environment” / sect-boycott framing in full (concept, poster, README, live FAQ — see §5). The campaign may target <b>only</b> (a) named individuals/units/officials tied to documented conduct with credible public sources, and (b) named commercial/organizational fronts likewise sourced. Never a community, never a sect, never a profession-by-sect grid. Route to legal counsel before any further public copy ships.</div>
+  </div>
+
+  <!-- ============ FORM LEVEL ============ -->
+  <h2 class="section" id="form">2 · Form-level findings (independent of the campaign frame)</h2>
+  <p class="lead">Even if the sectarian frame were removed, the proposed taxonomy as drawn still breaks multiple codified constraints. Severity-ranked; each maps to a real enforcement point in your code.</p>
+
+  <div class="finding crit">
+    <h4><span class="badge b-crit">Critical</span> F1 · Mass-targets ordinary private individuals <span class="id">mission · INNOCENT_PARTY</span></h4>
+    <div class="kv"><span class="lab">Fields</span> <span class="ar">باعة جوالة</span> (street vendors), delivery/taxi/private drivers, <span class="ar">عاملة تنظيف / عاملات تنظيف</span> (cleaners), <span class="ar">اكشاك</span> (kiosks), reception/front-desk, labour, employees, nurses, instructors, students.</div>
+    <div class="kv"><span class="lab">Breaks</span> Mission scope (“named individuals tied to <em>specific conduct</em> with credible public evidence”); <code>INNOCENT_PARTY</code> / <code>INNOCENT_PROFESSIONS</code> already shields doctors, nurses, teachers, students (<span class="path">persist.ts:83–100</span>). The entity-type enum has no slot for a taxi driver or cashier.</div>
+    <div class="kv"><span class="lab">Harm</span> Turns the archive into a public blacklist of low-power workers — retaliation, employment blacklisting, stalking, score-settling. These are not presumptive perpetrators of Syria crimes.</div>
+    <div class="fix"><b>Fix:</b> Remove all ordinary-worker categories. Individuals are admissible only when a credible public source already ties a <em>named</em> person (typically an official/commander or a publicly-named perpetrator) to specific documented conduct.</div>
+  </div>
+
+  <div class="finding crit">
+    <h4><span class="badge b-crit">Critical</span> F2 · Political-loyalty screening &amp; “bad attitude” complaint board <span class="id">non-sectarian · GROUP_TARGET · GDPR Art.9</span></h4>
+    <div class="kv"><span class="lab">Fields</span> Tourism Sub-type B hint: <b>“Does he support asad regime? Report for bad attitude.”</b> · the <span class="ar">شبيح</span> person-category · <span class="ar">المتعاونة والمتعاطفة</span> (“collaborating/sympathising”).</div>
+    <div class="kv"><span class="lab">Breaks</span> Non-sectarian tone; “justice not revenge / documentation not harassment”; <code>GROUP_TARGET</code>; GDPR Art. 9 / PDPL special-category (political opinion of an identifiable person).</div>
+    <div class="kv"><span class="lab">Harm</span> The single most dangerous string in the draft: it instructs users to denounce a private person for perceived loyalty and for interpersonal rudeness. Pure grudge/loyalty fuel, with no conduct and no source.</div>
+    <div class="fix"><b>Fix:</b> Delete the hint and the “support/sympathy/collaboration” framing entirely. Loyalty and “attitude” are never reportable. Replace with a closed list of documented conduct types that each require a source.</div>
+  </div>
+
+  <div class="finding crit">
+    <h4><span class="badge b-crit">Critical</span> F3 · No-source intake — <span class="ar">“تجربتك”</span> as the evidentiary basis <span class="id">INTAKE-01 · validateSubmission</span></h4>
+    <div class="kv"><span class="lab">Fields</span> Global Step 4 “<span class="ar">تجربتك</span> (your experience) + supporting-documents <em>checkbox</em>.”</div>
+    <div class="kv"><span class="lab">Breaks</span> “No source, no publication.” Your code already enforces the opposite of this design: <code>NO_SOURCE</code> if 0 sources and <code>WEAK_SOURCE</code> if &lt; 2 (<span class="path">persist.ts:128–146</span>); Zod <code>sourceLinks.min(1)</code> (<span class="path">validation.ts:73</span>). A personal anecdote is explicitly not a source.</div>
+    <div class="kv"><span class="lab">Harm</span> Trains submitters to accuse from grievance; floods intake with uncheckable claims about named people; destroys credibility before courts / UN COI / IIIM, which require source citations.</div>
+    <div class="fix"><b>Fix:</b> Make a credible-source citation the <em>primary</em> required field (URL/doc/upload), minimum two independent third-party sources. Personal experience may be captured only as a <b>non-public lead note</b>, never sufficient to publish. Replace the checkbox with a validated source field.</div>
+  </div>
+
+  <div class="finding crit">
+    <h4><span class="badge b-crit">Critical</span> F4 · Doxxing PII — plates, phones, addresses, map pins <span class="id">PRIVATE_TARGETING</span></h4>
+    <div class="kv"><span class="lab">Fields</span> street / nearest location / Google-Map pin · phone &amp; driver phone · <b>car plate</b> · taxi number · LinkedIn/Indeed/social handles · real-estate houses/villas/land + owner name.</div>
+    <div class="kv"><span class="lab">Breaks</span> <code>PRIVATE_TARGETING</code> (<span class="path">persist.ts:91–104</span>) already rejects phone/GPS/street-address/social-handle patterns; PROJECT.md “no home addresses / location-tracking.”</div>
+    <div class="kv"><span class="lab">Code gap surfaced</span> <code>PRIVATE_DATA_PATTERNS</code> does <em>not</em> yet match <b>car plates</b> or <b>international phone formats</b> (<code>+\d{7,}</code>, <code>00…</code>) — a plate pasted into <span class="path">allegationDescription</span> passes today. The proposed field would make doxxing a first-class column.</div>
+    <div class="fix"><b>Fix:</b> Remove all individual phone/plate/residence/map-pin/social fields. Allow only coarse location (country / governorate / city) for the <em>site of conduct</em>, never residence. Add plate + international-phone patterns to <code>PRIVATE_DATA_PATTERNS</code> with Vitest cases.</div>
+  </div>
+
+  <div class="finding crit">
+    <h4><span class="badge b-crit">Critical</span> F5 · Free-form <span class="ar">“شبيح”</span> label = accusation-by-epithet <span class="id">GROUP_TARGET · LEGAL-01</span></h4>
+    <div class="kv"><span class="lab">Field</span> Individuals Sub-type A → “<span class="ar">شبيح</span> (shabih)” as a selectable person type.</div>
+    <div class="kv"><span class="lab">Breaks</span> “Named individual tied to <em>specific conduct</em>”; identity/collective epithet not a documented act; bypasses the per-claim source FK (a label is not an <code>allegationSources</code> row). Living-person naming also needs the <code>LEGAL_GATE</code> lawyer sign-off.</div>
+    <div class="fix"><b>Fix:</b> Remove the label/epithet field. Conduct is entered only as a sourced allegation; categories, if any, are a closed enum of <em>acts</em> reviewed by counsel. Add <span class="ar">شبيح/عميل/مخبر</span> to <code>BANNED_PATTERNS</code> so they’re caught inside free text too.</div>
+  </div>
+
+  <div class="finding high">
+    <h4><span class="badge b-high">High</span> F6 · The lawyer-gate is a self-asserted boolean, not a counsel artifact <span class="id">existing build · LEGAL-01</span></h4>
+    <div class="kv"><span class="lab">Where</span> <code>hasLawyerSignOff</code> arrives in the publish payload; <code>validatePublication()</code> (<span class="path">persist.ts:237–246</span>); publish action (<span class="path">api/review/route.ts:182–192</span>).</div>
+    <div class="kv"><span class="lab">Harm</span> The platform’s entire defamation/Art. 9 defence reduces to <code>body.hasLawyerSignOff === true</code>, set by the same reviewer who publishes — no named lawyer, jurisdiction, scope, or signed artifact. In litigation, an unverifiable boolean is an admission the control was theatre.</div>
+    <div class="fix"><b>Fix:</b> Make sign-off a FK to a persisted <code>lawyer_sign_off</code> audit row (lawyer identity, bar/jurisdiction, entry IDs, date, standard version) created by a distinct <code>legal</code> role and hash-chained in <code>reviewLogs</code> (the <code>lawyer_sign_off</code> action enum already exists). Publish reads it from that row, never from request input.</div>
+  </div>
+
+  <div class="finding high">
+    <h4><span class="badge b-high">High</span> F7 · The ≥2-source gate checks count, not credibility or independence <span class="id">existing build · editorial</span></h4>
+    <div class="kv"><span class="lab">Where</span> <code>WEAK_SOURCE</code> floor (<span class="path">persist.ts:139–146</span>) counts links; two blog posts — or two copies of the submitter’s own anecdote — pass.</div>
+    <div class="kv"><span class="lab">Harm</span> A private person can be named and published behind any two arbitrary URLs. For private (non-public-figure) persons, defamation law gives the highest plaintiff protection — and the platform, not the anonymous submitter, is the publisher/defendant.</div>
+    <div class="fix"><b>Fix:</b> Encode source <em>tier</em> (A/B/C) into the publish gate, not just count. <code>entityType='individual'</code> of low authority must require Tier-A/B (court/UN/sanctions/recognized HR org). The submitter’s own narrative never counts toward the threshold. Add a public-figure/authority nexus test as a publish precondition.</div>
+  </div>
+
+  <div class="finding high">
+    <h4><span class="badge b-high">High</span> F8 · No lawful basis / Art. 9 condition / DPIA / retention; <code>isAnonymous</code> defaults false <span class="id">GDPR/PDPL · existing build</span></h4>
+    <div class="kv"><span class="lab">Harm</span> The platform processes political-opinion data about identifiable living persons with no recorded Art. 9(2) condition, no DPIA, no retention limit — rejected submissions still store the named person + unverified anecdote indefinitely. <code>isAnonymous</code> defaulting <b>false</b> makes a submitter-identity DB (a coercion/subpoena target) the path of least resistance; <code>ipHash</code> is pseudonymisation, not anonymity.</div>
+    <div class="fix"><b>Fix:</b> Persist a versioned lawful-basis + Art. 9 condition record (the <code>key_decisions</code> table) referenced by FK from every published entity; commission a DPIA; add a retention policy that purges identifying free-text from rejected submissions; default <code>isAnonymous</code> to <b>true</b>; demote <code>ipHash</code> to a short-TTL rate-limit token off the permanent row; provide an access/erasure/right-of-reply path reachable without an account.</div>
+  </div>
+
+  <div class="finding high">
+    <h4><span class="badge b-high">High</span> F9 · Taxonomy: sector-axis is mission-drift; no conduct vocabulary; overlaps <span class="id">IA · data-model</span></h4>
+    <div class="kv"><span class="lab">Issues</span> The 8 consumer sectors (Commercial/Tourism/Medical/Real-Estate…) read as a complaint board, not a crimes archive; the same actor (cleaners, delivery apps) recurs across categories; there is <em>no</em> conduct/“report-type” taxonomy — everything normalises to one free-text <code>allegationDescription</code>, leaving <code>triageCategory</code> unpopulated and <code>allegationClassification</code> an orphan field.</div>
+    <div class="fix"><b>Fix:</b> Replace sectors with an <b>accountability taxonomy</b>: one orthogonal <code>actorClass</code> (<code>individual | entity</code>, with optional entity subtype) + one required closed <code>conductType</code> enum (<code>arbitrary_detention | torture | extrajudicial_killing | enforced_disappearance | sexual_violence | property_seizure | command_responsibility | …</code>) rendered first and populating <code>triageCategory</code>. Conduct-based ⇒ fully <code>DATA-01</code>-compatible.</div>
+  </div>
+
+  <div class="finding med">
+    <h4><span class="badge b-med">Medium</span> F10 · Free-text location/status reconstruct targeting &amp; overstate certainty <span class="id">existing build</span></h4>
+    <div class="kv"><span class="lab">Issues</span> <code>allegationLocation</code> (free text) can hold “his house in [village]” — re-introducing the residence-targeting the GPS regex strips; <code>evidenceLevel</code>/<code>status</code> are reviewer self-attestation (a private person can be labelled <code>indicted</code>/<code>convicted</code> with no court-record FK — per-se defamation).</div>
+    <div class="fix"><b>Fix:</b> Constrain <code>allegationLocation</code> to governorate/city for individuals and screen it with the private-targeting regex; gate <code>status</code>/<code>evidenceLevel</code> ≥ Tier-A behind a required matching-tier <code>sources</code> FK.</div>
+  </div>
+
+  <div class="finding med">
+    <h4><span class="badge b-med">Medium</span> F11 · i18n — mixed-language labels, loaded terms, FAQ contamination is bilingual <span class="id">EN/AR parity</span></h4>
+    <div class="kv"><span class="lab">Issues</span> Fields mix Arabic + English in one label (“name/nickname Phonenubmer position”); typos (“Phonenubmer”, “recaption”→reception, <span class="ar">صيديلة</span>, <span class="ar">جميعات</span>); colloquial/loaded terms (<span class="ar">شبيح</span>, <span class="ar">كنية/فانوس</span>, “bad attitude”) lower evidentiary seriousness; the sectarian FAQ a1 is contaminated in <b>both</b> <span class="path">en.json</span> and <span class="path">ar.json</span>.</div>
+    <div class="fix"><b>Fix:</b> One clean legal label per language with full EN/AR parity; a controlled bilingual glossary; remove slang and epithets; run <code>check:i18n</code> after the rewrite.</div>
+  </div>
+
+  <!-- ============ MATRIX ============ -->
+  <h2 class="section" id="matrix">3 · Multi-model consensus matrix</h2>
+  <p class="lead">Three independent reviewers (run separately, with different tooling). Convergence on the criticals is the signal.</p>
+  <table>
+    <tr><th>Finding</th><th>Claude (repo-grounded)</th><th>Codex gpt-5.5 (legal web-research)</th><th>Kimi</th></tr>
+    <tr><td><b>C0 · Sect-based collective punishment</b></td><td class="yes">✓ (2 agents, independently)</td><td class="no">— (not given concept docs)</td><td class="no">— (not given concept docs)</td></tr>
+    <tr><td>F1 · Ordinary-individual targeting</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    <tr><td>F2 · Loyalty / “bad attitude”</td><td class="yes">✓</td><td class="yes">✓ (Art. 9)</td><td class="yes">✓</td></tr>
+    <tr><td>F3 · No-source intake</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    <tr><td>F4 · Doxxing PII (plate/phone/addr)</td><td class="yes">✓ (+regex gap)</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    <tr><td>F5 · <span class="ar">شبيح</span> epithet</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+    <tr><td>F6 · Lawyer-gate is a boolean</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>F7 · Count ≠ credibility</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓ (tiering)</td></tr>
+    <tr><td>F8 · Lawful basis/DPIA/retention</td><td class="yes">✓</td><td class="yes">✓ (Art. 5/9/35)</td><td class="yes">✓</td></tr>
+    <tr><td>F9 · Taxonomy / conduct vocabulary</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+  </table>
+  <p class="note">Codex independently verified the legal anchors via primary sources: <a href="https://gdpr-info.eu/art-9-gdpr/">GDPR Art. 9</a> (political opinion = special category), Art. 10 (criminal-offence data), Art. 5 (minimisation), Art. 35 (DPIA), plus Saudi PDPL sensitive-data rules. Codex/Kimi reviewed the pasted form taxonomy; the Claude workflow additionally grounded against the repo and surfaced C0.</p>
+
+  <!-- ============ SALVAGE ============ -->
+  <h2 class="section" id="salvage">4 · What’s salvageable — the lawful redesign</h2>
+  <p class="lead">The 5-step wizard shell and the named-entity documentation core are keepers. Rebuild the content from the schema up, source-first, conduct-based — which is exactly what <span class="path">submissions → entities → allegations → sources</span> and <code>validateSubmission</code> already want.</p>
+
+  <ol class="flow">
+    <li><b>Actor identity</b> — Who, and which class? <code>individual | entity</code> (+ entity subtype: organization / military_unit / security_branch / official_body). Individuals only when a public source already names them. No cleaners, drivers, students, nurses, vendors, kiosks, “ordinary employees.”</li>
+    <li><b>Conduct</b> — Required closed enum (<code>torture</code>, <code>enforced_disappearance</code>, <code>extrajudicial_killing</code>, <code>arbitrary_detention</code>, <code>sexual_violence</code>, <code>property_seizure</code>, <code>command_responsibility</code>, <code>sanctions-listed conduct</code>, …) + a description tied to that act. Never identity, loyalty, or “attitude.”</li>
+    <li><b>Sources</b> — <b>two source rows by default</b>, with live count and “minimum 2 independent sources” helper. Required source <em>type</em> (UN/IIIM · court · sanctions list · recognized HR org · corroborated journalism · official filing). Reject “my experience” / “social post” as a source. Submitter narrative never counts toward the threshold.</li>
+    <li><b>Context, safe granularity</b> — Governorate/city + date range only. No street, map pin, plate, phone, residence. Inline warning mirrors <code>PRIVATE_DATA_PATTERNS</code> so the submitter is corrected before submit, not rejected after.</li>
+    <li><b>Submitter / anonymity</b> — <code>isAnonymous</code> defaults <b>true</b>; checking it clears &amp; disables name/email client-side and the server drops them. Contact optional, purpose-labelled (reviewer follow-up only), stored separately. Nothing publishes until dual review + counsel-artifact sign-off for living persons.</li>
+  </ol>
+
+  <h3>Code hardening to ship alongside</h3>
+  <ul class="check">
+    <li><span class="badge b-good">do</span> Replace <code>hasLawyerSignOff</code> boolean with a <code>lawyer_sign_off</code> audit-row FK gate (F6).</li>
+    <li><span class="badge b-good">do</span> Tier-gate <code>individual</code> publication behind Tier-A/B sourcing + authority test (F7).</li>
+    <li><span class="badge b-good">do</span> Persist lawful-basis + Art. 9 condition + DPIA reference as a hard pre-publish gate (F8).</li>
+    <li><span class="badge b-good">do</span> Extend <code>PRIVATE_DATA_PATTERNS</code>: car plates, international phone formats; extend <code>BANNED_PATTERNS</code>: <span class="ar">شبيح/عميل/مخبر</span> + affiliation/“sympathiser” phrasing — with Vitest cases (rules engine is safety-critical).</li>
+    <li><span class="badge b-good">do</span> Add retention purge for rejected submissions + a no-account data-subject request path (F8).</li>
+    <li><span class="badge b-good">do</span> Add required <code>conductType</code> enum → populate <code>triageCategory</code>; remove/repurpose orphan <code>allegationClassification</code> (F9).</li>
+  </ul>
+
+  <!-- ============ REMEDIATION ============ -->
+  <h2 class="section" id="remediation">5 · Live-contamination remediation checklist</h2>
+  <p class="lead">The sectarian framing is already in shipped copy and repo docs. Strip it so the public surface matches the charter and the code. Each item: remove the “Alawite/Nusayri/نصيرية … nurturing environment / البيئة الحاضنة” collective-target language; keep only “the former regime and its named security/military apparatus &amp; named perpetrators with sources.”</p>
+  <table>
+    <tr><th>File</th><th>Where</th><th>Action</th></tr>
+    <tr><td class="path">messages/ar.json</td><td>:52 (faq.a1) — and re-scan :47</td><td>Remove <span class="ar">«والنصيرية باعتبارها البيئة الحاضنة»</span>; stop at “its security and military apparatus.”</td></tr>
+    <tr><td class="path">messages/en.json</td><td>:52 (faq.a1)</td><td>Remove “and Nusayri apparatus as its nurturing environment.”</td></tr>
+    <tr><td class="path">README.md</td><td>:3</td><td>Remove the “…and Nusayri … nurturing environment” clause from the tagline.</td></tr>
+    <tr><td class="path">CONCEPT.md</td><td>:11, :15, :20–26, :37, :40, :47, :51, :56–62, :73, :76</td><td>Remove the entire “popular boycott of the Alawites / nurturing environment / stop humanitarian dealings” program; keep only named-perpetrator + source documentation. (The :41/:77 disclaimer becomes true only once the body is gone.)</td></tr>
+    <tr><td class="path">WEBSITE-CONTENT.md</td><td>:177 (FAQ Q1) + any boycott-domain section</td><td>Same strip; this file feeds site copy — fix before it propagates further.</td></tr>
+    <tr><td class="path">full specs.JPG / .pdf</td><td>whole artifact</td><td>Retire the “Social Isolation Domains” poster; it cannot be edited into compliance.</td></tr>
+  </table>
+  <p class="note">After edits: run <code>check:i18n</code> for EN/AR parity, grep the repo for <span class="ar">النصيرية / علوي / عزل اجتماعي / مقاطعة</span> to confirm no residue, and have <code>security-dept</code> + counsel sign the corrected charter before re-publishing.</p>
+
+  <!-- ============ STRONG ============ -->
+  <h2 class="section" id="strong">6 · What’s already strong (keep it)</h2>
+  <p class="lead">For balance — the engineering is genuinely principled, which is exactly why the concept-layer drift is worth correcting rather than abandoning:</p>
+  <ul>
+    <li><span class="badge b-good">keep</span> <b>Identity-free schema</b> (<code>DATA-01</code>) — no sect/ethnicity/family columns exist; violation is structurally impossible.</li>
+    <li><span class="badge b-good">keep</span> <b>Source-required intake</b> at three gates (Zod <code>min(1)</code> → <code>validateSubmission</code> ≥2 → publish <code>sourceCount&gt;0</code>).</li>
+    <li><span class="badge b-good">keep</span> <b>Dual independent review</b> state machine + RBAC + mandatory 2FA for staff.</li>
+    <li><span class="badge b-good">keep</span> <b>PRIVATE_TARGETING / INNOCENT_PARTY / GROUP_TARGET / INCITEMENT / HATE_TONE</b> screens, EXIF/GPS stripping (<code>sharp</code>), hash-chained immutable audit log.</li>
+    <li><span class="badge b-good">keep</span> <b>Living-person lawyer gate</b> concept (just make it a real artifact, F6).</li>
+  </ul>
+  <p>The lawful version of this platform — named individuals/units/officials, tied to documented conduct, backed by credible public sources, gated by dual review and counsel — is important, defensible accountability work. This report rejects the collective-punishment direction precisely to protect that core.</p>
+
+  <div class="foot">
+    <b>Method:</b> Claude multi-agent workflow (<code>wgija27bk</code>, 7 agents, repo-grounded across constraints + current build + 5 review dimensions) + Codex <code>gpt-5.5</code> at high reasoning (with primary-source legal verification) + Kimi — run independently, then synthesized. <b>Files reviewed:</b> the pasted 8-sector taxonomy, <span class="path">full specs.JPG</span>, <span class="path">CONCEPT.md</span>, <span class="path">README.md</span>, <span class="path">messages/{ar,en}.json</span>, <span class="path">WEBSITE-CONTENT.md</span>, <span class="path">src/db/{schema,persist}.ts</span>, <span class="path">src/lib/validation.ts</span>, <span class="path">src/app/api/{submit,review}/route.ts</span>, <span class="path">src/app/[locale]/submit/SubmitClient.tsx</span>.<br><br>
+    This is a review artifact: it rejects the sect-targeting / collective-punishment program and the form’s targeting/doxxing/no-source defects, and prescribes the lawful named-perpetrator redesign. It is not an endorsement or implementation of the campaign as drawn.
+  </div>
+
+</div>
+</body>
+</html>
