@@ -4,6 +4,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { fontVars } from "../fonts";
 import { GtmScript, GtmNoScript } from "@/components/GtmScript";
 import "@/styles/tokens.css";
+import "@/styles/globals.css";
 import "@/components/hlshajara.css";
 
 export default async function LocaleLayout({
