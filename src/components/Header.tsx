@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { useStore } from "better-auth/react";
 import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
 
 export function Header() {
@@ -14,6 +16,10 @@ export function Header() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = "main-nav";
+
+  const { data: session } = useStore(authClient.useSession);
+  const role = ((session?.user as { role?: string } | null)?.role) ?? null;
+  const isStaff = ["reviewer", "senior_reviewer", "admin"].includes(role ?? "");
 
   const switchLocale = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
@@ -25,13 +31,11 @@ export function Header() {
   const isActive = (path: string) => pathname === `/${locale}${path}`;
 
   const navLinks = [
-    { href: "/record", label: t("record") },
-    { href: "/publications", label: t("publications") },
-    { href: "/mission", label: t("mission") },
-    { href: "/faq", label: t("faq") },
-    { href: "/reply", label: t("reply") },
-    { href: "/dashboard", label: t("dashboard") },
-    { href: "/policy", label: t("policy") },
+    { href: "/", label: t("home") },
+    { href: "/submit", label: t("submit") },
+    ...(isStaff ? [{ href: "/reviewer", label: t("reviewer") }] : []),
+    { href: "/", label: t("comingSoon") },
+    { href: "/login", label: t("login") },
   ];
 
   return (
@@ -59,7 +63,7 @@ export function Header() {
         <nav id={menuId} className={`site-nav${menuOpen ? " is-open" : ""}`} aria-label="Main">
           {navLinks.map((link) => (
             <Link
-              key={link.href}
+              key={`${link.href}-${link.label}`}
               href={`/${locale}${link.href}`}
               className={`site-nav-link${isActive(link.href) ? " active" : ""}`}
               onClick={() => setMenuOpen(false)}
@@ -88,9 +92,6 @@ export function Header() {
               </svg>
             )}
           </button>
-          <Link href={`/${locale}/submit`} className="btn primary btn-sm">
-            {t("submit")}
-          </Link>
           <button
             onClick={switchLocale}
             className="site-lang-btn"
