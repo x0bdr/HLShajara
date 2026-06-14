@@ -94,8 +94,8 @@ Step 9 does NOT transform the form — Phases 29–30 already encoded interim ma
 ### Canonical post-29/30 StepId set (AUTHORITATIVE — do not re-derive)
 The registry's `StepId` union after Phases 29 + 30 execute, in UI-SPEC §3/§4 step order, is EXACTLY:
 
-  `actor-class` (Step 1) · `entity-subtype` (Step 1b, individual-branch-skipped) · `conduct` (Step 3) ·
-  `role-in-act` (Step 4) · `identity` (Step 2) · `describe` (Step 5) · `evidence` (Step 6) ·
+  `actor-class` (Step 1) · `entity-subtype` (Step 1b, individual-branch-skipped) · `identity` (Step 2) ·
+  `conduct` (Step 3) · `role-in-act` (Step 4) · `describe` (Step 5) · `evidence` (Step 6) ·
   `media` (Step 7) · `about-you` (Step 8)
 
 There is **NO** `review` step in the post-29/30 registry — Phase 31 adds it (terminal, Step 9 = `review`).

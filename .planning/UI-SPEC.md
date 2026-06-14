@@ -136,13 +136,13 @@ Total **M = 9** numbered steps (intro and confirmation are unnumbered). Progress
   - **Source type** (optional select: UN/IIIM · Court record · Sanctions list · Recognized HR org · Corroborated journalism · Official filing) — UI hint, encoded into `title` until a real field exists (§8).
   - **Title** (`title`, optional, `max500`).
   - `+ Add source` (`.btn secondary`), remove (`.btn ghost danger`).
-- **Live source counter** with the rule surfaced **up front**: "Minimum 2 independent public sources / مصدران مستقلان موثوقان على الأقل." Reuses `sourceFiles[]` count toward the 2.
+- **Live source counter** with the rule surfaced **up front**: "Minimum 2 independent public sources / مصدران مستقلان موثوقان على الأقل." Uploaded files strengthen the evidence but do **not** count toward the 2 — the gate is independent public source **links** only (matches the server `WEAK_SOURCE` rule).
 - **Lead note (optional, non-public):** the **"notes" field that replaces "your experience."** Textarea, labeled *"For reviewers only. A note points us to verify — it is never published and never counts as a source. / للمراجعين فقط…"* Maps to a new `leadNote` field (§8).
-- **Next** gated on **`sourceLinks.length + sourceFiles.length ≥ 2`**. **i18n:** `submit.sourcesTitle`, `submit.sourcesRule`, `submit.sourceUrl`, `submit.sourceType`, `submit.sourceType_un/_court/_sanctions/_hr/_journalism/_official`, `submit.sourceTitleField`, `submit.addSource`, `submit.leadNote`, `submit.leadNoteHint`.
+- **Next** gated on **`sourceLinks.length ≥ 2`** (links-only — uploaded files do not unlock advance; matches the server `WEAK_SOURCE` screen). **i18n:** `submit.sourcesTitle`, `submit.sourcesRule`, `submit.sourceUrl`, `submit.sourceType`, `submit.sourceType_un/_court/_sanctions/_hr/_journalism/_official`, `submit.sourceTitleField`, `submit.addSource`, `submit.leadNote`, `submit.leadNoteHint`.
 
 ### Step 7 — Supporting media *(input, optional)*
 - **Uploads → `sourceFiles[]`** via existing `/api/upload` (returns `{hash,filename,originalName,url,size}`). Drag-drop + picker; per-file removable cards (mirror current upload UI).
-- **Safety copy (`.legal`):** "Media supports a sourced claim — it is not proof on its own. Image **and video** metadata is stripped; uploads are private and reviewed; do not upload faces of victims, children, or bystanders. / لا تُنشر تلقائيًا…"
+- **Safety copy (`.legal`):** "Media supports a sourced claim — it is not proof on its own. Image metadata is stripped; uploads are private and reviewed; do not upload faces of victims, children, or bystanders. / لا تُنشر تلقائيًا…" (video + video-metadata stripping arrive with Phase 33/BE-05; until then video is hidden from the picker — see the backend flag below.)
 - **Optional link** field (validated, archived server-side; a personal social link is rejected with a `.legal-error`).
 - **Next / Skip.** **i18n:** `submit.mediaTitle`, `submit.mediaSafety`, `submit.mediaLink`, `submit.skip`.
 
