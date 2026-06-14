@@ -38,7 +38,6 @@ export function Header() {
   };
 
   const navLinks = [
-    { href: "/", label: t("home") },
     ...(isAdmin
       ? [
           { href: "/reviewer", label: t("reviewer") },
