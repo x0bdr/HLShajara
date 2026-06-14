@@ -265,6 +265,39 @@ export function firstIncompleteStep(state: WizardState): StepId {
   return STEPS[STEPS.length - 1].id;
 }
 
+/* ---------- DRAFT-RESTORE COMPLETION RECOMPUTE (v1.4 M5) ---------- */
+
+/**
+ * Recompute which step ids a RESTORED form already satisfies, IGNORING the
+ * `completed` confirmation list (v1.4 M5).
+ *
+ * `isComplete` refuses to count a `completionGate` step unless its id is already
+ * in `state.completed` — correct during live navigation (a seeded value must be
+ * explicitly confirmed), but WRONG when rehydrating a draft: the user DID confirm
+ * those steps in the prior session, the confirmations just don't survive in the
+ * draft form. This helper instead asks ONLY the form-level question — "does the
+ * restored form value satisfy this step?" — using each step's `requires`
+ * predicate (a `completionGate` step with no `requires`, e.g. `actor-class`, is
+ * satisfied by virtue of the draft existing) and skipping `branchWhen` steps.
+ *
+ * `RESTORE_DRAFT` seeds `state.completed` from this so `firstIncompleteStep` lands
+ * the user at the FIRST genuinely-unfinished step rather than redirecting all the
+ * way back to `actor-class`. Input steps are included on the SAME rule — they are
+ * marked complete only when their `requires` predicate passes (an optional input
+ * whose `requires` is always-true counts as complete, which is correct).
+ */
+export function formSatisfiedSteps(form: WizardState["form"]): StepId[] {
+  const out: StepId[] = [];
+  // Iterate over the widened `StepDef` view so the optional `branchWhen`/`requires`
+  // members are accessible (the `as const` literal union narrows them away, the
+  // same reason `isSkipped`/`isComplete` take a `StepDef` parameter).
+  for (const step of STEPS as readonly StepDef[]) {
+    if (step.branchWhen && step.branchWhen(form)) continue; // skipped branch
+    if (step.requires ? step.requires(form) : true) out.push(step.id as StepId);
+  }
+  return out;
+}
+
 /* ---------- VISIBLE COUNT (progress "Step N of M") ---------- */
 
 /**

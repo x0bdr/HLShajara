@@ -98,7 +98,7 @@ export const submitSchema = z.object({
     .default([]),
   submitterEmail: z.string().email().optional().or(z.literal("")),
   submitterName: z.string().max(255).optional(),
-  isAnonymous: z.boolean().default(false),
+  isAnonymous: z.boolean().default(true),
 });
 
 export type SubmitInput = z.infer<typeof submitSchema>;

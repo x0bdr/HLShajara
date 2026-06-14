@@ -211,6 +211,8 @@
     "idArea": "Governorate or city (optional)",
     "idAreaHint": "Coarse location only. Do not enter a street address, building, or map pin.",
     "idPublicRef": "Public identifier (optional)",
+    "idPublicRefHint": "Official website or registry page only — not a personal social profile.",
+    "idPublicRefError": "Personal social profiles are not accepted. Use an official website or registry page.",
     "idLocationError": "Use a governorate or city only — remove the street-level address.",
     "idMismatchNotice": "The role you entered does not match the selected actor type. Reviewers will check this.",
     "descLabel": "What was documented",

@@ -27,7 +27,14 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components";
 import type { SubmitInput } from "@/lib/validation";
-import { stripSourceType, displayValue } from "./review-helpers";
+import {
+  stripSourceType,
+  displayValue,
+  entityTypeLabelKey,
+  conductLabelKey,
+  displayDocumentedRole,
+  roleInActLabelKey,
+} from "./review-helpers";
 
 /* ---------- PURE HELPERS ---------- */
 // `stripSourceType` + `displayValue` live in the JSX-free sibling
@@ -70,6 +77,27 @@ export function ReviewStep({
   const sourcesOk = form.sourceLinks.length >= 2;
   const submitDisabled = submitting || !affirmed || form.sourceLinks.length < 2;
 
+  // v1.4 DISPLAY-only localization. The raw slugs/enums are still SUBMITTED
+  // verbatim by the parent (WizardClient) — these only localize what the submitter
+  // SEES. A `null` key means "no localized label, show the raw value verbatim".
+  const typeKey = entityTypeLabelKey(form.entityType);
+  const typeDisplay = typeKey ? t(typeKey) : displayValue(form.entityType);
+
+  const conductKey = conductLabelKey(form.allegationClassification);
+  const conductDisplay = conductKey
+    ? t(conductKey)
+    : displayValue(form.allegationClassification);
+
+  // Documented role/title (Actor group) — clause stripped for display.
+  const documentedRoleDisplay = displayValue(displayDocumentedRole(form.entityRole));
+
+  // Role-in-act (Conduct group) — localized role label, or the stripped role
+  // verbatim when no clause / "other"/free text.
+  const roleInActKey = roleInActLabelKey(form.entityRole);
+  const roleInActDisplay = roleInActKey
+    ? t(roleInActKey)
+    : displayValue(displayDocumentedRole(form.entityRole));
+
   return (
     <div className="flex-col">
       <div className="t">{t("reviewTitle")}</div>
@@ -92,11 +120,11 @@ export function ReviewStep({
         </div>
         <div className="review-row">
           <span className="k">{t("idRole")}</span>
-          <span className="v">{displayValue(form.entityRole)}</span>
+          <span className="v">{documentedRoleDisplay}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("type")}</span>
-          <span className="v">{displayValue(form.entityType)}</span>
+          <span className="v">{typeDisplay}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("location")}</span>
@@ -118,11 +146,11 @@ export function ReviewStep({
         </div>
         <div className="review-row">
           <span className="k">{t("q_conduct")}</span>
-          <span className="v">{displayValue(form.allegationClassification)}</span>
+          <span className="v">{conductDisplay}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("q_roleInAct")}</span>
-          <span className="v">{displayValue(form.entityRole)}</span>
+          <span className="v">{roleInActDisplay}</span>
         </div>
       </div>
 

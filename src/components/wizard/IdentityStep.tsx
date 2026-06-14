@@ -28,7 +28,7 @@ import { useTranslations } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
 import { composeLocation, screenIdentityStep } from "@/lib/wizard/step-logic";
-import { isCoarseLocationClean } from "@/lib/screens";
+import { isCoarseLocationClean, screenPrivateTargeting } from "@/lib/screens";
 
 interface IdentityStepProps {
   form: SubmitInput;
@@ -68,7 +68,19 @@ export function IdentityStep({ form, dispatch }: IdentityStepProps) {
   // dedicated column is a later-phase follow-up). It is held in local UI state
   // only — never folded into entityName/entityRole (which would skew the
   // MISMATCH/describe screens) and never written to allegationLocation.
+  //
+  // v1.4 H3 (S1): the field is for an OFFICIAL website/registry URL only. It is
+  // screened on blur via the shared `screenPrivateTargeting` (the same regex set
+  // the server uses) so a personal social profile link is rejected inline with a
+  // `.legal-error` instead of slipping in as an unscreened personal identifier.
   const [publicRef, setPublicRef] = useState("");
+  const [publicRefError, setPublicRefError] = useState(false);
+
+  function onPublicRefBlur(value: string) {
+    // Empty is fine (optional). A personal social link / private-data token trips
+    // PRIVATE_DATA_PATTERNS — flag it inline. The value never reaches the payload.
+    setPublicRefError(value.trim().length > 0 && screenPrivateTargeting(value));
+  }
 
   function writeLocation(nextCountry: string, nextCity: string) {
     // Only a COARSE-CLEAN city is ever composed in (S5); a dirty token is held in
@@ -186,8 +198,21 @@ export function IdentityStep({ form, dispatch }: IdentityStepProps) {
           type="text"
           className="ds-input"
           value={publicRef}
-          onChange={(e) => setPublicRef(e.target.value)}
+          aria-invalid={publicRefError || undefined}
+          aria-describedby={publicRefError ? "id-public-ref-error" : "id-public-ref-hint"}
+          onChange={(e) => {
+            setPublicRef(e.target.value);
+            // Clear a prior error as the user edits; re-screen on blur.
+            if (publicRefError) setPublicRefError(false);
+          }}
+          onBlur={(e) => onPublicRefBlur(e.target.value)}
         />
+        <p id="id-public-ref-hint" className="ds-caption">{t("idPublicRefHint")}</p>
+        {publicRefError && (
+          <p id="id-public-ref-error" className="legal-error" role="alert">
+            {t("idPublicRefError")}
+          </p>
+        )}
       </div>
     </div>
   );

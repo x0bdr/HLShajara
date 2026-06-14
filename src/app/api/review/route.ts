@@ -6,6 +6,13 @@ import { validatePublication, withAudit } from "@/db/persist";
 import { getSession, unauthorizedResponse, forbiddenResponse, require2FA } from "@/lib/session";
 import { hasRole, canPublish } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
+// v1.4 H1: strip the wizard's interim encodings before they reach the PUBLIC record.
+// Both strippers are pure/server-safe (framework-free, zero runtime deps): `stripRoleClause`
+// removes the appended `ROLE_CLAUSE_TOKEN<slug>` clause from entityRole; `stripSourceType`
+// removes the `[TYPE: <slug>] ` prefix from a source title. Reusing the canonical helpers
+// (single source of truth) instead of re-implementing the regexes here.
+import { stripRoleClause } from "@/lib/wizard/encoding";
+import { stripSourceType } from "@/components/wizard/review-helpers";
 
 /* ---------- GET: list pending submissions ---------- */
 export async function GET(request: Request) {
@@ -202,7 +209,9 @@ export async function POST(request: Request) {
               publicId,
               type: submission.entityType,
               name: submission.entityName,
-              role: submission.entityRole,
+              // v1.4 H1: strip the interim ` — role in act: <slug>` clause so the
+              // published role is the clean documented title, not the wizard token.
+              role: stripRoleClause(submission.entityRole),
               status: "alleged",
               evidenceLevel: (submission.evidenceStrength ?? "1") as "0" | "1" | "2" | "3" | "4",
               isDeceased: submission.isDeceased === true,
@@ -234,6 +243,9 @@ export async function POST(request: Request) {
       for (let i = 0; i < sourceLinks.length; i++) {
         const link = sourceLinks[i];
         const verification = sourceVerification[i] ?? {};
+        // v1.4 H1: strip the interim `[TYPE: <slug>] ` prefix so the published source
+        // title is the clean title, not the wizard provenance token.
+        const cleanTitle = stripSourceType(link.title ?? "").title.trim();
         const [source] = await withAudit(
           { actorId, actorRole },
           () =>
@@ -241,7 +253,7 @@ export async function POST(request: Request) {
               .insert(sources)
               .values({
                 tier: verification.tier ?? "C",
-                title: link.title ?? "Untitled source",
+                title: cleanTitle.length > 0 ? cleanTitle : "Untitled source",
                 publisher: verification.publisher ?? "Submitted source",
                 date: new Date().toISOString().slice(0, 10),
                 url: link.url,

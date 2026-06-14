@@ -17,6 +17,11 @@
 import type { Reducer } from "react";
 import type { SubmitInput } from "@/lib/validation";
 import type { StepId } from "./registry";
+// v1.4 M5: runtime helper to recompute which steps a RESTORED draft already
+// satisfies (form-level only, ignoring the lost `completed` confirmations). The
+// import is RELATIVE (not the `@/` alias) so the strip-types regression drivers
+// can resolve it via their off-thread `.ts` resolve hook, matching registry.ts.
+import { formSatisfiedSteps } from "./registry";
 
 /* ---------- STATE ---------- */
 
@@ -42,10 +47,9 @@ export interface WizardState {
 /**
  * Canonical seed shape — field names are LIFTED VERBATIM from the legacy
  * single-page form (`SubmitClient.tsx:17-30`) because they ARE the `/api/submit`
- * contract. The ONE intentional divergence: `isAnonymous` seeds to `true`
- * (UI-SPEC §8 / S7 anonymity-default-on). The schema default is `false`
- * (`validation.ts:87`); the UI flips it at the client seed now, the DB-column
- * default flip is BE-04 in Phase 33.
+ * contract. `isAnonymous` seeds to `true` (UI-SPEC §8 / S7 anonymity-default-on),
+ * matching the Zod schema default (`validation.ts` `isAnonymous.default(true)`,
+ * flipped in v1.4 M6) and the Phase-33 DB-column default flip (BE-04).
  */
 const initialForm: SubmitInput = {
   entityName: "",
@@ -90,6 +94,7 @@ const RESTORABLE_KEYS: ReadonlyArray<keyof SubmitInput> = [
   "submitterEmail",
   "submitterName",
   "isAnonymous",
+  "leadNote",
 ];
 
 /* ---------- ACTIONS ---------- */
@@ -234,15 +239,24 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
           (safe as Record<string, unknown>)[key] = (action.draft as Record<string, unknown>)[key];
         }
       }
-      // A restored draft means the user had progressed past the actor-class choice,
-      // so the choice step counts as completed (its selection rides in the draft form).
+      const restoredForm = { ...state.form, ...safe };
+      // v1.4 M5: a restored draft lost its `completed` confirmations, but the form
+      // values prove which steps were already satisfied. Recompute `completed` for
+      // EVERY step the restored form satisfies (not just actor-class) so
+      // `firstIncompleteStep` lands the user at the first genuinely-unfinished step
+      // instead of redirecting all the way back. Input steps are only marked when
+      // their `requires` predicate passes (formSatisfiedSteps enforces this). Merge
+      // with any pre-existing `completed` ids, de-duplicated.
+      const satisfied = formSatisfiedSteps(restoredForm);
+      const completed = [...state.completed];
+      for (const id of satisfied) {
+        if (!completed.includes(id)) completed.push(id);
+      }
       return {
         ...state,
         dirty: false,
-        form: { ...state.form, ...safe },
-        completed: state.completed.includes("actor-class")
-          ? state.completed
-          : [...state.completed, "actor-class"],
+        form: restoredForm,
+        completed,
       };
     }
 

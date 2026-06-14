@@ -25,15 +25,41 @@
 "use strict";
 
 const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const assert = require("node:assert/strict");
 
 const STATE_TS = path.join(__dirname, "..", "src", "lib", "wizard", "state.ts");
 
-function buildDriver() {
+// Off-thread ESM resolve hook: map extensionless relative specifiers to their
+// ".ts" sibling so Node's --experimental-strip-types loader can follow the
+// bundler-style imports that state.ts now pulls in (v1.4 M5: state.ts imports
+// `./registry` at runtime, which transitively imports `./encoding`/`./step-logic`/
+// `../screens`). Mirrors scripts/wizard-choice-steps-check.js. The `@/`-aliased
+// imports in those modules are all `import type` (erased at runtime), so only the
+// relative specifiers need resolving.
+const HOOK_SOURCE = `
+import { existsSync } from "node:fs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { dirname, resolve as pathResolve } from "node:path";
+export async function resolve(specifier, context, next) {
+  if ((specifier.startsWith("./") || specifier.startsWith("../")) &&
+      !/\\.[mc]?[jt]s$/.test(specifier) && context.parentURL) {
+    const parentPath = fileURLToPath(context.parentURL);
+    const cand = pathResolve(dirname(parentPath), specifier + ".ts");
+    if (existsSync(cand)) return next(pathToFileURL(cand).href, context);
+  }
+  return next(specifier, context);
+}
+`;
+
+function buildDriver(hookUrl) {
   const importPath = JSON.stringify("file://" + STATE_TS);
   return `
-import { wizardReducer, initialWizardState } from ${importPath};
+import { register } from "node:module";
+register(${JSON.stringify(hookUrl)});
+const { wizardReducer, initialWizardState } = await import(${importPath});
 const out = {};
 
 // seed assertions
@@ -99,11 +125,21 @@ process.stdout.write(JSON.stringify(out));
 }
 
 function run() {
-  const res = spawnSync(
-    process.execPath,
-    ["--experimental-strip-types", "--input-type=module", "-"],
-    { input: buildDriver(), encoding: "utf8" }
-  );
+  // Write the resolve hook to a temp file (register() needs a file URL).
+  const hookPath = path.join(os.tmpdir(), `wizard-reducer-hook-${process.pid}.mjs`);
+  fs.writeFileSync(hookPath, HOOK_SOURCE, "utf8");
+  const hookUrl = "file://" + hookPath;
+
+  let res;
+  try {
+    res = spawnSync(
+      process.execPath,
+      ["--experimental-strip-types", "--input-type=module", "-"],
+      { input: buildDriver(hookUrl), encoding: "utf8" }
+    );
+  } finally {
+    try { fs.unlinkSync(hookPath); } catch { /* best-effort cleanup */ }
+  }
 
   if (res.status !== 0) {
     console.error("FAIL: could not execute src/lib/wizard/state.ts under --experimental-strip-types.");
