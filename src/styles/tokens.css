@@ -162,6 +162,9 @@
 }
 .ds-eyebrow:lang(ar) { font-family: var(--font-sans); font-weight: 600; font-size: var(--text-sm); color: var(--fg2); }
 .ds-mono { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0; color: var(--fg2); }
+/* Machine strings (reference ids, URLs, hashes) stay LTR + end-aligned inside RTL
+   so digits/paths read correctly (UI-SPEC §10; mirrors [dir=rtl] .review-sources). */
+[dir=rtl] .ds-mono { direction: ltr; text-align: right; }
 
 /* Arabic gets a touch more line-height and size for parity with Latin. */
 :lang(ar) { line-height: var(--leading-normal); }
