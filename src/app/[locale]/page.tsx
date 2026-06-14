@@ -3,132 +3,110 @@ export function generateStaticParams() {
 }
 
 import { getTranslations } from "next-intl/server";
-import { PageShell, HeroSection, StatsBar, ArchiveHome, PrinciplesSection, DocumentationDomains, FoundingBanner } from "@/components";
-import type { Entity, SourceTier } from "@/lib/types";
+import { PageShell, HeroSection, StatsBar, PrinciplesSection, DocumentationDomains, FoundingBanner } from "@/components";
 import Link from "next/link";
 import { db } from "@/db";
-import { entities, allegations, sources, allegationSources } from "@/db/schema";
-import { isNotNull, eq } from "drizzle-orm";
+import { entities, submissions } from "@/db/schema";
+import { isNotNull, eq, sql } from "drizzle-orm";
 
-async function getPublishedEntities(page = 1, limit = 20): Promise<{ entities: Entity[]; hasMore: boolean }> {
+interface StatusCounts {
+  pending: number;
+  underReview: number;
+  alleged: number;
+  investigating: number;
+  indicted: number;
+  sanctioned: number;
+  convicted: number;
+  deceased: number;
+}
+
+async function getStatusCounts(): Promise<StatusCounts> {
   try {
-    const offset = (page - 1) * limit;
-    const rows = await db
-      .select()
+    const pending = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(submissions)
+      .where(eq(submissions.status, "pending"));
+    const underReview = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(submissions)
+      .where(eq(submissions.status, "verified"));
+
+    const statusRows = await db
+      .select({ status: entities.status, count: sql<number>`count(*)` })
       .from(entities)
       .where(isNotNull(entities.publishedAt))
-      .limit(limit + 1)
-      .offset(offset);
+      .groupBy(entities.status);
 
-    const result: Entity[] = [];
-    for (const e of rows) {
-      const als = await db
-        .select()
-        .from(allegations)
-        .where(eq(allegations.entityId, e.id));
-
-      const entityAllegations = [];
-      for (const a of als) {
-        const srcLinks = await db
-          .select({ s: sources })
-          .from(allegationSources)
-          .innerJoin(sources, eq(allegationSources.sourceId, sources.id))
-          .where(eq(allegationSources.allegationId, a.id));
-
-        entityAllegations.push({
-          description: a.description,
-          period: a.period ?? "",
-          location: a.location ?? "",
-          classification: a.classification ?? undefined,
-          sources: srcLinks.map(({ s }) => ({
-            tier: s.tier as SourceTier,
-            title: s.title,
-            publisher: s.publisher,
-            date: s.date,
-          })),
-        });
-      }
-
-      result.push({
-        id: e.publicId,
-        type: e.type as Entity["type"],
-        name: e.name,
-        role: e.role,
-        status: (e.status === "unpublished" ? "alleged" : e.status) as Entity["status"],
-        evidence: Number(e.evidenceLevel) as Entity["evidence"],
-        version: e.version,
-        rightOfReply: (e.rightOfReplyState ?? "none") as Entity["rightOfReply"],
-        allegations: entityAllegations as Entity["allegations"],
-      });
+    const byStatus: Record<string, number> = {};
+    for (const row of statusRows) {
+      const key = row.status === "unpublished" ? "alleged" : row.status;
+      byStatus[key] = (byStatus[key] ?? 0) + row.count;
     }
 
-    const hasMore = rows.length > limit;
-    return { entities: hasMore ? result.slice(0, limit) : result, hasMore };
+    return {
+      pending: pending[0]?.count ?? 0,
+      underReview: underReview[0]?.count ?? 0,
+      alleged: byStatus.alleged ?? 0,
+      investigating: byStatus.investigating ?? 0,
+      indicted: byStatus.indicted ?? 0,
+      sanctioned: byStatus.sanctioned ?? 0,
+      convicted: byStatus.convicted ?? 0,
+      deceased: byStatus.deceased ?? 0,
+    };
   } catch (err) {
-    console.warn("DB unavailable during build, returning empty entities:", (err as Error).message);
-    return { entities: [], hasMore: false };
+    console.warn("DB unavailable during build, returning empty status counts:", (err as Error).message);
+    return { pending: 0, underReview: 0, alleged: 0, investigating: 0, indicted: 0, sanctioned: 0, convicted: 0, deceased: 0 };
   }
 }
 
 export default async function HomePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ page?: string }>;
 }) {
   const { locale } = await params;
-  const { page: pageParam } = await searchParams;
-  const page = Math.max(1, parseInt(pageParam || "1", 10));
   const t = await getTranslations({ locale, namespace: "home" });
-  const legal = await getTranslations({ locale, namespace: "legal" });
+  const record = await getTranslations({ locale, namespace: "record" });
+  const dashboard = await getTranslations({ locale, namespace: "dashboard" });
 
-  const { entities: published, hasMore } = await getPublishedEntities(page, 20);
-  const entryCount = published.length;
-  const sourceCount = published.reduce(
-    (sum, e) => sum + e.allegations.reduce((aSum, a) => aSum + a.sources.length, 0),
-    0
-  );
-  const verdictCount = published.filter((e) => e.status === "convicted").length;
+  const counts = await getStatusCounts();
+
+  const statusCards = [
+    { label: dashboard("pending"), value: counts.pending },
+    { label: dashboard("underReview"), value: counts.underReview },
+    { label: record("status_alleged"), value: counts.alleged },
+    { label: record("status_investigating"), value: counts.investigating },
+    { label: record("status_indicted"), value: counts.indicted },
+    { label: record("status_sanctioned"), value: counts.sanctioned },
+    { label: record("status_convicted"), value: counts.convicted },
+    { label: record("status_deceased"), value: counts.deceased },
+  ];
 
   return (
     <PageShell noPad>
       <HeroSection />
-      <StatsBar entries={entryCount} sources={sourceCount} verdicts={verdictCount} />
+      <StatsBar
+        entries={counts.alleged + counts.investigating + counts.indicted + counts.sanctioned + counts.convicted + counts.deceased}
+        sources={counts.pending + counts.underReview}
+        verdicts={counts.convicted}
+      />
       <PrinciplesSection />
       <DocumentationDomains />
       <FoundingBanner />
 
       <section className="archive-section">
         <div className="archive-header">
-          <h2 className="archive-title">{t("recordTitle")}</h2>
-          <p className="archive-lead">{t("lead")}</p>
+          <h2 className="archive-title">{record("title")}</h2>
+          <p className="archive-lead">{record("lead")}</p>
         </div>
 
-        <div className="legal">
-          <div className="t">{legal("title")}</div>
-          <p>{legal("note")}</p>
-        </div>
-
-        <div className="mt-20">
-          <ArchiveHome entities={published} showHeader={false} />
-        </div>
-
-        {/* Pagination */}
-        <div className="pagination-bar">
-          <Link href={`/${locale}?page=${Math.max(1, page - 1)}`}>
-            <button className="btn secondary" disabled={page <= 1}>
-              {locale === "ar" ? "السابق" : "Previous"}
-            </button>
-          </Link>
-          <span className="ds-body-sm text-fg2">
-            {locale === "ar" ? `الصفحة ${page}` : `Page ${page}`}
-          </span>
-          <Link href={`/${locale}?page=${page + 1}`}>
-            <button className="btn secondary" disabled={!hasMore}>
-              {locale === "ar" ? "التالي" : "Next"}
-            </button>
-          </Link>
+        <div className="dash-grid">
+          {statusCards.map((card) => (
+            <div key={card.label} className="card dash-card">
+              <div className="dash-value">{card.value}</div>
+              <div className="dash-label">{card.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
