@@ -66,7 +66,7 @@ function buildDriver(hookUrl) {
 import { register } from "node:module";
 register(${JSON.stringify(hookUrl)});
 
-const { STEPS, nextStep, prevStep, visibleStepCount, isCountedStep } = await import(${reg});
+const { STEPS, nextStep, prevStep, visibleStepCount, isCountedStep, isReachable } = await import(${reg});
 const { CONDUCT_SLUGS, ROLE_SLUGS, ROLE_CLAUSE_TOKEN, encodeRoleClause, stripRoleClause } = await import(${enc});
 const { wizardReducer, initialWizardState } = await import(${st});
 
@@ -103,6 +103,24 @@ out.entityVisibleCount = visibleStepCount(entity);
 
 const indivAtConduct = { ...indiv, currentStep: "conduct" };
 out.indivPrevFromConduct = prevStep(indivAtConduct);
+
+// (b2) BLOCKER-1 regression — "An entity" chosen but no concrete subtype enum yet
+// (entityType still seeded "individual", entityChosen=true). entity-subtype MUST be
+// REACHABLE + COUNTED and be the next step after actor-class; the visible count must
+// match the full entity branch (10). This is the exact unreachable-entity-branch trap.
+const entityPending = {
+  ...initialWizardState,
+  currentStep: "actor-class",
+  form: { ...initialWizardState.form, entityType: "individual" },
+  completed: ["actor-class"],
+  entityChosen: true,
+};
+out.entityPendingNext = nextStep(entityPending);
+out.entityPendingSubtypeCounted = isCountedStep("entity-subtype", entityPending);
+out.entityPendingSubtypeReachable = isReachable("entity-subtype", entityPending);
+out.entityPendingVisibleCount = visibleStepCount(entityPending);
+// And the committed-subtype entity branch likewise reaches entity-subtype.
+out.entitySubtypeReachable = isReachable("entity-subtype", entity);
 
 // (c) encode/strip round-trip + clause-REPLACE for every ROLE_SLUGS member.
 const base = "Brigadier, Branch 215";
@@ -232,6 +250,18 @@ function run() {
     assert.equal(o.entitySubtypeCounted, true));
   check("Entity branch: visibleStepCount = 10 (all steps + review counted)", () =>
     assert.equal(o.entityVisibleCount, 10));
+  check("Entity branch: entity-subtype IS reachable (committed subtype)", () =>
+    assert.equal(o.entitySubtypeReachable, true));
+
+  // (b2) BLOCKER-1: "An entity" chosen, subtype pending — branch must be live.
+  check("Entity-pending: nextStep(actor-class) = entity-subtype (NOT skipped to identity)", () =>
+    assert.equal(o.entityPendingNext, "entity-subtype"));
+  check("Entity-pending: entity-subtype IS counted", () =>
+    assert.equal(o.entityPendingSubtypeCounted, true));
+  check("Entity-pending: entity-subtype IS reachable", () =>
+    assert.equal(o.entityPendingSubtypeReachable, true));
+  check("Entity-pending: visibleStepCount = 10 (entity branch fully counted)", () =>
+    assert.equal(o.entityPendingVisibleCount, 10));
 
   // (c) encode/strip
   o.roundTrip.forEach((r) => {

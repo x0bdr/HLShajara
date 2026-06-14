@@ -42,6 +42,17 @@ export interface WizardState {
    * back (reachability gate, UI-SPEC §2.6). Phase 29's real steps reuse this.
    */
   completed: StepId[];
+  /**
+   * TRUE once the user has actively chosen the "An entity" actor class but BEFORE
+   * a concrete entity-subtype enum is committed. This is the ONLY signal that
+   * distinguishes "individual actor" from "entity actor, subtype pending" while
+   * `entityType` is still seeded "individual" — it makes the registry reach AND
+   * count `entity-subtype` on the entity branch (the `branchWhen` predicate reads
+   * it). Cleared when the user picks the "An individual" card; set when they pick
+   * "An entity". Committing a real subtype enum (entityType off "individual")
+   * makes it redundant but it stays consistent.
+   */
+  entityChosen: boolean;
 }
 
 /**
@@ -74,6 +85,8 @@ export const initialWizardState: WizardState = {
   // Nothing is actively completed at start — the seeded `entityType` is NOT a
   // user selection, so `actor-class` stays incomplete until confirmed.
   completed: [],
+  // No actor class chosen yet — the entity branch is not active until "An entity".
+  entityChosen: false,
 };
 
 /**
@@ -109,6 +122,7 @@ export type WizardAction =
   | { type: "GOTO_STEP"; step: StepId }
   | { type: "COMPLETE_STEP"; step: StepId }
   | { type: "INVALIDATE_SUBTYPE"; entityType: SubmitInput["entityType"] }
+  | { type: "CHOOSE_ENTITY_CLASS" }
   | { type: "RESTORE_DRAFT"; draft: Partial<Record<string, unknown>> }
   | { type: "RESET" };
 
@@ -127,6 +141,13 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
       return {
         ...state,
         dirty: true,
+        // Keep `entityChosen` consistent when `entityType` is written directly:
+        // a real entity-subtype enum (Step 1b commit) sets it true; an explicit
+        // "individual" clears it. Any other field leaves it untouched.
+        entityChosen:
+          action.field === "entityType"
+            ? action.value !== "individual"
+            : state.entityChosen,
         form: { ...state.form, [action.field]: action.value },
       };
 
@@ -219,10 +240,27 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
       return {
         ...state,
         dirty: true,
+        // Switching the actor class back to "individual" leaves the entity branch:
+        // clear `entityChosen` so `entity-subtype` is skipped + uncounted again.
+        entityChosen:
+          action.entityType === "individual" ? false : state.entityChosen,
         form: {
           ...state.form,
           entityType: action.entityType,
         },
+      };
+
+    /**
+     * User actively picked the "An entity" actor card. Marks the entity branch
+     * active so `entity-subtype` is REACHABLE + COUNTED even though `entityType`
+     * is still seeded "individual" (a concrete subtype enum is committed at Step
+     * 1b). Does NOT write `entityType` — a non-enum value must never enter it.
+     */
+    case "CHOOSE_ENTITY_CLASS":
+      return {
+        ...state,
+        dirty: true,
+        entityChosen: true,
       };
 
     /**
@@ -257,6 +295,9 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
         dirty: false,
         form: restoredForm,
         completed,
+        // A restored entity branch always carries a committed subtype enum, so
+        // derive `entityChosen` from the restored entityType.
+        entityChosen: restoredForm.entityType !== "individual",
       };
     }
 
@@ -267,6 +308,7 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
         dirty: false,
         visited: ["actor-class"],
         completed: [],
+        entityChosen: false,
       };
 
     default:

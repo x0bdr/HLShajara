@@ -56,13 +56,18 @@ export interface StepDef {
    */
   readonly completionGate?: boolean;
   /**
-   * If present and TRUE for the current form, this step is SKIPPED (branch
+   * If present and TRUE for the current state, this step is SKIPPED (branch
    * skip) and does NOT increment the visible "Step N of M" count. The
-   * `entity-subtype` step ("1b") sets `branchWhen: (f) => f.entityType === "individual"`
-   * so the Individual branch hides AND uncounts it (UI-SPEC §3); no other step
-   * carries a `branchWhen`.
+   * `entity-subtype` step ("1b") is skipped ONLY on the Individual branch —
+   * i.e. when `entityType === "individual"` AND the user has not actively chosen
+   * the entity actor class (`state.entityChosen`). Receiving the FULL state (not
+   * just the form) is required because "An entity" is committed BEFORE a real
+   * subtype enum is picked: until then `entityType` is still seeded "individual",
+   * so the form alone cannot distinguish "individual actor" from "entity actor,
+   * subtype pending". The `entityChosen` flag closes that gap so the entity branch
+   * reaches AND counts `entity-subtype`. No other step carries a `branchWhen`.
    */
-  readonly branchWhen?: (form: WizardState["form"]) => boolean;
+  readonly branchWhen?: (state: WizardState) => boolean;
 }
 
 /**
@@ -96,7 +101,12 @@ export const STEPS = [
     archetype: "choice",
     titleKey: "q_entitySubtype",
     completionGate: true,
-    branchWhen: (form) => form.entityType === "individual",
+    // Skipped ONLY on the Individual branch: seeded/committed "individual" actor
+    // class AND the user has not actively picked the entity actor card. Once
+    // `entityChosen` is set (or a real entity-subtype enum is committed, flipping
+    // entityType off "individual"), this step is reachable AND counted.
+    branchWhen: (state) =>
+      state.form.entityType === "individual" && !state.entityChosen,
     requires: (form) =>
       form.entityType === "organization" ||
       form.entityType === "military_unit" ||
@@ -192,7 +202,7 @@ function getStep(id: StepId): StepDef | undefined {
 
 /** A step is skipped when its `branchWhen` predicate holds for the current form. */
 function isSkipped(step: StepDef, state: WizardState): boolean {
-  return step.branchWhen ? step.branchWhen(state.form) : false;
+  return step.branchWhen ? step.branchWhen(state) : false;
 }
 
 /**
@@ -288,11 +298,25 @@ export function firstIncompleteStep(state: WizardState): StepId {
  */
 export function formSatisfiedSteps(form: WizardState["form"]): StepId[] {
   const out: StepId[] = [];
+  // For a RESTORED draft the form value alone determines the branch: a non-
+  // "individual" entityType IS an entity actor with a committed subtype, so
+  // synthesize `entityChosen` from it for the branch-skip predicate (a draft is
+  // only persisted after real data entry, never in the transient "entity chosen,
+  // subtype pending" interim). This keeps `entity-subtype` correctly NON-skipped
+  // (and thus eligible to be marked satisfied) on a restored entity branch.
+  const skipState: WizardState = {
+    form,
+    currentStep: STEPS[0].id,
+    dirty: false,
+    visited: [],
+    completed: [],
+    entityChosen: form.entityType !== "individual",
+  };
   // Iterate over the widened `StepDef` view so the optional `branchWhen`/`requires`
   // members are accessible (the `as const` literal union narrows them away, the
   // same reason `isSkipped`/`isComplete` take a `StepDef` parameter).
   for (const step of STEPS as readonly StepDef[]) {
-    if (step.branchWhen && step.branchWhen(form)) continue; // skipped branch
+    if (step.branchWhen && step.branchWhen(skipState)) continue; // skipped branch
     if (step.requires ? step.requires(form) : true) out.push(step.id as StepId);
   }
   return out;

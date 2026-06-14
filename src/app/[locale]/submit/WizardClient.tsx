@@ -125,21 +125,37 @@ export function WizardClient() {
   // /api/submit stays authoritative (T-31-08). Reset on RESET / "Submit another".
   const [affirmed, setAffirmed] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
-  // True while the user has confirmed "An entity" on actor-class but not yet
-  // committed a subtype — drives the entity card's selected-on-Back state WITHOUT
-  // writing a non-enum value to entityType (S2-S4 / T-29-06).
-  const [entityChosen, setEntityChosen] = useState(false);
+  // `state.entityChosen` (reducer-owned) is the single source of truth for "the
+  // user picked An entity but has not committed a subtype yet" — it drives both
+  // the entity card's selected-on-Back state AND the registry branch/count so
+  // `entity-subtype` is reachable + counted, WITHOUT writing a non-enum value to
+  // entityType (S2-S4 / T-29-06). Aliased locally for readability.
+  const entityChosen = state.entityChosen;
   // Transient orphan-invalidation notice shown when an actor-class switch on Back
   // clears the entity-subtype answer. Cleared on the next navigation/confirm.
   const [showSubtypeNotice, setShowSubtypeNotice] = useState(false);
   const submittedRef = useRef(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Latest state mirror — the deferred auto-advance timer (and the confirm path
+  // that dispatches an actor-class change immediately before advancing) must read
+  // POST-dispatch state, not the stale render closure. Without this, picking "An
+  // entity" then auto-advancing would compute `nextStep` from the pre-dispatch
+  // state (entityChosen=false) and SKIP `entity-subtype` — the BLOCKER-1 trap.
+  const stateRef = useRef(state);
 
   // Widen to the declared `StepDef` so optional `requires`/`titleKey`/`branchWhen`
   // are accessible — the `as const` STEPS narrows each member to its literal
   // shape, dropping the optional props from members that omit them.
   const stepDef: StepDef | undefined = STEPS.find((s) => s.id === state.currentStep);
   const archetype: StepArchetype = stepDef?.archetype ?? "choice";
+
+  /* ---------- keep the latest-state mirror synced (post-render) ----------
+   * The deferred auto-advance timer reads `stateRef.current` so it branches on
+   * POST-dispatch state. Syncing in an effect (not during render) keeps it
+   * lint-clean while still updating before any timer fires. */
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   /* ---------- (1) ROUTING: push the step into ?step= ---------- */
   const goTo = useCallback(
@@ -226,9 +242,11 @@ export function WizardClient() {
 
   /* ---------- forward / back navigation ---------- */
   const advance = useCallback(() => {
-    const next = nextStep(state);
+    // Read the freshest state via the ref so a just-dispatched actor-class change
+    // (e.g. CHOOSE_ENTITY_CLASS) is reflected before `nextStep` branches.
+    const next = nextStep(stateRef.current);
     if (next) goTo(next);
-  }, [state, goTo]);
+  }, [goTo]);
 
   const goBack = useCallback(() => {
     // Back is an explicit navigation — clear any transient invalidation notice.
@@ -244,15 +262,23 @@ export function WizardClient() {
    * (UI-SPEC §2.3, WIZ-02). The advance is armed ONLY here, never on mount/URL-
    * sync, so returning via Back never re-auto-advances. Re-confirming the same
    * card on Back still routes through here, so a re-confirm advances. */
-  const completeAndAdvance = useCallback(() => {
-    dispatch({ type: "COMPLETE_STEP", step: state.currentStep });
-    if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    if (prefersReducedMotion()) {
-      advance();
-    } else {
-      advanceTimer.current = setTimeout(advance, ADVANCE_DELAY_MS);
-    }
-  }, [advance, state.currentStep]);
+  const completeAndAdvance = useCallback(
+    (nextOverride?: StepId) => {
+      dispatch({ type: "COMPLETE_STEP", step: state.currentStep });
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+      // When the confirm KNOWS its branch target (e.g. "An entity" → entity-subtype),
+      // it passes `nextOverride` so the advance never has to recompute `nextStep`
+      // from a not-yet-committed dispatch (the stale-closure trap that would skip
+      // entity-subtype). Otherwise the ref-backed `advance` resolves the next step.
+      const run = nextOverride ? () => goTo(nextOverride) : advance;
+      if (prefersReducedMotion()) {
+        run();
+      } else {
+        advanceTimer.current = setTimeout(run, ADVANCE_DELAY_MS);
+      }
+    },
+    [advance, goTo, state.currentStep],
+  );
 
   /* ---------- per-step interim-encoding confirm dispatch ----------
    * Each choice step encodes its pick onto the EXISTING /api/submit contract
@@ -262,6 +288,9 @@ export function WizardClient() {
    * local marker and lets Step 1b commit one of the five enum literals. */
   const onChoiceConfirm = useCallback(
     (value: string) => {
+      // Explicit next-step target for branch-changing confirms whose dispatch
+      // hasn't committed yet (avoids recomputing nextStep from stale state).
+      let nextOverride: StepId | undefined;
       switch (state.currentStep) {
         case "actor-class": {
           // Was the branch already committed to entity (subtype answered, or the
@@ -278,13 +307,23 @@ export function WizardClient() {
               dispatch({ type: "SET_FIELD", field: "entityType", value: "individual" });
               setShowSubtypeNotice(false);
             }
-            setEntityChosen(false);
+            // Both paths clear `entityChosen` (INVALIDATE_SUBTYPE/SET_FIELD do so
+            // when entityType becomes "individual"), so no extra dispatch needed.
+            // The individual branch's next step is always `identity` (entity-subtype
+            // skipped) — target it explicitly so the advance doesn't recompute from
+            // pre-dispatch state still carrying the entity branch.
+            nextOverride = "identity";
           } else {
-            // "An entity" — route to Step 1b without committing a non-enum value.
-            // If the user was previously on the individual branch this is a switch,
-            // but there is no orphan to clear (individual has no subtype answer).
-            setEntityChosen(true);
+            // "An entity" — mark the entity branch active (reducer-owned
+            // `entityChosen`) so `entity-subtype` is REACHABLE + COUNTED, without
+            // committing a non-enum value to entityType. Step 1b commits the real
+            // subtype enum. A switch from the individual branch has no orphan to
+            // clear (individual carries no subtype answer).
+            dispatch({ type: "CHOOSE_ENTITY_CLASS" });
             setShowSubtypeNotice(false);
+            // The entity branch's next step is always Step 1b — target it
+            // explicitly so the advance doesn't recompute from pre-dispatch state.
+            nextOverride = "entity-subtype";
             // entityType stays whatever Step 1b last committed (or the seed); the
             // requires() gate keeps entity-subtype reachable-but-incomplete until
             // a real subtype enum is picked.
@@ -320,7 +359,7 @@ export function WizardClient() {
         default:
           break;
       }
-      completeAndAdvance();
+      completeAndAdvance(nextOverride);
     },
     [state.currentStep, state.form.entityType, state.form.entityRole, entityChosen, completeAndAdvance],
   );
