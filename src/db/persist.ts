@@ -7,64 +7,23 @@
  *   3. No incitement / hate tone in free-text fields
  */
 
-import { z } from "zod";
 import type { db } from "./index";
 import { appendAuditLog } from "./audit";
 import type { userRoleEnum } from "./schema";
-
-/* ---------- BANNED PATTERNS ---------- */
-
-const BANNED_PATTERNS = [
-  /\b(علوي|علوية|علويين|نصيري|نصيرية|نصيريين|شيعي|شيعية|شيعة|سني|سنية|سنّي|سُنّي|درزي|درزية|مسيحي|مسيحية|أيزيدي|أيزيدية|كردي|كردية|تركمان|تركماني|أرمني|شركسي|شيشاني|تشيشاني)\b/gi,
-  /\b(عائلة| clan |قبيلة|طائفة|مذهب|إثنية|عرق|منطقة \w+ية|محافظة \w+|قرية \w+|حي \w+)\b/gi,
-  /\b(اقتلوا|اضربوا|دمروا|فجّروا|حرّقوا|اغتصبوا|اذبحوا|اقتل|اضرب|دمر|فجّر|حرق|اغتصب|اذبح|يجب قتل|لابد من قتل|الموت ل|القتل ل|القضاء على)\b/gi,
-  /\b(خنازير|كلاب|قردة|جرذان|حشرات|أوبئة|وباء|طاعون|ملعون|ملعونة|نجس|نجسة|خبيث|خبيثة|وسخ|وسخة)\b/gi,
-];
-
-const HATE_PATTERNS = [
-  /\b(الموت لل|المقاومة ضد|الجهاد ضد|الانتقام من|الثأر ل|التطهير من|التخلص من|إبادة|إبادة جماعية|تطهير عرقي|تطهير طائفي|تطهير مذهبي)\b/gi,
-];
+import type { PersistResult } from "@/lib/screens";
+import {
+  screenText,
+  screenInnocentParty,
+  screenPrivateTargeting,
+  screenMismatch,
+} from "@/lib/screens";
 
 /* ---------- VALIDATION RESULT ---------- */
 
-export type PersistResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; code: string; message: string; field?: string };
-
-/* ---------- SCREENING ---------- */
-
-function screenText(text: string): {
-  banned: boolean;
-  incitement: boolean;
-  hateTone: boolean;
-  matches: string[];
-} {
-  const matches: string[] = [];
-  let banned = false;
-  let incitement = false;
-  let hateTone = false;
-
-  for (const pattern of BANNED_PATTERNS) {
-    const found = text.match(pattern);
-    if (found) {
-      banned = true;
-      matches.push(...found);
-    }
-  }
-
-  for (const pattern of HATE_PATTERNS) {
-    const found = text.match(pattern);
-    if (found) {
-      hateTone = true;
-      matches.push(...found);
-    }
-  }
-
-  // Incitement detection: calls to violence
-  incitement = /\b(اقتلوا|اضربوا|دمروا|فجّروا|حرّقوا|اغتصبوا|اذبحوا|يجب قتل|لابد من قتل|الموت ل|القتل ل|القضاء على)\b/gi.test(text);
-
-  return { banned, incitement, hateTone, matches: [...new Set(matches)] };
-}
+// Single source of truth: PersistResult + the pure screens live in
+// `@/lib/screens` (EV-05) so client and server cannot drift. Re-export the type
+// so existing importers of `persist.ts`'s `PersistResult` keep working.
+export type { PersistResult } from "@/lib/screens";
 
 /* ---------- CHOKE POINT ---------- */
 
@@ -77,46 +36,11 @@ interface PersistContext {
 /**
  * Validate that an entity/allegation submission meets all structural rules.
  * Called BEFORE any database write.
+ *
+ * The pure screens (regex pattern sets + screen* functions) are imported from
+ * `@/lib/screens`; this function's early-return order is the authoritative
+ * server cascade that `runScreens` mirrors client-side.
  */
-/* ---------- ADDITIONAL PATTERN SETS ---------- */
-
-const INNOCENT_PROFESSIONS = [
-  /\b(طفل|طفلة|أطفال|طفول|civilian|مدني|مدنية|doctor|طبيب|طبيبة|teacher|معلم|معلمة|nurse|ممرض|ممرضة|journalist|صحفي|صحفية|student|طالب|طالبة|hospital|مستشفى|school|مدرسة|clinic|عيادة|university|جامعة|researcher|باحث|باحثة|activist|ناشط|ناشطة|aid worker|عامل إغاثة)\b/gi,
-];
-
-const ORG_TERMS = [
-  /\b(division|فرقة|brigade|لواء|regiment|فوج|battalion|كتيبة|committee|لجنة|ministry|وزارة|council|مجلس|organization|منظمة|party|حزب|force|قوة| apparatus|جهاز|branch|فرع)\b/gi,
-];
-
-const PRIVATE_DATA_PATTERNS = [
-  /\b\d{4,}\s*[-–]\s*\d{4,}\s*[-–]\s*\d{2,}/, // phone numbers
-  /\b\d{1,3}\.\d{1,6},\s*\d{1,3}\.\d{1,6}\b/, // GPS coordinates
-  /\b(شارع|ساحة|حي|منطقة|بناية|طابق|شقة|زقاق|عمارة)\s+\w+/i, // addresses
-  /\b(facebook\.com|instagram\.com|twitter\.com|x\.com|tiktok\.com)\/[^\s]+/i, // social media handles
-];
-
-function screenInnocentParty(text: string): boolean {
-  return INNOCENT_PROFESSIONS.some((p) => p.test(text));
-}
-
-function screenPrivateTargeting(text: string): boolean {
-  return PRIVATE_DATA_PATTERNS.some((p) => p.test(text));
-}
-
-function screenMismatch(entityType: string, entityRole: string): boolean {
-  const role = entityRole.toLowerCase();
-  if (entityType === "individual") {
-    // Individual should not have organizational role descriptors
-    return /\b(فرقة|لواء|فوج|كتيبة|لجنة|وزارة|مجلس|منظمة|حزب|قوة|جهاز|مؤسسة)\b/.test(role);
-  }
-  if (entityType === "organization" || entityType === "military_unit" || entityType === "security_branch" || entityType === "official_body") {
-    // Organization should not have a single-person job title
-    return /\b(ضابط|عقيد|عميد|لواء|عميد|عميد|نقيب|ملازم|رقيب|جندي|مدير|رئيس|وزير|نائب|سكرتير|مساعد|مستشار)\b/.test(role) &&
-      !/\b(رئيس|مدير|قائد|مسؤول)\b/.test(role);
-  }
-  return false;
-}
-
 export function validateSubmission(data: {
   entityName?: string;
   entityRole?: string;
