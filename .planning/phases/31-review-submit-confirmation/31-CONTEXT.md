@@ -83,14 +83,37 @@ Step 9 does NOT transform the form — Phases 29–30 already encoded interim ma
   err_private,err_group,err_innocent,err_tone,err_mismatch` (UI-SPEC §3/§10) — full EN+AR parity; `check:i18n` gate.
 
 ### Integration Points
-- New `Step9` review component + `rejection-map.ts`; wire into registry as the final step (already positioned).
+- New `Step9` review component + `rejection-map.ts`. **The `review` step is NOT yet registered** — no
+  Phase-29 or Phase-30 plan appends it (verified: 29-01 registers `actor-class/entity-subtype/conduct/role-in-act`;
+  30-01 appends `identity/describe/evidence/media/about-you`; neither adds `review`). Phase 31 MUST append a
+  terminal `{ id: "review", … }` StepDef to `registry.ts` itself (Plan 31-01, Task 4) as the FINAL step after
+  `about-you`, so `StepId` includes `"review"`, `state.currentStep === "review"` can match, and `goTo`/`isReachable`
+  resolve. Without this the `<ReviewStep>` branch never renders and REV-01..04 are all unreachable.
 - Reuse WizardClient submit/result/clearDraft/GTM plumbing; build verified via `next build`.
+
+### Canonical post-29/30 StepId set (AUTHORITATIVE — do not re-derive)
+The registry's `StepId` union after Phases 29 + 30 execute, in UI-SPEC §3/§4 step order, is EXACTLY:
+
+  `actor-class` (Step 1) · `entity-subtype` (Step 1b, individual-branch-skipped) · `conduct` (Step 3) ·
+  `role-in-act` (Step 4) · `identity` (Step 2) · `describe` (Step 5) · `evidence` (Step 6) ·
+  `media` (Step 7) · `about-you` (Step 8)
+
+There is **NO** `review` step in the post-29/30 registry — Phase 31 adds it (terminal, Step 9 = `review`).
+The slugs `actor`, `you`, and `review` are **NOT** registry ids before Phase 31; any onEdit/goTo to `actor`/`you`
+is a bug (goTo to a non-existent step). The six review-group Edit targets (first-step-of-group) are therefore:
+
+  Actor → **`actor-class`** · Conduct → **`conduct`** · Description → **`describe`** ·
+  Evidence → **`evidence`** · Media → **`media`** · You → **`about-you`**
+
+The rejection-map stepIds (`identity` · `describe` · `evidence`) and the review-step detection
+(`state.currentStep === "review"`) MUST reference ids from this set (plus the Phase-31-added `review`).
 </code_context>
 
 <specifics>
 ## Specific Ideas
 - The §3 rejection table is LOCKED — implement exactly. Reference-id = numeric `submissionId`, mono/LTR.
-- Edit links route to the FIRST step of each group, not the literal step.
+- Edit links route to the FIRST step of each group, not the literal step — and use the ACTUAL registry slug
+  (`actor-class` / `about-you`), never the friendly group name (`actor` / `you`).
 </specifics>
 
 <deferred>
@@ -98,3 +121,5 @@ Step 9 does NOT transform the form — Phases 29–30 already encoded interim ma
 - Lead-note server persistence + first-class field swap-offs → Phase 33 (parallel) / later swap-off.
 - RTL/a11y/full-parity hardening audit → Phase 32.
 </deferred>
+</content>
+</invoke>
