@@ -345,7 +345,7 @@ export function WizardClient() {
   /* ---------- (6) SUBMIT + CONFIRMATION + REJECTION ROUTING (REV-03/REV-04) ----
    * POSTs the assembled SubmitInput to the existing /api/submit choke point. The
    * body serializes the FULL `state.form`, so the optional `leadNote` rides along
-   * verbatim when set (the route accept-but-ignores it until Phase 33 / BE-02).
+   * verbatim when set (the route now PERSISTS it — Phase 33 / BE-02 has landed).
    *
    * On success ({ ok:true, submissionId, message }): clear the draft + fire GTM,
    * but DO NOT reset/redirect — the success `.legal-success` panel replaces the
