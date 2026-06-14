@@ -63,6 +63,11 @@ export const submitSchema = z.object({
   allegationPeriod: z.string().max(100).optional(),
   allegationLocation: z.string().max(200).optional(),
   allegationClassification: z.string().max(100).optional(),
+  // Reviewer-only lead note (non-public, never a source, never folded into the description).
+  // Fork-point prerequisite: accepted here so the wizard can submit it; the /api/submit insert
+  // deliberately does NOT write it yet (accept-but-ignore). Phase 33 (BE-02) adds the column +
+  // persistence and starts writing it.
+  leadNote: z.string().max(5000).optional(),
   sourceLinks: z
     .array(
       z.object({
