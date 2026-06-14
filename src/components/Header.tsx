@@ -19,7 +19,9 @@ export function Header() {
 
   const { data: session } = useStore(authClient.useSession);
   const role = ((session?.user as { role?: string } | null)?.role) ?? null;
+  const isAdmin = role === "admin";
   const isStaff = ["reviewer", "senior_reviewer", "admin"].includes(role ?? "");
+  const isSignedIn = Boolean(session?.user);
 
   const switchLocale = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
@@ -32,10 +34,18 @@ export function Header() {
 
   const navLinks = [
     { href: "/", label: t("home") },
-    { href: "/submit", label: t("submit") },
-    ...(isStaff ? [{ href: "/reviewer", label: t("reviewer") }] : []),
-    { href: "/", label: t("comingSoon") },
-    { href: "/login", label: t("login") },
+    ...(isAdmin
+      ? [
+          { href: "/reviewer", label: t("reviewer") },
+          { href: "/admin/publications", label: t("adminPublications") },
+          { href: "/admin/replies", label: t("adminReplies") },
+        ]
+      : isStaff
+        ? [{ href: "/reviewer", label: t("reviewer") }]
+        : []),
+    isSignedIn
+      ? { href: "/profile", label: t("profile") }
+      : { href: "/login", label: t("login") },
   ];
 
   return (
@@ -71,9 +81,22 @@ export function Header() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href={`/${locale}/submit`}
+            className={`site-nav-cta${isActive("/submit") ? " active" : ""}`}
+            onClick={() => setMenuOpen(false)}
+          >
+            {t("submit")}
+          </Link>
         </nav>
 
         <div className="site-actions">
+          <Link
+            href={`/${locale}/submit`}
+            className={`site-nav-cta site-nav-cta--desktop${isActive("/submit") ? " active" : ""}`}
+          >
+            {t("submit")}
+          </Link>
           <button
             type="button"
             className="site-menu-btn"

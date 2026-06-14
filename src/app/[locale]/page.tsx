@@ -40,12 +40,12 @@ async function getStatusCounts(): Promise<StatusCounts> {
     const byStatus: Record<string, number> = {};
     for (const row of statusRows) {
       const key = row.status === "unpublished" ? "alleged" : row.status;
-      byStatus[key] = (byStatus[key] ?? 0) + row.count;
+      byStatus[key] = (byStatus[key] ?? 0) + (Number(row.count) || 0);
     }
 
     return {
-      pending: pending[0]?.count ?? 0,
-      underReview: underReview[0]?.count ?? 0,
+      pending: Number(pending[0]?.count) || 0,
+      underReview: Number(underReview[0]?.count) || 0,
       alleged: byStatus.alleged ?? 0,
       investigating: byStatus.investigating ?? 0,
       indicted: byStatus.indicted ?? 0,
