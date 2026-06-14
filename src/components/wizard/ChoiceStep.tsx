@@ -35,8 +35,13 @@ interface ChoiceOption {
 }
 
 interface ChoiceStepProps {
-  /** Id of the step heading the radiogroup is labelled by (from WizardPanel's h2). */
-  labelledBy: string;
+  /**
+   * Accessible name for the radiogroup — the resolved step title. Passed as
+   * `aria-label` (rather than `aria-labelledby`) because the heading the panel
+   * renders lives in a sibling component (`WizardPanel`); an explicit label
+   * keeps the group's name self-contained and never dangles a missing id ref.
+   */
+  ariaLabel: string;
   /** The placeholder option set (two cards for the scaffold). */
   options: ReadonlyArray<ChoiceOption>;
   /** The currently-selected value (the prior form value on Back-return). */
@@ -45,7 +50,7 @@ interface ChoiceStepProps {
   onConfirm: (value: string) => void;
 }
 
-export function ChoiceStep({ labelledBy, options, value, onConfirm }: ChoiceStepProps) {
+export function ChoiceStep({ ariaLabel, options, value, onConfirm }: ChoiceStepProps) {
   // The card whose value matches the current form value is the "active" (roving
   // tabindex=0) card; if none matches yet, the first card is the tab stop.
   const activeIndex = Math.max(
@@ -97,7 +102,7 @@ export function ChoiceStep({ labelledBy, options, value, onConfirm }: ChoiceStep
   }
 
   return (
-    <div className="choice-grid" role="radiogroup" aria-labelledby={labelledBy}>
+    <div className="choice-grid" role="radiogroup" aria-label={ariaLabel}>
       {options.map((option, i) => {
         const checked = option.value === value;
         const isActive = i === activeIndex;
