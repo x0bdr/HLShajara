@@ -71,6 +71,12 @@ import { WizardProgress } from "@/components/wizard/WizardProgress";
 import { WizardNav } from "@/components/wizard/WizardNav";
 import { WizardPanel } from "@/components/wizard/WizardPanel";
 import { ChoiceStep } from "@/components/wizard/ChoiceStep";
+import { InputStep } from "@/components/wizard/InputStep";
+import { IdentityStep } from "@/components/wizard/IdentityStep";
+import { DescribeStep } from "@/components/wizard/DescribeStep";
+import { EvidenceStep } from "@/components/wizard/EvidenceStep";
+import { MediaStep } from "@/components/wizard/MediaStep";
+import { AboutYouStep } from "@/components/wizard/AboutYouStep";
 
 /**
  * Local sentinel for "the user picked An entity but has not yet chosen a subtype".
@@ -481,14 +487,35 @@ export function WizardClient() {
             <p>{t("invalidateSubtypeNotice")}</p>
           </div>
         )}
-        {/* All four Phase-29 steps are `choice` archetype; the input steps land in
-            Phase 30. */}
-        <ChoiceStep
-          ariaLabel={stepTitle}
-          options={choiceOptions}
-          value={choiceValue}
-          onConfirm={onChoiceConfirm}
-        />
+        {/* Render dispatch: choice steps render the ChoiceStep; the Phase-30 input
+            steps each render their own component, routed by currentStep. The Next
+            gate follows automatically from `stepValid` (registry `requires`). The
+            scaffold InputStep is the defensive fallback for any other input id. */}
+        {archetype === "choice" ? (
+          <ChoiceStep
+            ariaLabel={stepTitle}
+            options={choiceOptions}
+            value={choiceValue}
+            onConfirm={onChoiceConfirm}
+          />
+        ) : state.currentStep === "identity" ? (
+          <IdentityStep form={state.form} dispatch={dispatch} />
+        ) : state.currentStep === "describe" ? (
+          <DescribeStep form={state.form} dispatch={dispatch} />
+        ) : state.currentStep === "evidence" ? (
+          <EvidenceStep form={state.form} dispatch={dispatch} />
+        ) : state.currentStep === "media" ? (
+          <MediaStep form={state.form} dispatch={dispatch} />
+        ) : state.currentStep === "about-you" ? (
+          <AboutYouStep form={state.form} dispatch={dispatch} />
+        ) : (
+          <InputStep
+            fieldId="wizard-scaffold-input"
+            label={stepTitle}
+            value={state.form.entityName}
+            dispatch={dispatch}
+          />
+        )}
       </WizardPanel>
 
       <WizardNav
