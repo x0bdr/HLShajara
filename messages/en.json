@@ -4,6 +4,7 @@
     "description": "A civic platform preserving a documented record of crimes committed in Syria."
   },
   "nav": {
+    "home": "Home",
     "record": "Public Record",
     "mission": "Mission",
     "faq": "FAQ",
@@ -132,7 +133,18 @@
     "name": "Your Name",
     "anonymous": "Submit Anonymously",
     "submitting": "Submitting...",
-    "submitButton": "Submit Report"
+    "submitButton": "Submit Report",
+    "back": "Back",
+    "next": "Next",
+    "begin": "Begin",
+    "stepCounter": "Step {n} of {m}",
+    "restoreDraftTitle": "Resume your draft?",
+    "restoreDraftBody": "An unfinished report is saved on this device. It is kept only in this browser tab — clear it if this is a shared device.",
+    "restoreDraftResume": "Resume",
+    "restoreDraftDiscard": "Start over",
+    "leaveWarning": "Your report is not submitted yet. Leave this page and lose your progress?",
+    "scaffoldChoiceTitle": "Make a choice",
+    "scaffoldInputLabel": "Enter a value"
   },
   "reply": {
     "title": "Right of Reply",

@@ -4,6 +4,7 @@
     "description": "منصّة مدنية تحفظ السجلّ الموثّق للجرائم التي ارتُكبت في سوريا."
   },
   "nav": {
+    "home": "الرئيسية",
     "record": "السجلّ العام",
     "mission": "المهمّة",
     "faq": "الأسئلة الشائعة",
@@ -132,7 +133,18 @@
     "name": "اسمك",
     "anonymous": "تقديم مجهول",
     "submitting": "جارِ الإرسال...",
-    "submitButton": "تقديم بلاغ"
+    "submitButton": "تقديم بلاغ",
+    "back": "رجوع",
+    "next": "التالي",
+    "begin": "ابدأ",
+    "stepCounter": "الخطوة {n} من {m}",
+    "restoreDraftTitle": "استئناف المسودة؟",
+    "restoreDraftBody": "تم حفظ بلاغ غير مكتمل على هذا الجهاز. يُحفظ فقط في علامة تبويب المتصفح هذه — احذفه إن كان هذا جهازًا مشتركًا.",
+    "restoreDraftResume": "استئناف",
+    "restoreDraftDiscard": "البدء من جديد",
+    "leaveWarning": "لم يتم إرسال بلاغك بعد. هل تريد مغادرة هذه الصفحة وفقدان ما أنجزته؟",
+    "scaffoldChoiceTitle": "اختر",
+    "scaffoldInputLabel": "أدخل قيمة"
   },
   "reply": {
     "title": "حق الرد",
