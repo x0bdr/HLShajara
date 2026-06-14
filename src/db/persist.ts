@@ -49,6 +49,10 @@ export function validateSubmission(data: {
   sourceCount?: number;
   sourceLinks?: { url: string; title?: string }[];
 }): PersistResult<typeof data> {
+  // Phase 33 (BE-02) invariant: `sourceCount` here is ALWAYS `sourceLinks.length`
+  // only. The reviewer-only `leadNote` is NEVER counted as a source (it cannot
+  // inflate sourceCount to bypass WEAK_SOURCE) and is NEVER folded into
+  // allegationDescription or any screened free-text field.
   // 1. Must have at least one source
   if ((data.sourceCount ?? 0) === 0) {
     return {
