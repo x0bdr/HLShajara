@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Report Submission Wizard
 status: executing
-stopped_at: Completed 28-03-PLAN.md — pure wizard engine (state.ts reducer bound to SubmitInput, registry.ts STEPS+branching/reachability, persistence.ts hls.submit.draft.v1) + 11 shell i18n keys (EN/AR parity). 3/5 Phase 28 plans done.
-last_updated: "2026-06-14T00:31:00.000Z"
+stopped_at: Completed 28-04-PLAN.md — wizard chrome components (WizardProgress pills + Arabic-Indic Step N of M counter, WizardNav Back+conditional Next, WizardPanel focus-to-heading + aria-live announcer) consuming Plan 02 CSS + Plan 03 engine; zero new deps, zero new i18n keys. 4/5 Phase 28 plans done.
+last_updated: "2026-06-14T00:48:00.000Z"
 last_activity: 2026-06-14
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: `.planning/PROJECT.md` (updated 2026-06-14)
 ## Current Position
 
 Phase: 28 (wizard-foundation) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 Last activity: 2026-06-14
 
 ## Performance Metrics
@@ -63,6 +63,7 @@ Last activity: 2026-06-14
 | 28 | 01 | ~12 min | 2 | 3 | 88bcffe (test), 75be711 (feat), bc01155 (refactor) |
 | Phase 28 P02 | ~10 min | 2 tasks | 1 files |
 | 28 | 03 | ~16 min | 3 | 6 | 4387f0d (test), abb9a2f (feat), 886ef62 (feat), b2b312d (feat) |
+| 28 | 04 | ~14 min | 3 | 3 | 172b37b (feat), c383a83 (feat), d95b553 (feat) |
 
 ## Accumulated Context
 
@@ -87,6 +88,15 @@ See PROJECT.md Key Decisions table for full log.
 - TDD reducer test drives the pure TS via Node `--experimental-strip-types` (Plan 01 precedent) — no test framework installed (T-28-SC zero installs).
 - Registry wires only the **two scaffold steps** for Phase 28; Phases 29–31 append the real 9. The branch-skip (`entityType === "individual"`) + visible-count (`Step N of M` doesn't count skipped "1b") contract is encoded now via `isReachable`/`firstIncompleteStep`/`isCountedStep`/`visibleStepCount`.
 - Shell i18n: only the **11** foundation keys added to EN+AR under `submit` with parity; the full ~70-key set is deferred to **Phase 32**.
+
+**Phase 28 (28-04):**
+
+- The three wizard chrome components (`WizardProgress`/`WizardNav`/`WizardPanel`) are **stateless leaves** — props-in + callbacks-out (`onJump`/`onBack`/`onNext`), importing NO router/reducer. The Plan 05 `WizardClient` root wires them; this keeps each component independently typecheck-gated and Plan-05-swappable.
+- `WizardProgress` derives pill status (done/current/upcoming) from registry `visibleStepIndex` + `state.visited`; a branch-skipped step gets no pill and never miscounts M. Counter uses `Intl.NumberFormat(useLocale())` → Arabic-Indic digits in AR (WIZ-04). Active pill = `aria-current="step"`; completed = `<button>` calling `onJump`; upcoming = inert `<span>`.
+- `WizardNav`: Back (`.btn ghost back`) only when `!isFirst` (chevron via CSS `.back::before margin-inline-end`, RTL-mirroring); Next (`Button` primary `.next`, `disabled`+`aria-disabled` until `stepValid`) ONLY for `archetype==="input"`; choice steps render no Next (auto-advance, WIZ-02/03).
+- `WizardPanel`: focuses `<h2 tabIndex={-1}>` via `useEffect` on step change (never traps); ONE persistent visually-hidden `aria-live="polite"` node announces `N / M — title` (Intl-formatted). Renders only React text + children (no raw-HTML injection — T-28-08); reduced-motion honored in CSS. Inline clip-style used only for the sr-only node (no helper class exists; no new CSS).
+- `t(step.titleKey as never)` is the sanctioned next-intl dynamic-key escape — `titleKey` is a runtime registry string; the cast is the only zero-dep option without a generated typed-key map.
+- **No new i18n keys** added (the 5 consumed keys — back/next/stepCounter/scaffoldChoiceTitle/scaffoldInputLabel — shipped in 28-03; EN+AR parity verified). **No new dependencies** (T-28-SC honored). TDD Task 1 verified via tsc + grep gates (no test framework installed; JSX can't run under `--experimental-strip-types`); full a11y/interaction testing is Phase 32's remit.
 
 ### v1.4 Architecture Notes
 
@@ -113,7 +123,7 @@ See PROJECT.md Key Decisions table for full log.
 
 ## Session Continuity
 
-Last session: 2026-06-14T00:31:00.000Z
-Stopped at: Completed 28-03-PLAN.md — pure wizard engine (`src/lib/wizard/{state,registry,persistence}.ts`) bound to `SubmitInput` + 11 shell i18n keys (EN/AR parity). 3/5 Phase 28 plans done.
+Last session: 2026-06-14T00:48:00.000Z
+Stopped at: Completed 28-04-PLAN.md — wizard chrome components (`src/components/wizard/{WizardProgress,WizardNav,WizardPanel}.tsx`) consuming Plan 02 WIZARD CSS + Plan 03 engine; aria-current/aria-live/focus-to-heading + Arabic-Indic counter; zero new deps/i18n keys. 4/5 Phase 28 plans done.
 Resume file: None
-Next command: `/gsd:execute-phase 28` (resume at plan 28-04 — Chrome components: WizardProgress / WizardNav / WizardPanel)
+Next command: `/gsd:execute-phase 28` (resume at plan 28-05 — Scaffold ChoiceStep/InputStep + WizardClient root: routing/draft/history/branching + page swap + live human-verify)

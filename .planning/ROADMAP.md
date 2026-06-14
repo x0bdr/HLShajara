@@ -95,7 +95,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 - [x] 28-01-PLAN.md — Lift pure validation screens into `src/lib/screens.ts` (EV-05) + refactor `persist.ts` to re-import + parity regression check
 - [x] 28-02-PLAN.md — WIZARD/STEPPER CSS section (tokens only, logical props, brass check, reduced-motion)
 - [x] 28-03-PLAN.md — Wizard engine: reducer (bound to SubmitInput) + step registry/branching + sessionStorage draft + shell i18n keys
-- [ ] 28-04-PLAN.md — Chrome components: WizardProgress (pills + Arabic-Indic counter), WizardNav (Back/Next), WizardPanel (focus + aria-live)
+- [x] 28-04-PLAN.md — Chrome components: WizardProgress (pills + Arabic-Indic counter), WizardNav (Back/Next), WizardPanel (focus + aria-live)
 - [ ] 28-05-PLAN.md — Scaffold ChoiceStep/InputStep + WizardClient root (routing/draft/history/branching) + page swap + live human-verify
 **UI hint**: yes
 
@@ -194,7 +194,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 | 25. Admin Publication Editor | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 26. Social Authentication | v1.3 | — | ✅ Complete | 2026-06-01 |
 | 27. Analytics & GTM | v1.3 | — | ✅ Complete | 2026-06-01 |
-| 28. Wizard Foundation | v1.4 | 3/5 | In Progress|  |
+| 28. Wizard Foundation | v1.4 | 4/5 | In Progress|  |
 | 29. Choice Steps | v1.4 | 0/0 | Not started | - |
 | 30. Input & Evidence Steps | v1.4 | 0/0 | Not started | - |
 | 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
