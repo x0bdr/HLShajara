@@ -32,6 +32,11 @@ export function Header() {
 
   const isActive = (path: string) => pathname === `/${locale}${path}`;
 
+  const handleLogout = async () => {
+    await authClient.signOut();
+    router.push(`/${locale}`);
+  };
+
   const navLinks = [
     { href: "/", label: t("home") },
     ...(isAdmin
@@ -122,6 +127,16 @@ export function Header() {
           >
             {locale === "ar" ? "EN" : "عربي"}
           </button>
+          {isSignedIn && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="site-logout-btn"
+              aria-label={t("logout")}
+            >
+              {t("logout")}
+            </button>
+          )}
         </div>
       </div>
     </header>
