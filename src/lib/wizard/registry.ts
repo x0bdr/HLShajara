@@ -30,36 +30,51 @@ export interface StepDef {
   /**
    * Predicate over the form that must hold for this step to be considered
    * complete (and therefore for later steps to be reachable). Absent ⇒ the step
-   * has no completion gate.
+   * has no form-level completion gate.
    */
   readonly requires?: (form: WizardState["form"]) => boolean;
+  /**
+   * When TRUE, this step is complete ONLY once it has been actively confirmed
+   * (its id is in `state.completed`) — used for choice steps whose value is
+   * SEEDED (e.g. `entityType: "individual"`), so a seed alone never satisfies the
+   * reachability gate. `requires` (form-level) can't express this because a seed
+   * makes the form already look "valid"; the explicit completion flag does.
+   */
+  readonly completionGate?: boolean;
   /**
    * If present and TRUE for the current form, this step is SKIPPED (branch
    * skip) and does NOT increment the visible "Step N of M" count. Phase 29's
    * entity-subtype step ("1b") sets `branchWhen: (f) => f.entityType === "individual"`.
+   * NOTE: the scaffold-input step is NOT branch-skipped — only the future
+   * entity-subtype step is — so it carries no `branchWhen` here.
    */
   readonly branchWhen?: (form: WizardState["form"]) => boolean;
 }
 
 /**
  * Ordered step list. `as const` so `StepId` can be derived from the literal ids.
- * Phase 28 scaffold: a `choice` step then an `input` step. The `branchWhen` on
- * the input step demonstrates the Individual-branch skip contract Phases 29+
- * extend — `entityType === "individual"` skips the (future) entity-subtype step
- * without incrementing the visible count.
+ * Phase 28 scaffold: a `choice` step then an `input` step — BOTH always shown and
+ * counted, so the normal forward flow reads "Step 1 of 2" then "Step 2 of 2".
+ *
+ * The choice step uses `completionGate` (not `branchWhen`) to demonstrate the
+ * reachability contract: its `entityType` value is seeded, so it counts as
+ * complete only once actively confirmed. The branch-SKIP contract (where a step
+ * is hidden AND uncounted) belongs to Phase 29's entity-subtype step, not to the
+ * scaffold-input — putting `branchWhen` on the only input step would hide it and
+ * miscount the flow as "Step 0 of 1".
  */
 export const STEPS = [
   {
     id: "scaffold-choice",
     archetype: "choice",
     titleKey: "scaffoldChoiceTitle",
+    // Seeded `entityType` must not auto-satisfy the gate — require an explicit pick.
+    completionGate: true,
   },
   {
     id: "scaffold-input",
     archetype: "input",
     titleKey: "scaffoldInputLabel",
-    // Demonstrates the branch-skip predicate the real entity-subtype step uses.
-    branchWhen: (form) => form.entityType === "individual",
     requires: (form) => form.entityName.trim().length > 0,
   },
 ] as const satisfies ReadonlyArray<StepDef>;
@@ -82,8 +97,18 @@ function isSkipped(step: StepDef, state: WizardState): boolean {
   return step.branchWhen ? step.branchWhen(state.form) : false;
 }
 
-/** A step is "complete" when it has no `requires`, or `requires` holds. */
+/**
+ * A step is "complete" when BOTH gates pass:
+ *  - the form-level `requires(form)` holds (or there is none), AND
+ *  - if it carries a `completionGate`, it has been ACTIVELY confirmed
+ *    (its id is in `state.completed`) — a seeded value alone never satisfies it.
+ */
 function isComplete(step: StepDef, state: WizardState): boolean {
+  // `StepDef.id` widens to `string`; compare via the `StepId[]` membership without
+  // a cast by checking the completed list contains this id.
+  if (step.completionGate && !state.completed.some((id) => id === step.id)) {
+    return false;
+  }
   return step.requires ? step.requires(state.form) : true;
 }
 

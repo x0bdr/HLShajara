@@ -44,8 +44,13 @@ export function WizardProgress({ state, onJump }: WizardProgressProps) {
   const locale = useLocale();
 
   // Arabic-Indic digits in AR, Western digits in EN — the single locale-formatter
-  // for both N and M so "Step ٣ من ٩" renders correctly (UI-SPEC §7, INTL-02).
-  const fmt = new Intl.NumberFormat(locale);
+  // for both N and M so "الخطوة ٣ من ٩" renders correctly (UI-SPEC §7, INTL-02).
+  // Bare "ar" yields Latin digits in this ICU build, so AR explicitly pins the
+  // Arabic numbering system to render ١/٢; EN keeps the default Latin digits.
+  const fmt = new Intl.NumberFormat(
+    locale,
+    locale === "ar" ? { numberingSystem: "arab" } : undefined,
+  );
 
   // M (visible total) and N (current position) come from the registry so a
   // branch-skipped step (e.g. the Individual-branch "1b") never miscounts (WIZ-04).

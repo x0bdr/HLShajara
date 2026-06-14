@@ -49,8 +49,13 @@ export function WizardPanel({ title, stepIndex, stepTotal, children }: WizardPan
   }, [title, stepIndex, stepTotal]);
 
   // Arabic-Indic digits in AR so the spoken announcement matches the visible
-  // counter (UI-SPEC §7). Single persistent node updated by text content below.
-  const fmt = new Intl.NumberFormat(locale);
+  // counter (UI-SPEC §7). Bare "ar" yields Latin digits in this ICU build, so AR
+  // explicitly pins the Arabic numbering system; EN keeps default Latin digits.
+  // Single persistent node updated by text content below.
+  const fmt = new Intl.NumberFormat(
+    locale,
+    locale === "ar" ? { numberingSystem: "arab" } : undefined,
+  );
   const announcement = `${fmt.format(stepIndex)} / ${fmt.format(stepTotal)} — ${title}`;
 
   return (

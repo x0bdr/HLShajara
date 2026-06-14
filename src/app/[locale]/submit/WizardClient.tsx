@@ -13,7 +13,9 @@
  * Six concerns are wired here (UI-SPEC §2):
  *  (1) ROUTING — the active step is the single source of truth in the `?step=`
  *      URL param, so browser Back/Forward + refresh just work (WIZ-03/WIZ-05).
- *      `goTo(id)` pushes `/submit?step=<id>` with `{ scroll: false }`.
+ *      `goTo(id)` pushes the next-intl OBJECT href
+ *      `{ pathname: "/submit", query: { step: id } }` with `{ scroll: false }` —
+ *      a STRING href with a query suffix is a no-op under `localePrefix: "always"`.
  *  (2) DRAFT — every reducer change persists via `saveDraft`; on mount a saved
  *      draft surfaces a restore prompt (Resume → RESTORE_DRAFT, Start over →
  *      clearDraft + RESET); a successful submit / Start-over clears the draft.
@@ -107,7 +109,13 @@ export function WizardClient() {
   const goTo = useCallback(
     (id: StepId, replace = false) => {
       dispatch({ type: "GOTO_STEP", step: id });
-      const href = `/submit?step=${id}`;
+      // next-intl `createNavigation({ localePrefix: "always" })` does NOT navigate
+      // when handed a STRING href carrying a query string ("/submit?step=X") — the
+      // locale-prefixing path-builder drops the query and the push is a no-op. The
+      // OBJECT (UrlObject) form routes the query through `query` so the locale
+      // prefix + `?step=` are both applied client-side (auto-advance, Back/Forward,
+      // the mount URL-sync, and the reachability redirect all depend on this).
+      const href = { pathname: "/submit", query: { step: id } };
       if (replace) router.replace(href, { scroll: false });
       else router.push(href, { scroll: false });
     },
@@ -192,12 +200,16 @@ export function WizardClient() {
   }, [state, goTo]);
 
   /* ---------- (4) AUTO-ADVANCE: choice confirm ----------
-   * The scaffold choice commits the actor-class branch (individual vs entity)
-   * so the input-step branch-skip is exercised, then advances — IMMEDIATELY
+   * The scaffold choice commits the actor-class value then marks the choice step
+   * actively completed (unlocking the next step), and advances — IMMEDIATELY
    * under reduced motion, else after var(--dur) (UI-SPEC §2.3, WIZ-02). */
   const onChoiceConfirm = useCallback(
     (value: string) => {
       dispatch({ type: "SET_FIELD", field: "entityType", value });
+      // Mark the choice step ACTIVELY completed so its seeded value no longer
+      // gates reachability — a deep-link past an unanswered choice still redirects
+      // back, but a confirmed one unlocks the next step (UI-SPEC §2.6).
+      dispatch({ type: "COMPLETE_STEP", step: state.currentStep });
       if (advanceTimer.current) clearTimeout(advanceTimer.current);
       if (prefersReducedMotion()) {
         advance();
@@ -205,7 +217,7 @@ export function WizardClient() {
         advanceTimer.current = setTimeout(advance, ADVANCE_DELAY_MS);
       }
     },
-    [advance],
+    [advance, state.currentStep],
   );
 
   /* ---------- (2) DRAFT: restore prompt actions ---------- */
@@ -268,8 +280,8 @@ export function WizardClient() {
   const stepTitle = stepDef ? t(stepDef.titleKey as never) : "";
   const stepIndex = visibleStepIndex(state.currentStep, state);
   const stepTotal = visibleStepCount(state);
-  // Scaffold choice options exercise the actor-class branch (individual skips
-  // the input step; entity surfaces it) — neutral, never an S1-S4 category.
+  // Scaffold choice options set the neutral actor-class value (individual vs
+  // organization) — never an S1-S4 category. Both branches show the input step.
   const choiceOptions = [
     { value: "individual", title: t("typeIndividual" as never) },
     { value: "organization", title: t("typeOrganization" as never) },

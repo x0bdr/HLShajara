@@ -29,6 +29,14 @@ export interface WizardState {
   dirty: boolean;
   /** Steps the user has reached, for progress / reachability. */
   visited: StepId[];
+  /**
+   * Steps the user has ACTIVELY satisfied (a choice confirmed, an input filled),
+   * as opposed to merely seeded or visited. A choice step's seed value (e.g.
+   * `entityType: "individual"`) does NOT make it complete — only an explicit
+   * confirmation adds it here, so a deep-link past an unanswered choice redirects
+   * back (reachability gate, UI-SPEC §2.6). Phase 29's real steps reuse this.
+   */
+  completed: StepId[];
 }
 
 /**
@@ -59,6 +67,9 @@ export const initialWizardState: WizardState = {
   currentStep: "scaffold-choice",
   dirty: false,
   visited: ["scaffold-choice"],
+  // Nothing is actively completed at start — the seeded `entityType` is NOT a
+  // user selection, so `scaffold-choice` stays incomplete until confirmed.
+  completed: [],
 };
 
 /**
@@ -91,6 +102,7 @@ export type WizardAction =
   | { type: "ADD_FILE"; file: SubmitInput["sourceFiles"][number] }
   | { type: "REMOVE_FILE"; index: number }
   | { type: "GOTO_STEP"; step: StepId }
+  | { type: "COMPLETE_STEP"; step: StepId }
   | { type: "INVALIDATE_DOWNSTREAM" }
   | { type: "RESTORE_DRAFT"; draft: Partial<Record<string, unknown>> }
   | { type: "RESET" };
@@ -175,6 +187,20 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
       };
 
     /**
+     * Mark a step as ACTIVELY satisfied (choice confirmed / input filled). Idempotent
+     * — drives the reachability gate so a deep-link past an unanswered choice step
+     * redirects back to it (UI-SPEC §2.6). Does NOT touch `dirty`/`form`; it records
+     * only UI progress.
+     */
+    case "COMPLETE_STEP":
+      return {
+        ...state,
+        completed: state.completed.includes(action.step)
+          ? state.completed
+          : [...state.completed, action.step],
+      };
+
+    /**
      * Clear the answers that depend on the actor-class branch when the upstream
      * choice changes (UI-SPEC §2.6) — conduct classification and role are the
      * entityType-dependent downstream answers in the scaffold flow. The
@@ -205,7 +231,16 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
           (safe as Record<string, unknown>)[key] = (action.draft as Record<string, unknown>)[key];
         }
       }
-      return { ...state, dirty: false, form: { ...state.form, ...safe } };
+      // A restored draft means the user had progressed past the actor-class choice,
+      // so the choice step counts as completed (its selection rides in the draft form).
+      return {
+        ...state,
+        dirty: false,
+        form: { ...state.form, ...safe },
+        completed: state.completed.includes("scaffold-choice")
+          ? state.completed
+          : [...state.completed, "scaffold-choice"],
+      };
     }
 
     case "RESET":
@@ -214,6 +249,7 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
         currentStep: "scaffold-choice",
         dirty: false,
         visited: ["scaffold-choice"],
+        completed: [],
       };
 
     default:
