@@ -23,6 +23,13 @@
 
 import type { WizardState } from "./state";
 import { ROLE_CLAUSE_TOKEN } from "./encoding";
+import {
+  requiresIdentity,
+  requiresDescribe,
+  requiresEvidence,
+  requiresMedia,
+  requiresAboutYou,
+} from "./step-logic";
 
 /* ---------- STEP DEFINITIONS ---------- */
 
@@ -97,6 +104,15 @@ export const STEPS = [
       form.entityType === "official_body",
   },
   {
+    // Step 2 — identity (input). Inserted BETWEEN entity-subtype (Step 1b) and
+    // conduct (Step 3) per UI-SPEC §3/§4 flow order. Gate: name + role + country
+    // (requiresIdentity reads a non-empty composed allegationLocation).
+    id: "identity",
+    archetype: "input",
+    titleKey: "q_identity",
+    requires: requiresIdentity,
+  },
+  {
     // Step 3 — conduct type. Confirmed value writes a CONDUCT_SLUGS slug to
     // allegationClassification (Plan 29-03); the gate is a non-empty slug.
     id: "conduct",
@@ -113,6 +129,37 @@ export const STEPS = [
     titleKey: "q_roleInAct",
     completionGate: true,
     requires: (form) => form.entityRole.includes(ROLE_CLAUSE_TOKEN),
+  },
+  {
+    // Step 5 — describe the act (input). Gate: ≥20 chars (requiresDescribe).
+    id: "describe",
+    archetype: "input",
+    titleKey: "q_describe",
+    requires: requiresDescribe,
+  },
+  {
+    // Step 6 — evidence keystone (input). Gate: ≥2 source LINKS (requiresEvidence,
+    // links-only — mirrors the server WEAK_SOURCE screen; files do not unlock).
+    id: "evidence",
+    archetype: "input",
+    titleKey: "q_evidence",
+    requires: requiresEvidence,
+  },
+  {
+    // Step 7 — media (input). Optional — requiresMedia is always-true (Next never
+    // blocked); video upload is deferred to Phase 33 (BE-05).
+    id: "media",
+    archetype: "input",
+    titleKey: "q_media",
+    requires: requiresMedia,
+  },
+  {
+    // Step 8 — about you (input). Optional — requiresAboutYou is always-true;
+    // anonymity is ON by default and clears name/email when toggled on (S7).
+    id: "about-you",
+    archetype: "input",
+    titleKey: "q_aboutYou",
+    requires: requiresAboutYou,
   },
 ] as const satisfies ReadonlyArray<StepDef>;
 

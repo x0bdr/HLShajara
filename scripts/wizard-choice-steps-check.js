@@ -182,9 +182,17 @@ function run() {
     }
   }
 
-  // (a) step order
-  check("STEPS = the four real choice steps in UI-SPEC order", () =>
-    assert.deepEqual(o.stepIds, ["actor-class", "entity-subtype", "conduct", "role-in-act"]));
+  // (a) step order — Phase 30 inserts the five input steps into UI-SPEC §3 flow
+  // order (identity BETWEEN entity-subtype and conduct; describe/evidence/media/
+  // about-you AFTER role-in-act). The four Phase-29 choice ids stay in their
+  // relative order; only the input steps interleave. The exact nine-step order is
+  // gated by scripts/step-logic-check.js; here we assert the four choice ids
+  // remain present in their Phase-29 relative order.
+  check("STEPS keeps the four choice ids in their Phase-29 relative order", () =>
+    assert.deepEqual(
+      o.stepIds.filter((id) =>
+        ["actor-class", "entity-subtype", "conduct", "role-in-act"].includes(id)),
+      ["actor-class", "entity-subtype", "conduct", "role-in-act"]));
 
   // (d) slug tuples
   check("CONDUCT_SLUGS length 14", () => assert.equal(o.conductSlugs.length, 14));
@@ -203,21 +211,26 @@ function run() {
     ]));
   check("ROLE_CLAUSE_TOKEN literal", () => assert.equal(o.token, " — role in act: "));
 
-  // (b) branch behavior
-  check("Individual branch: nextStep(actor-class) = conduct", () =>
-    assert.equal(o.indivNext, "conduct"));
+  // (b) branch behavior — Phase 30 inserts `identity` between entity-subtype and
+  // conduct, so the Individual branch (entity-subtype skipped) now steps
+  // actor-class → identity (not conduct). The branch-SKIP semantics for
+  // entity-subtype are unchanged; only the next/visible-count totals grow by the
+  // four input steps that now interleave (identity + describe/evidence/media/
+  // about-you). Individual: 9 steps minus the skipped entity-subtype = 8.
+  check("Individual branch: nextStep(actor-class) = identity (input Step 2)", () =>
+    assert.equal(o.indivNext, "identity"));
   check("Individual branch: entity-subtype NOT counted", () =>
     assert.equal(o.indivSubtypeCounted, false));
-  check("Individual branch: visibleStepCount = 3 (subtype excluded)", () =>
-    assert.equal(o.indivVisibleCount, 3));
-  check("Individual branch: prevStep(conduct) = actor-class (subtype skipped)", () =>
-    assert.equal(o.indivPrevFromConduct, "actor-class"));
+  check("Individual branch: visibleStepCount = 8 (subtype excluded)", () =>
+    assert.equal(o.indivVisibleCount, 8));
+  check("Individual branch: prevStep(conduct) = identity (subtype skipped, identity inserted)", () =>
+    assert.equal(o.indivPrevFromConduct, "identity"));
   check("Entity branch: nextStep(actor-class) = entity-subtype", () =>
     assert.equal(o.entityNext, "entity-subtype"));
   check("Entity branch: entity-subtype IS counted", () =>
     assert.equal(o.entitySubtypeCounted, true));
-  check("Entity branch: visibleStepCount = 4", () =>
-    assert.equal(o.entityVisibleCount, 4));
+  check("Entity branch: visibleStepCount = 9 (all steps counted)", () =>
+    assert.equal(o.entityVisibleCount, 9));
 
   // (c) encode/strip
   o.roundTrip.forEach((r) => {
