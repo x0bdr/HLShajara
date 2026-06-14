@@ -163,7 +163,10 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1â€
   2. A reviewer-only `leadNote` is persisted that is never returned on any public path and never counts as a source.
   3. Each source carries its own `sourceType`, and the actor's `roleInConduct` is stored as a first-class field.
   4. New submissions default to anonymous (`isAnonymous = true`), and uploaded video has its metadata stripped before storage so the media step can safely accept video.
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 33-01-PLAN.md â€” Shared anti-drift conduct/role constants + pgEnums/nullable columns + isAnonymous default flip + additive migration (BE-01, BE-04, BE-06)
+- [ ] 33-02-PLAN.md â€” Extend intake Zod schema + persist conductType/roleInConduct/leadNote on /api/submit + auto-populate triageCategory + leadNote-never-public guard (BE-01, BE-02, BE-03, BE-06)
+- [ ] 33-03-PLAN.md â€” ffmpeg exec helper + gated video-metadata-strip branch in /api/upload, fail-closed when ffmpeg absent (BE-05)
 
 ## Progress
 
@@ -199,4 +202,4 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1â€
 | 30. Input & Evidence Steps | v1.4 | 0/0 | Not started | - |
 | 31. Review, Submit & Confirmation | v1.4 | 0/0 | Not started | - |
 | 32. i18n, RTL & Accessibility | v1.4 | 0/0 | Not started | - |
-| 33. Backend Support | v1.4 | 0/0 | Not started | - |
+| 33. Backend Support | v1.4 | 0/3 | Planned | - |
