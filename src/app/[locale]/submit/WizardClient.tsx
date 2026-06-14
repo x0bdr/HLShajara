@@ -416,7 +416,22 @@ export function WizardClient() {
   function resumeDraft() {
     const draft = loadDraft<WizardState>();
     if (draft && draft.form) {
-      dispatch({ type: "RESTORE_DRAFT", draft: draft.form });
+      const action = { type: "RESTORE_DRAFT", draft: draft.form } as const;
+      dispatch(action);
+      setShowRestore(false);
+      // MED: restoring the FORM is not enough — also land the user on the step they
+      // left off (draft.currentStep), not back on actor-class. Compute the restored
+      // state locally (the dispatch above is async) to test reachability with the
+      // recomputed `completed`/`entityChosen`; navigate there only if it is a known,
+      // reachable step, else fall to the first genuinely-incomplete step.
+      const restored = wizardReducer(state, action);
+      const saved = draft.currentStep;
+      const target =
+        typeof saved === "string" && isKnownStep(saved) && isReachable(saved, restored)
+          ? saved
+          : firstIncompleteStep(restored);
+      goTo(target, true);
+      return;
     }
     setShowRestore(false);
   }
