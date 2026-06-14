@@ -44,6 +44,7 @@ export function Header() {
           { href: "/reviewer", label: t("reviewer") },
           { href: "/admin/publications", label: t("adminPublications") },
           { href: "/admin/replies", label: t("adminReplies") },
+          { href: "/admin/stats", label: t("adminStats") },
         ]
       : isStaff
         ? [{ href: "/reviewer", label: t("reviewer") }]
