@@ -58,12 +58,27 @@ import {
   visibleStepIndex,
 } from "@/lib/wizard/registry";
 import { saveDraft, loadDraft, clearDraft } from "@/lib/wizard/persistence";
+import {
+  CONDUCT_SLUGS,
+  ROLE_SLUGS,
+  ROLE_CLAUSE_TOKEN,
+  encodeRoleClause,
+  stripRoleClause,
+  type RoleSlug,
+} from "@/lib/wizard/encoding";
 
 import { WizardProgress } from "@/components/wizard/WizardProgress";
 import { WizardNav } from "@/components/wizard/WizardNav";
 import { WizardPanel } from "@/components/wizard/WizardPanel";
 import { ChoiceStep } from "@/components/wizard/ChoiceStep";
-import { InputStep } from "@/components/wizard/InputStep";
+
+/**
+ * Local sentinel for "the user picked An entity but has not yet chosen a subtype".
+ * Tracked in React state (NOT the SubmitInput form) so a non-enum value never
+ * enters `entityType`; Step 1b resolves it to a real enum literal. Used only to
+ * render the entity card selected on Back before a subtype is committed.
+ */
+const ENTITY_MARKER = "entity-marker";
 
 /** The `var(--dur)` transition window (tokens.css `--dur: 200ms`). */
 const ADVANCE_DELAY_MS = 200;
@@ -96,6 +111,13 @@ export function WizardClient() {
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
+  // True while the user has confirmed "An entity" on actor-class but not yet
+  // committed a subtype — drives the entity card's selected-on-Back state WITHOUT
+  // writing a non-enum value to entityType (S2-S4 / T-29-06).
+  const [entityChosen, setEntityChosen] = useState(false);
+  // Transient orphan-invalidation notice shown when an actor-class switch on Back
+  // clears the entity-subtype answer. Cleared on the next navigation/confirm.
+  const [showSubtypeNotice, setShowSubtypeNotice] = useState(false);
   const submittedRef = useRef(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -195,29 +217,98 @@ export function WizardClient() {
   }, [state, goTo]);
 
   const goBack = useCallback(() => {
+    // Back is an explicit navigation — clear any transient invalidation notice.
+    setShowSubtypeNotice(false);
     const prev = prevStep(state);
     if (prev) goTo(prev);
   }, [state, goTo]);
 
-  /* ---------- (4) AUTO-ADVANCE: choice confirm ----------
-   * The scaffold choice commits the actor-class value then marks the choice step
-   * actively completed (unlocking the next step), and advances — IMMEDIATELY
-   * under reduced motion, else after var(--dur) (UI-SPEC §2.3, WIZ-02). */
+  /* ---------- (4) AUTO-ADVANCE: shared post-confirm advance ----------
+   * Marks the current choice step ACTIVELY completed (unlocking the next step —
+   * a deep-link past an unanswered choice still redirects back, UI-SPEC §2.6),
+   * then advances IMMEDIATELY under reduced motion, else after var(--dur)
+   * (UI-SPEC §2.3, WIZ-02). The advance is armed ONLY here, never on mount/URL-
+   * sync, so returning via Back never re-auto-advances. Re-confirming the same
+   * card on Back still routes through here, so a re-confirm advances. */
+  const completeAndAdvance = useCallback(() => {
+    dispatch({ type: "COMPLETE_STEP", step: state.currentStep });
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    if (prefersReducedMotion()) {
+      advance();
+    } else {
+      advanceTimer.current = setTimeout(advance, ADVANCE_DELAY_MS);
+    }
+  }, [advance, state.currentStep]);
+
+  /* ---------- per-step interim-encoding confirm dispatch ----------
+   * Each choice step encodes its pick onto the EXISTING /api/submit contract
+   * (Plan 29-01 encoding): actor-class/entity-subtype → entityType (enum only),
+   * conduct → allegationClassification slug, role-in-act → the entityRole clause.
+   * The entity card NEVER writes a non-enum literal to entityType — it records a
+   * local marker and lets Step 1b commit one of the five enum literals. */
   const onChoiceConfirm = useCallback(
     (value: string) => {
-      dispatch({ type: "SET_FIELD", field: "entityType", value });
-      // Mark the choice step ACTIVELY completed so its seeded value no longer
-      // gates reachability — a deep-link past an unanswered choice still redirects
-      // back, but a confirmed one unlocks the next step (UI-SPEC §2.6).
-      dispatch({ type: "COMPLETE_STEP", step: state.currentStep });
-      if (advanceTimer.current) clearTimeout(advanceTimer.current);
-      if (prefersReducedMotion()) {
-        advance();
-      } else {
-        advanceTimer.current = setTimeout(advance, ADVANCE_DELAY_MS);
+      switch (state.currentStep) {
+        case "actor-class": {
+          // Was the branch already committed to entity (subtype answered, or the
+          // entity marker set)? Detect an actual actor-class CHANGE on Back.
+          const wasEntity = entityChosen || state.form.entityType !== "individual";
+          if (value === "individual") {
+            // Switching FROM entity TO individual on Back orphans the subtype:
+            // invalidate ONLY entity-subtype (rewrite entityType to "individual",
+            // preserve conduct/role) and surface the transient aria-live notice.
+            if (wasEntity) {
+              dispatch({ type: "INVALIDATE_SUBTYPE", entityType: "individual" });
+              setShowSubtypeNotice(true);
+            } else {
+              dispatch({ type: "SET_FIELD", field: "entityType", value: "individual" });
+              setShowSubtypeNotice(false);
+            }
+            setEntityChosen(false);
+          } else {
+            // "An entity" — route to Step 1b without committing a non-enum value.
+            // If the user was previously on the individual branch this is a switch,
+            // but there is no orphan to clear (individual has no subtype answer).
+            setEntityChosen(true);
+            setShowSubtypeNotice(false);
+            // entityType stays whatever Step 1b last committed (or the seed); the
+            // requires() gate keeps entity-subtype reachable-but-incomplete until
+            // a real subtype enum is picked.
+          }
+          break;
+        }
+        case "entity-subtype": {
+          // value is one of organization/military_unit/security_branch/official_body.
+          dispatch({ type: "SET_FIELD", field: "entityType", value });
+          setShowSubtypeNotice(false);
+          break;
+        }
+        case "conduct": {
+          // value is a CONDUCT_SLUGS slug. Conduct "other" durably encodes
+          // allegationClassification="other"; Phase-30 Step 5 reads
+          // `allegationClassification === "other"` to mark the description
+          // required-to-name-the-act. triageCategory is NOT set here (Phase 33).
+          dispatch({ type: "SET_FIELD", field: "allegationClassification", value });
+          setShowSubtypeNotice(false);
+          break;
+        }
+        case "role-in-act": {
+          // value is a ROLE_SLUGS slug — append the clause to entityRole, stripping
+          // any prior clause first so a re-pick on Back REPLACES (no stacking).
+          dispatch({
+            type: "SET_FIELD",
+            field: "entityRole",
+            value: encodeRoleClause(stripRoleClause(state.form.entityRole), value as RoleSlug),
+          });
+          setShowSubtypeNotice(false);
+          break;
+        }
+        default:
+          break;
       }
+      completeAndAdvance();
     },
-    [advance, state.currentStep],
+    [state.currentStep, state.form.entityType, state.form.entityRole, entityChosen, completeAndAdvance],
   );
 
   /* ---------- (2) DRAFT: restore prompt actions ---------- */
@@ -280,12 +371,75 @@ export function WizardClient() {
   const stepTitle = stepDef ? t(stepDef.titleKey as never) : "";
   const stepIndex = visibleStepIndex(state.currentStep, state);
   const stepTotal = visibleStepCount(state);
-  // Scaffold choice options set the neutral actor-class value (individual vs
-  // organization) — never an S1-S4 category. Both branches show the input step.
-  const choiceOptions = [
-    { value: "individual", title: t("typeIndividual" as never) },
-    { value: "organization", title: t("typeOrganization" as never) },
-  ];
+
+  /* ---------- per-step ChoiceStep options + selected value ----------
+   * Options resolve their titles/defs through the Plan 29-02 `submit` keys. The
+   * `value` is the current form value so the prior card renders selected+focused
+   * on Back (ChoiceStep focuses the matching card only when value is non-empty).
+   * All sets are CLOSED (S1-S4): every card is a specific ACT or an entity-type
+   * enum — never a person's group, belief, or occupation target. */
+  let choiceOptions: ReadonlyArray<{ value: string; title: string; desc?: string }> = [];
+  let choiceValue = "";
+
+  switch (state.currentStep) {
+    case "actor-class":
+      choiceOptions = [
+        {
+          value: "individual",
+          title: t("actorIndividual" as never),
+          desc: t("actorIndividualHint" as never),
+        },
+        {
+          value: ENTITY_MARKER,
+          title: t("actorEntity" as never),
+          desc: t("actorEntityHint" as never),
+        },
+      ];
+      // Selected = individual when committed; else (entityType is already one of
+      // the four entity enums OR the user just picked "An entity") the marker.
+      // `entityChosen` is folded in so the marker shows even before a subtype is
+      // committed, but it never widens entityType past its enum (S2-S4 / T-29-06).
+      choiceValue =
+        state.form.entityType === "individual"
+          ? entityChosen
+            ? ENTITY_MARKER
+            : state.completed.includes("actor-class")
+              ? "individual"
+              : ""
+          : ENTITY_MARKER;
+      break;
+    case "entity-subtype":
+      choiceOptions = [
+        { value: "organization", title: t("typeOrganization" as never) },
+        { value: "military_unit", title: t("typeMilitaryUnit" as never) },
+        { value: "security_branch", title: t("typeSecurityBranch" as never) },
+        { value: "official_body", title: t("typeOfficialBody" as never) },
+      ];
+      // Pre-select only once a real entity subtype enum is committed.
+      choiceValue =
+        state.form.entityType === "individual" ? "" : state.form.entityType;
+      break;
+    case "conduct":
+      choiceOptions = CONDUCT_SLUGS.map((slug) => ({
+        value: slug,
+        title: t(`conduct_${slug}` as never),
+        desc: t(`conduct_${slug}_def` as never),
+      }));
+      choiceValue = state.form.allegationClassification ?? "";
+      break;
+    case "role-in-act":
+      choiceOptions = ROLE_SLUGS.map((slug) => ({
+        value: slug,
+        title: t(`role_${slug}` as never),
+      }));
+      // Parse the prior role slug out of the entityRole clause for selected-on-Back.
+      choiceValue = state.form.entityRole.includes(ROLE_CLAUSE_TOKEN)
+        ? state.form.entityRole.split(ROLE_CLAUSE_TOKEN).pop() ?? ""
+        : "";
+      break;
+    default:
+      break;
+  }
 
   return (
     <div className="wizard">
@@ -318,21 +472,23 @@ export function WizardClient() {
         stepIndex={stepIndex}
         stepTotal={stepTotal}
       >
-        {archetype === "choice" ? (
-          <ChoiceStep
-            ariaLabel={stepTitle}
-            options={choiceOptions}
-            value={state.form.entityType}
-            onConfirm={onChoiceConfirm}
-          />
-        ) : (
-          <InputStep
-            fieldId="wizard-scaffold-input"
-            label={stepTitle}
-            value={state.form.entityName}
-            dispatch={dispatch}
-          />
+        {/* Transient orphan-invalidation notice (CONTEXT Success Criterion 4):
+            a one-line `.legal` block with aria-live="polite" — NOT a modal/toast.
+            Shown when an actor-class switch on Back cleared the entity-subtype
+            answer; clears on the next navigation/confirm. */}
+        {showSubtypeNotice && (
+          <div className="legal mb-16" role="status" aria-live="polite">
+            <p>{t("invalidateSubtypeNotice")}</p>
+          </div>
         )}
+        {/* All four Phase-29 steps are `choice` archetype; the input steps land in
+            Phase 30. */}
+        <ChoiceStep
+          ariaLabel={stepTitle}
+          options={choiceOptions}
+          value={choiceValue}
+          onConfirm={onChoiceConfirm}
+        />
       </WizardPanel>
 
       <WizardNav
