@@ -30,7 +30,7 @@
  *      (Phase 31 fills the real copy/flow).
  *
  * Security: restored draft values bind to controlled inputs (auto-escaped); no
- * `dangerouslySetInnerHTML`. The `?step=` guard is UX only.
+ * raw-HTML injection anywhere. The `?step=` guard is UX only.
  */
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
@@ -67,6 +67,8 @@ import {
   type RoleSlug,
 } from "@/lib/wizard/encoding";
 
+import { resolveRejection } from "@/lib/wizard/rejection-map";
+
 import { WizardProgress } from "@/components/wizard/WizardProgress";
 import { WizardNav } from "@/components/wizard/WizardNav";
 import { WizardPanel } from "@/components/wizard/WizardPanel";
@@ -77,6 +79,7 @@ import { DescribeStep } from "@/components/wizard/DescribeStep";
 import { EvidenceStep } from "@/components/wizard/EvidenceStep";
 import { MediaStep } from "@/components/wizard/MediaStep";
 import { AboutYouStep } from "@/components/wizard/AboutYouStep";
+import ReviewStep from "@/components/wizard/ReviewStep";
 
 /**
  * Local sentinel for "the user picked An entity but has not yet chosen a subtype".
@@ -106,6 +109,8 @@ interface SubmitResult {
   ok: boolean;
   message: string;
   code?: string;
+  /** Server-issued reference id on success ({ ok:true, submissionId, message }). */
+  submissionId?: number;
 }
 
 export function WizardClient() {
@@ -116,6 +121,9 @@ export function WizardClient() {
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Step-9 affirmation checkbox (REV-02). UX-only gate; the server screen on
+  // /api/submit stays authoritative (T-31-08). Reset on RESET / "Submit another".
+  const [affirmed, setAffirmed] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
   // True while the user has confirmed "An entity" on actor-class but not yet
   // committed a subtype — drives the entity card's selected-on-Back state WITHOUT
@@ -329,15 +337,25 @@ export function WizardClient() {
   function discardDraft() {
     clearDraft();
     dispatch({ type: "RESET" });
+    setAffirmed(false);
     setShowRestore(false);
     goTo(STEPS[0].id, true);
   }
 
-  /* ---------- (6) SUBMIT SKELETON ----------
-   * Wired to the existing /api/submit choke point with the SubmitInput state
-   * (the interim §8 field correspondence). Phase 31 fills the real review/copy;
-   * the skeleton keeps the POST + GTM + reset + clearDraft contract so nothing
-   * drifts. */
+  /* ---------- (6) SUBMIT + CONFIRMATION + REJECTION ROUTING (REV-03/REV-04) ----
+   * POSTs the assembled SubmitInput to the existing /api/submit choke point. The
+   * body serializes the FULL `state.form`, so the optional `leadNote` rides along
+   * verbatim when set (the route accept-but-ignores it until Phase 33 / BE-02).
+   *
+   * On success ({ ok:true, submissionId, message }): clear the draft + fire GTM,
+   * but DO NOT reset/redirect — the success `.legal-success` panel replaces the
+   * wizard chrome and the reset happens only when the user clicks "Submit another".
+   *
+   * On rejection ({ ok:false, code, message }): resolve the code via the closed
+   * rejection map; a known code → goTo(route.stepId) (a real registry id) and
+   * show t(route.messageKey) in the reused `.legal-error` panel at that step. An
+   * unknown/garbage code (VALIDATION_ERROR, network) → generic error, stay put
+   * (T-31-07). The draft is NEVER cleared on error. */
   async function handleSubmit() {
     setSubmitting(true);
     setResult(null);
@@ -354,7 +372,6 @@ export function WizardClient() {
       data = { ok: false, message: t("error") };
     }
 
-    setResult(data);
     setSubmitting(false);
 
     pushDataLayer(GTM_EVENTS.SUBMIT_CLICK, {
@@ -364,11 +381,35 @@ export function WizardClient() {
     });
 
     if (data.ok) {
+      // Confirmation: keep the user on the success panel (no RESET here — that is
+      // deferred to "Submit another"). Clear the draft so it never persists past a
+      // completed submission (T-31-10).
       submittedRef.current = true;
       clearDraft();
-      dispatch({ type: "RESET" });
-      goTo(STEPS[0].id, true);
+      setResult(data);
+      return;
     }
+
+    // Rejection: route the (untrusted) code back to the offending step if known.
+    const route = resolveRejection(data.code ?? "");
+    if (route) {
+      setResult({ ok: false, message: t(route.messageKey as never), code: data.code });
+      goTo(route.stepId as StepId);
+    } else {
+      // Unknown / VALIDATION_ERROR / network — generic error, stay on review.
+      setResult({ ok: false, message: data.message || t("error"), code: data.code });
+    }
+  }
+
+  /* ---------- "Submit another" — full reset back to step 1 ---------- */
+  function submitAnother() {
+    setResult(null);
+    setAffirmed(false);
+    setSubmitting(false);
+    submittedRef.current = false;
+    clearDraft();
+    dispatch({ type: "RESET" });
+    goTo(STEPS[0].id, true);
   }
 
   /* ---------- derived render values ---------- */
@@ -377,6 +418,13 @@ export function WizardClient() {
   const stepTitle = stepDef ? t(stepDef.titleKey as never) : "";
   const stepIndex = visibleStepIndex(state.currentStep, state);
   const stepTotal = visibleStepCount(state);
+  // The terminal review step (appended to the registry by Plan 31-01). Detect via
+  // the real "review" id, anchored to the registry's last step so it can't drift.
+  const isReview =
+    state.currentStep === "review" &&
+    STEPS[STEPS.length - 1].id === "review";
+  // Submission confirmed — the success panel replaces the wizard chrome entirely.
+  const submitted = result?.ok === true;
 
   /* ---------- per-step ChoiceStep options + selected value ----------
    * Options resolve their titles/defs through the Plan 29-02 `submit` keys. The
@@ -447,6 +495,27 @@ export function WizardClient() {
       break;
   }
 
+  /* ---------- CONFIRMATION: success replaces the wizard chrome entirely ---------- */
+  if (submitted) {
+    return (
+      <div className="wizard">
+        <div className="legal legal-success mt-16 mb-16">
+          <div className="t">{t("successTitle")}</div>
+          <p>{t("successBody")}</p>
+          <p className="mt-16">
+            {t("referenceIdLabel")}:{" "}
+            <span className="ds-mono">{result?.submissionId}</span>
+          </p>
+          <div className="wizard-nav flex-between mt-16">
+            <Button variant="primary" onClick={submitAnother}>
+              {t("submitAnother")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="wizard">
       {showRestore && (
@@ -464,9 +533,12 @@ export function WizardClient() {
         </div>
       )}
 
-      {result && (
-        <div className={`legal mt-16 mb-16 ${result.ok ? "legal-success" : "legal-error"}`}>
-          <div className="t">{result.ok ? t("success") : t("error")}</div>
+      {/* Rejection / generic error panel (success is handled by the early return
+          above). On a server rejection this shows t(messageKey) at the offending
+          step after goTo routes the user there; the draft is NOT cleared. */}
+      {result && !result.ok && (
+        <div className="legal legal-error mt-16 mb-16" role="status" aria-live="polite">
+          <div className="t">{t("error")}</div>
           <p>{result.message}</p>
         </div>
       )}
@@ -487,11 +559,21 @@ export function WizardClient() {
             <p>{t("invalidateSubtypeNotice")}</p>
           </div>
         )}
-        {/* Render dispatch: choice steps render the ChoiceStep; the Phase-30 input
-            steps each render their own component, routed by currentStep. The Next
-            gate follows automatically from `stepValid` (registry `requires`). The
-            scaffold InputStep is the defensive fallback for any other input id. */}
-        {archetype === "choice" ? (
+        {/* Render dispatch: the terminal review step renders <ReviewStep>; choice
+            steps render the ChoiceStep; the Phase-30 input steps each render their
+            own component, routed by currentStep. The Next gate follows from
+            `stepValid` (registry `requires`). The scaffold InputStep is the
+            defensive fallback for any other input id. */}
+        {isReview ? (
+          <ReviewStep
+            form={state.form}
+            affirmed={affirmed}
+            submitting={submitting}
+            onEdit={(id) => goTo(id as StepId)}
+            onAffirmChange={setAffirmed}
+            onSubmit={handleSubmit}
+          />
+        ) : archetype === "choice" ? (
           <ChoiceStep
             ariaLabel={stepTitle}
             options={choiceOptions}
@@ -518,9 +600,12 @@ export function WizardClient() {
         )}
       </WizardPanel>
 
+      {/* On the review step, submission flows ONLY through ReviewStep's own Submit
+          button — suppress the scaffold WizardNav Submit path to avoid a double
+          Submit control. Back is still available via the registry nav below. */}
       <WizardNav
         isFirst={isFirst}
-        archetype={archetype}
+        archetype={isReview ? "choice" : archetype}
         stepValid={stepValid}
         onBack={goBack}
         onNext={nextStep(state) ? advance : handleSubmit}
