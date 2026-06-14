@@ -29,7 +29,6 @@ export default function RecordPage() {
 
   // Debounced server-side search with filters
   useEffect(() => {
-    setLoading(true);
     const params = new URLSearchParams();
     if (filter.trim()) params.set("q", filter.trim());
     if (status) params.set("status", status);

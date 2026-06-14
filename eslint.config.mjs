@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Non-production design assets, scripts, and generated files:
+    "DESIGN ASSETS/**",
+    "design_handoff_hlshajara/**",
+    "scripts/**",
+    "drizzle/**",
+    ".planning/**",
+    "pics/**",
   ]),
 ]);
 

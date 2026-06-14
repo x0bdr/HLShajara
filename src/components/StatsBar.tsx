@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 interface StatsBarProps {
   entries: number;
@@ -9,7 +9,6 @@ interface StatsBarProps {
 }
 
 export function StatsBar({ entries, sources, verdicts }: StatsBarProps) {
-  const locale = useLocale();
   const t = useTranslations("home");
 
   const stats = [

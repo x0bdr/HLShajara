@@ -4,9 +4,14 @@
  * Pure constants module: NO JSX, NO React. Closed option sets per report category
  * plus per-subtype detail schemas so step 4 shows only the relevant fields.
  * Icons are referenced by name string and resolved to Lucide components in the UI.
+ *
+ * v1.5 localization: all user-visible labels are stored as `submit.*` i18n keys
+ * in messages/en.json and messages/ar.json. This file no longer contains
+ * hardcoded Arabic or English labels.
  */
 
-import type { ReportCategory } from "@/lib/validation";
+import type { ReportCategory, ReportMetadata } from "@/lib/validation";
+import arMessages from "../../../messages/ar.json";
 
 export type DetailFieldId =
   | "ownerName"
@@ -21,73 +26,79 @@ export type DetailFieldId =
   | "driverName"
   | "taxiNumber"
   | "appName"
-  | "propertyType";
+  | "propertyType"
+  | "partnerName"
+  | "investorName"
+  | "receptionInfo"
+  | "labourInfo"
+  | "supportDataInfo"
+  | "clubName";
 
-export interface CategoryOption {
+export interface LocalizedOption {
   value: string;
-  labelAr: string;
-  labelEn?: string;
-  descriptionAr?: string;
-  descriptionEn?: string;
+  labelKey: string;
+  descriptionKey?: string;
   iconName?: string;
 }
 
-export interface SubTypeConfig extends CategoryOption {
+export interface SubTypeConfig extends LocalizedOption {
   /** Which free-text detail fields to show for this subtype. */
   detailFields: DetailFieldId[];
 }
 
 export interface CategoryConfig {
   id: ReportCategory;
-  labelAr: string;
-  labelEn: string;
-  /** Short subtext shown under the category card title. */
-  descAr: string;
-  descEn: string;
+  labelKey: string;
+  descriptionKey: string;
   iconName: string;
   entityType: "individual" | "organization";
   subTypes: SubTypeConfig[];
   /** Card options shown in Step 4 ("نوع البلاغ"). */
-  detailFlags: CategoryOption[];
+  detailFlags: LocalizedOption[];
 }
 
-const COMMON_FLAGS = {
-  owner: { value: "owner", labelAr: "المالك / الشركاء", iconName: "UserCog" },
-  partner: { value: "partner", labelAr: "شريك / شركاء", iconName: "Handshake" },
-  reception: { value: "reception", labelAr: "استقبال / مكتب أمامي", iconName: "Headphones" },
-  labour: { value: "labour", labelAr: "عمال / موظفون", iconName: "Users" },
-  supportData: { value: "support_data", labelAr: "أي بيانات داعمة", iconName: "FileText" },
-  doctor: { value: "doctor", labelAr: "طبيب / دكتور", iconName: "Stethoscope" },
-  nurse: { value: "nurse", labelAr: "ممرض / ممرضة", iconName: "HeartPulse" },
-  instructor: { value: "instructor", labelAr: "اسم المدرب / الأستاذ", iconName: "UserCheck" },
-  investor: { value: "investor", labelAr: "مستثمر / رئيس النادي", iconName: "TrendingUp" },
-  student: { value: "student", labelAr: "طالب", iconName: "GraduationCap" },
-  clubName: { value: "club_name", labelAr: "اسم النادي / الجمعية", iconName: "Flag" },
+/** Translation function shape for the `submit` namespace. */
+type SubmitT = (key: string) => string;
+
+const arSubmit = arMessages.submit as Record<string, string>;
+
+function arLabel(key: string): string {
+  return arSubmit[key] ?? key;
+}
+
+const COMMON_FLAGS: Record<string, LocalizedOption> = {
+  owner: { value: "owner", labelKey: "flagOwner", iconName: "UserCog" },
+  partner: { value: "partner", labelKey: "flagPartner", iconName: "Handshake" },
+  reception: { value: "reception", labelKey: "flagReception", iconName: "Headphones" },
+  labour: { value: "labour", labelKey: "flagLabour", iconName: "Users" },
+  supportData: { value: "support_data", labelKey: "flagSupportData", iconName: "FileText" },
+  doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
+  nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
+  instructor: { value: "instructor", labelKey: "flagInstructor", iconName: "UserCheck" },
+  investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
+  student: { value: "student", labelKey: "flagStudent", iconName: "GraduationCap" },
+  clubName: { value: "club_name", labelKey: "flagClubName", iconName: "Flag" },
 };
 
 export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   {
     id: "commercial",
-    labelAr: "تجاري",
-    labelEn: "Commercial",
-    descAr: "متاجر، مصانع، علامات تجارية، محلات ومولات",
-    descEn: "Shops, factories, brands, stores and malls",
+    labelKey: "catCommercial",
+    descriptionKey: "catCommercialDesc",
     iconName: "Store",
     entityType: "organization",
     subTypes: [
       {
         value: "brand",
-        labelAr: "براند / اسم العلامة التجارية / اسم المنتج",
-        descriptionAr: "بلاغ عن منتج أو علامة تجارية محددة",
-        descriptionEn: "Report about a specific product or brand",
+        labelKey: "subCommercialBrand",
+        descriptionKey: "subCommercialBrandDesc",
         iconName: "Tag",
         detailFields: ["ownerName"],
       },
       {
         value: "factory",
-        labelAr: "مصانع / معامل / متاجر إلكترونية / محلات تجارية / مولات / ورشات",
-        descriptionAr: "بلاغ عن منشأة تجارية أو مصنع أو متجر",
-        descriptionEn: "Report about a commercial facility, factory or shop",
+        labelKey: "subCommercialFactory",
+        descriptionKey: "subCommercialFactoryDesc",
         iconName: "Factory",
         detailFields: ["ownerName"],
       },
@@ -96,147 +107,123 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
   {
     id: "individuals",
-    labelAr: "أفراد",
-    labelEn: "Individuals",
-    descAr: "بائعون، سائقون، موظفون، مؤثرون، عمال نظافة",
-    descEn: "Vendors, drivers, employees, influencers, cleaners",
+    labelKey: "catIndividuals",
+    descriptionKey: "catIndividualsDesc",
     iconName: "User",
     entityType: "individual",
     subTypes: [
       {
         value: "street_vendor",
-        labelAr: "باعة جوالة",
-        descriptionAr: "بائع متنقل في الأسواق أو الشوارع",
-        descriptionEn: "Mobile vendor in markets or streets",
+        labelKey: "subIndividualsStreetVendor",
+        descriptionKey: "subIndividualsStreetVendorDesc",
         iconName: "ShoppingBag",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "driver",
-        labelAr: "سائق سيرفيس / شحن / خاص / توصيل",
-        descriptionAr: "سائق سيارة أجرة، شحن، توصيل أو خاص",
-        descriptionEn: "Taxi, shipping, delivery or private driver",
+        labelKey: "subIndividualsDriver",
+        descriptionKey: "subIndividualsDriverDesc",
         iconName: "Car",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "cleaner",
-        labelAr: "عاملة تنظيف",
-        descriptionAr: "عاملة نظافة منزلية أو مكتبية",
-        descriptionEn: "Domestic or office cleaner",
+        labelKey: "subIndividualsCleaner",
+        descriptionKey: "subIndividualsCleanerDesc",
         iconName: "Sparkles",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "shabbiha",
-        labelAr: "شبيح",
-        descriptionAr: "شخص مرتبط بأنشطة النظام السابق",
-        descriptionEn: "Person linked to former regime activity",
+        labelKey: "subIndividualsShabbiha",
+        descriptionKey: "subIndividualsShabbihaDesc",
         iconName: "ShieldAlert",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "influencer",
-        labelAr: "مؤثر / حساب سوشال ميديا",
-        descriptionAr: "حساب أو شخص مؤثر على وسائل التواصل",
-        descriptionEn: "Social media account or influencer",
+        labelKey: "subIndividualsInfluencer",
+        descriptionKey: "subIndividualsInfluencerDesc",
         iconName: "Smartphone",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "gov_employee",
-        labelAr: "موظف حكومي",
-        descriptionAr: "موظف في جهة حكومية أو عامة",
-        descriptionEn: "Government or public sector employee",
+        labelKey: "subIndividualsGovEmployee",
+        descriptionKey: "subIndividualsGovEmployeeDesc",
         iconName: "Landmark",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "private_employee",
-        labelAr: "موظف قطاع خاص",
-        descriptionAr: "موظف في شركة أو مؤسسة خاصة",
-        descriptionEn: "Private sector employee",
+        labelKey: "subIndividualsPrivateEmployee",
+        descriptionKey: "subIndividualsPrivateEmployeeDesc",
         iconName: "Briefcase",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "kiosk",
-        labelAr: "أكشاك",
-        descriptionAr: "صاحب كشك في الشارع أو السوق",
-        descriptionEn: "Street or market kiosk operator",
+        labelKey: "subIndividualsKiosk",
+        descriptionKey: "subIndividualsKioskDesc",
         iconName: "Store",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
       {
         value: "delivery_app",
-        labelAr: "تطبيقات توصيل",
-        descriptionAr: "مندوب توصيل عبر تطبيق",
-        descriptionEn: "App delivery courier",
+        labelKey: "subIndividualsDeliveryApp",
+        descriptionKey: "subIndividualsDeliveryAppDesc",
         iconName: "Truck",
-        detailFields: ["reportedPersonName", "reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
+        detailFields: ["reportedPersonPhone", "reportedPersonPosition", "reportedPersonSocialMedia"],
       },
     ],
-    detailFlags: [
-      { value: "name", labelAr: "الاسم / الكنية", iconName: "User" },
-      { value: "phone", labelAr: "رقم الهاتف", iconName: "Phone" },
-      { value: "position", labelAr: "المنصب / المهنة", iconName: "IdCard" },
-      { value: "social", labelAr: "حسابات سوشال ميديا", iconName: "Share2" },
-    ],
+    detailFlags: [],
   },
   {
     id: "educational",
-    labelAr: "تعليمي",
-    labelEn: "Educational",
-    descAr: "أكاديميات، معاهد، كورسات، أساتذة وروضات",
-    descEn: "Academies, institutes, courses, professors and kindergartens",
+    labelKey: "catEducational",
+    descriptionKey: "catEducationalDesc",
     iconName: "GraduationCap",
     entityType: "organization",
     subTypes: [
       {
         value: "academy",
-        labelAr: "أكاديميات",
-        descriptionAr: "أكاديمية تعليمية أو تدريبية",
-        descriptionEn: "Educational or training academy",
+        labelKey: "subEducationalAcademy",
+        descriptionKey: "subEducationalAcademyDesc",
         iconName: "School",
         detailFields: ["ownerName"],
       },
       {
         value: "institute",
-        labelAr: "معاهد",
-        descriptionAr: "معهد تعليمي أو مهني",
-        descriptionEn: "Educational or vocational institute",
+        labelKey: "subEducationalInstitute",
+        descriptionKey: "subEducationalInstituteDesc",
         iconName: "Building",
         detailFields: ["ownerName"],
       },
       {
         value: "course",
-        labelAr: "كورسات",
-        descriptionAr: "دورة تدريبية أو كورس محدد",
-        descriptionEn: "Training course or specific class",
+        labelKey: "subEducationalCourse",
+        descriptionKey: "subEducationalCourseDesc",
         iconName: "BookOpen",
         detailFields: ["ownerName"],
       },
       {
         value: "professor",
-        labelAr: "أساتذة",
-        descriptionAr: "أستاذ جامعي أو مدرس",
-        descriptionEn: "University professor or teacher",
+        labelKey: "subEducationalProfessor",
+        descriptionKey: "subEducationalProfessorDesc",
         iconName: "UserCheck",
         detailFields: ["ownerName", "reportedPersonName", "reportedPersonPosition"],
       },
       {
         value: "university_doctor",
-        labelAr: "دكاترة جامعة",
-        descriptionAr: "دكتور جامعي أو باحث",
-        descriptionEn: "University doctor or researcher",
+        labelKey: "subEducationalUniversityDoctor",
+        descriptionKey: "subEducationalUniversityDoctorDesc",
         iconName: "GraduationCap",
         detailFields: ["ownerName", "reportedPersonName", "reportedPersonPosition"],
       },
       {
         value: "kindergarten",
-        labelAr: "روضات",
-        descriptionAr: "روضة أطفال أو حضانة",
-        descriptionEn: "Kindergarten or nursery",
+        labelKey: "subEducationalKindergarten",
+        descriptionKey: "subEducationalKindergartenDesc",
         iconName: "Baby",
         detailFields: ["ownerName"],
       },
@@ -245,114 +232,99 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
   {
     id: "service",
-    labelAr: "خدمي",
-    labelEn: "Service",
-    descAr: "تنظيف، توصيل، تجميل، صرافة، صيانة، صالات أفراح",
-    descEn: "Cleaning, delivery, beauty, exchange, repair, wedding halls",
+    labelKey: "catService",
+    descriptionKey: "catServiceDesc",
     iconName: "Wrench",
     entityType: "organization",
     subTypes: [
       {
         value: "cleaning_office",
-        labelAr: "مكاتب تنظيف",
-        descriptionAr: "شركة أو مكتب تنظيف",
-        descriptionEn: "Cleaning company or office",
+        labelKey: "subServiceCleaningOffice",
+        descriptionKey: "subServiceCleaningOfficeDesc",
         iconName: "Sparkles",
         detailFields: ["ownerName"],
       },
       {
         value: "delivery_app",
-        labelAr: "تطبيقات توصيل",
-        descriptionAr: "شركة أو تطبيق توصيل",
-        descriptionEn: "Delivery company or app",
+        labelKey: "subServiceDeliveryApp",
+        descriptionKey: "subServiceDeliveryAppDesc",
         iconName: "Truck",
         detailFields: ["ownerName"],
       },
       {
         value: "beauty_center",
-        labelAr: "مراكز تجميل",
-        descriptionAr: "مركز تجميل أو عناية",
-        descriptionEn: "Beauty or care center",
+        labelKey: "subServiceBeautyCenter",
+        descriptionKey: "subServiceBeautyCenterDesc",
         iconName: "Scissors",
         detailFields: ["ownerName"],
       },
       {
         value: "massage",
-        labelAr: "مساج",
-        descriptionAr: "مركز مساج أو سبا",
-        descriptionEn: "Massage or spa center",
+        labelKey: "subServiceMassage",
+        descriptionKey: "subServiceMassageDesc",
         iconName: "Hand",
         detailFields: ["ownerName"],
       },
       {
         value: "barber",
-        labelAr: "حلاقين",
-        descriptionAr: "صالون حلاقة",
-        descriptionEn: "Barbershop",
+        labelKey: "subServiceBarber",
+        descriptionKey: "subServiceBarberDesc",
         iconName: "Scissors",
         detailFields: ["ownerName"],
       },
       {
         value: "laundry",
-        labelAr: "مغسلة ملابس",
-        descriptionAr: "مغسلة ملابس أو تنظيف جاف",
-        descriptionEn: "Laundry or dry cleaning",
+        labelKey: "subServiceLaundry",
+        descriptionKey: "subServiceLaundryDesc",
         iconName: "Shirt",
         detailFields: ["ownerName"],
       },
       {
         value: "club",
-        labelAr: "نوادي",
-        descriptionAr: "نادي رياضي أو اجتماعي",
-        descriptionEn: "Sports or social club",
+        labelKey: "subServiceClub",
+        descriptionKey: "subServiceClubDesc",
         iconName: "Users",
         detailFields: ["ownerName"],
       },
       {
         value: "renovation",
-        labelAr: "شركات ترميم / مقاولات",
-        descriptionAr: "شركة ترميم أو مقاولات",
-        descriptionEn: "Renovation or contracting company",
+        labelKey: "subServiceRenovation",
+        descriptionKey: "subServiceRenovationDesc",
         iconName: "Hammer",
         detailFields: ["ownerName"],
       },
       {
         value: "import_export",
-        labelAr: "مكاتب / شركات استيراد شحن تصدير",
-        descriptionAr: "شركة استيراد، تصدير أو شحن",
-        descriptionEn: "Import, export or shipping company",
+        labelKey: "subServiceImportExport",
+        descriptionKey: "subServiceImportExportDesc",
         iconName: "Ship",
         detailFields: ["ownerName"],
       },
       {
         value: "exchange",
-        labelAr: "صرافة",
-        descriptionAr: "محل صرافة أو تحويل أموال",
-        descriptionEn: "Exchange or money transfer shop",
+        labelKey: "subServiceExchange",
+        descriptionKey: "subServiceExchangeDesc",
         iconName: "Banknote",
         detailFields: ["ownerName"],
       },
       {
         value: "tech_company",
-        labelAr: "شركات تقنية / محلات صيانة",
-        descriptionAr: "شركة تقنية أو محل صيانة",
-        descriptionEn: "Tech company or repair shop",
+        labelKey: "subServiceTechCompany",
+        descriptionKey: "subServiceTechCompanyDesc",
         iconName: "Cpu",
         detailFields: ["ownerName"],
       },
       {
         value: "wedding_hall",
-        labelAr: "صالات أفراح",
-        descriptionAr: "صالة أفراح أو مناسبات",
-        descriptionEn: "Wedding or event hall",
+        labelKey: "subServiceWeddingHall",
+        descriptionKey: "subServiceWeddingHallDesc",
         iconName: "PartyPopper",
         detailFields: ["ownerName"],
       },
       {
         value: "other",
-        labelAr: "غير ذلك",
-        descriptionAr: "نوع خدمي آخر غير مدرج",
-        descriptionEn: "Other service type not listed",
+        labelKey: "subServiceOther",
+        descriptionKey: "subServiceOtherDesc",
         iconName: "HelpCircle",
         detailFields: ["ownerName"],
       },
@@ -361,66 +333,57 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
   {
     id: "tourism",
-    labelAr: "سياحي",
-    labelEn: "Tourism",
-    descAr: "فنادق، مطاعم، تكاسي، مكاتب تأجير سيارات، شاليهات",
-    descEn: "Hotels, restaurants, taxis, car rentals, chalets",
+    labelKey: "catTourism",
+    descriptionKey: "catTourismDesc",
     iconName: "Plane",
     entityType: "organization",
     subTypes: [
       {
         value: "travel_company",
-        labelAr: "شركة سياحة وسفر",
-        descriptionAr: "شركة سياحة أو سفر",
-        descriptionEn: "Travel or tourism company",
+        labelKey: "subTourismTravelCompany",
+        descriptionKey: "subTourismTravelCompanyDesc",
         iconName: "Plane",
         detailFields: ["ownerName"],
       },
       {
         value: "hotel",
-        labelAr: "فنادق",
-        descriptionAr: "فندق أو نزل",
-        descriptionEn: "Hotel or lodging",
+        labelKey: "subTourismHotel",
+        descriptionKey: "subTourismHotelDesc",
         iconName: "Hotel",
         detailFields: ["ownerName"],
       },
       {
         value: "restaurant_cafe",
-        labelAr: "مطاعم / مقاهي",
-        descriptionAr: "مطعم، مقهى أو كافيتريا",
-        descriptionEn: "Restaurant, cafe or cafeteria",
+        labelKey: "subTourismRestaurantCafe",
+        descriptionKey: "subTourismRestaurantCafeDesc",
         iconName: "UtensilsCrossed",
         detailFields: ["ownerName"],
       },
       {
         value: "taxi",
-        labelAr: "تكاسي",
-        descriptionAr: "سيارة أجرة عامة أو تكسي",
-        descriptionEn: "Public taxi",
+        labelKey: "subTourismTaxi",
+        descriptionKey: "subTourismTaxiDesc",
         iconName: "Taxi",
         detailFields: ["carType", "carPlate", "driverPhone", "driverName", "taxiNumber", "appName"],
       },
       {
         value: "car_rental",
-        labelAr: "مكاتب تأجير سيارات",
-        descriptionAr: "مكتب تأجير سيارات",
-        descriptionEn: "Car rental office",
+        labelKey: "subTourismCarRental",
+        descriptionKey: "subTourismCarRentalDesc",
         iconName: "Car",
         detailFields: ["ownerName"],
       },
       {
         value: "farm_chalet",
-        labelAr: "مزارع / شاليهات / فلل",
-        descriptionAr: "مزرعة، شاليه أو فيلا للإيجار",
-        descriptionEn: "Farm, chalet or villa rental",
+        labelKey: "subTourismFarmChalet",
+        descriptionKey: "subTourismFarmChaletDesc",
         iconName: "TreePine",
         detailFields: ["ownerName"],
       },
       {
         value: "private_car",
-        labelAr: "سيارة خاصة",
-        descriptionAr: "سيارة خاصة عبر تطبيق / مكتب",
-        descriptionEn: "Private car via app or office",
+        labelKey: "subTourismPrivateCar",
+        descriptionKey: "subTourismPrivateCarDesc",
         iconName: "Car",
         detailFields: ["carType", "carPlate", "driverPhone", "driverName", "taxiNumber", "appName"],
       },
@@ -436,42 +399,36 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
   {
     id: "medical",
-    labelAr: "طبي",
-    labelEn: "Medical",
-    descAr: "صيدليات، عيادات، مستشفيات ومراكز طبية",
-    descEn: "Pharmacies, clinics, hospitals and medical centers",
+    labelKey: "catMedical",
+    descriptionKey: "catMedicalDesc",
     iconName: "Stethoscope",
     entityType: "organization",
     subTypes: [
       {
         value: "pharmacy",
-        labelAr: "صيدلية / صيدليات",
-        descriptionAr: "صيدلية أو شركة أدوية",
-        descriptionEn: "Pharmacy or drugstore",
+        labelKey: "subMedicalPharmacy",
+        descriptionKey: "subMedicalPharmacyDesc",
         iconName: "Pill",
         detailFields: ["ownerName"],
       },
       {
         value: "personal_clinic",
-        labelAr: "عيادة شخصية",
-        descriptionAr: "عيادة طبية شخصية",
-        descriptionEn: "Personal medical clinic",
+        labelKey: "subMedicalPersonalClinic",
+        descriptionKey: "subMedicalPersonalClinicDesc",
         iconName: "Stethoscope",
         detailFields: ["ownerName", "reportedPersonName", "reportedPersonPosition"],
       },
       {
         value: "private_hospital",
-        labelAr: "مستشفى خاص",
-        descriptionAr: "مستشفى أو مركز طبي خاص",
-        descriptionEn: "Private hospital or medical center",
+        labelKey: "subMedicalPrivateHospital",
+        descriptionKey: "subMedicalPrivateHospitalDesc",
         iconName: "Hospital",
         detailFields: ["ownerName"],
       },
       {
         value: "medical_center",
-        labelAr: "مركز طبي / عيادات",
-        descriptionAr: "مركز طبي أو مجمع عيادات",
-        descriptionEn: "Medical center or clinic complex",
+        labelKey: "subMedicalMedicalCenter",
+        descriptionKey: "subMedicalMedicalCenterDesc",
         iconName: "HeartPulse",
         detailFields: ["ownerName"],
       },
@@ -480,58 +437,50 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
   {
     id: "organizations",
-    labelAr: "منظمات",
-    labelEn: "Organizations",
-    descAr: "منظمات مدنية، إعلام، نقابات، نوادي طلابية",
-    descEn: "Civil society, media, unions, student clubs",
+    labelKey: "catOrganizations",
+    descriptionKey: "catOrganizationsDesc",
     iconName: "Building2",
     entityType: "organization",
     subTypes: [
       {
         value: "civil_society",
-        labelAr: "منظمات مجتمع مدني",
-        descriptionAr: "منظمة مجتمع مدني",
-        descriptionEn: "Civil society organization",
+        labelKey: "subOrganizationsCivilSociety",
+        descriptionKey: "subOrganizationsCivilSocietyDesc",
         iconName: "Users",
         detailFields: ["ownerName"],
       },
       {
         value: "social_media_company",
-        labelAr: "شركات سوشال ميديا",
-        descriptionAr: "شركة منصة تواصل اجتماعي",
-        descriptionEn: "Social media platform company",
+        labelKey: "subOrganizationsSocialMediaCompany",
+        descriptionKey: "subOrganizationsSocialMediaCompanyDesc",
         iconName: "Globe",
         detailFields: ["ownerName"],
       },
       {
         value: "media_institution",
-        labelAr: "مؤسسات أو شركات إعلامية",
-        descriptionAr: "مؤسسة إعلامية أو قناة",
-        descriptionEn: "Media institution or channel",
+        labelKey: "subOrganizationsMediaInstitution",
+        descriptionKey: "subOrganizationsMediaInstitutionDesc",
         iconName: "Radio",
         detailFields: ["ownerName"],
       },
       {
         value: "quasi_governmental",
-        labelAr: "منظمة شبه حكومية",
-        descriptionAr: "منظمة شبه حكومية أو عامة",
-        descriptionEn: "Quasi-governmental organization",
+        labelKey: "subOrganizationsQuasiGovernmental",
+        descriptionKey: "subOrganizationsQuasiGovernmentalDesc",
         iconName: "Building2",
         detailFields: ["ownerName"],
       },
       {
         value: "association",
-        labelAr: "جمعيات / نقابات",
-        descriptionAr: "جمعية، نقابة أو تجمع مهني",
-        descriptionEn: "Association, union or professional gathering",
+        labelKey: "subOrganizationsAssociation",
+        descriptionKey: "subOrganizationsAssociationDesc",
         iconName: "Handshake",
         detailFields: ["ownerName"],
       },
       {
         value: "student_club",
-        labelAr: "تجمعات نوادي طلابية / سكن جامعي",
-        descriptionAr: "نادي طلابي أو سكن جامعي",
-        descriptionEn: "Student club or university housing",
+        labelKey: "subOrganizationsStudentClub",
+        descriptionKey: "subOrganizationsStudentClubDesc",
         iconName: "UsersRound",
         detailFields: ["ownerName", "reportedPersonName", "reportedPersonPosition"],
       },
@@ -540,72 +489,96 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
   {
     id: "real_estate",
-    labelAr: "عقاري",
-    labelEn: "Real Estate",
-    descAr: "منازل، شقق، فلل، مزارع، أراضي، محلات ومكاتب",
-    descEn: "Houses, apartments, villas, farms, lands, shops and offices",
+    labelKey: "catRealEstate",
+    descriptionKey: "catRealEstateDesc",
     iconName: "Home",
     entityType: "organization",
     subTypes: [
       {
         value: "house",
-        labelAr: "منازل",
-        descriptionAr: "منزل أو بيت مستقل",
-        descriptionEn: "House or standalone home",
+        labelKey: "subRealEstateHouse",
+        descriptionKey: "subRealEstateHouseDesc",
         iconName: "Home",
         detailFields: ["ownerName", "propertyType"],
       },
       {
         value: "apartment",
-        labelAr: "شقق",
-        descriptionAr: "شقة سكنية",
-        descriptionEn: "Residential apartment",
+        labelKey: "subRealEstateApartment",
+        descriptionKey: "subRealEstateApartmentDesc",
         iconName: "Building",
         detailFields: ["ownerName", "propertyType"],
       },
       {
         value: "villa",
-        labelAr: "فلل",
-        descriptionAr: "فيلا أو منزل كبير",
-        descriptionEn: "Villa or large house",
+        labelKey: "subRealEstateVilla",
+        descriptionKey: "subRealEstateVillaDesc",
         iconName: "Castle",
         detailFields: ["ownerName", "propertyType"],
       },
       {
         value: "farm",
-        labelAr: "مزارع",
-        descriptionAr: "مزرعة أو أرض زراعية",
-        descriptionEn: "Farm or agricultural land",
+        labelKey: "subRealEstateFarm",
+        descriptionKey: "subRealEstateFarmDesc",
         iconName: "Wheat",
         detailFields: ["ownerName", "propertyType"],
       },
       {
         value: "land",
-        labelAr: "أراضي",
-        descriptionAr: "قطعة أرض",
-        descriptionEn: "Land plot",
+        labelKey: "subRealEstateLand",
+        descriptionKey: "subRealEstateLandDesc",
         iconName: "Map",
         detailFields: ["ownerName", "propertyType"],
       },
       {
         value: "shop",
-        labelAr: "محلات",
-        descriptionAr: "محل تجاري",
-        descriptionEn: "Commercial shop",
+        labelKey: "subRealEstateShop",
+        descriptionKey: "subRealEstateShopDesc",
         iconName: "Store",
         detailFields: ["ownerName", "propertyType"],
       },
       {
         value: "office",
-        labelAr: "مكاتب",
-        descriptionAr: "مكتب تجاري",
-        descriptionEn: "Commercial office",
+        labelKey: "subRealEstateOffice",
+        descriptionKey: "subRealEstateOfficeDesc",
         iconName: "Building2",
         detailFields: ["ownerName", "propertyType"],
       },
     ],
     detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.supportData],
   },
+];
+
+/** Country options for Step 2. Values are kept in Arabic to avoid breaking existing data. */
+export const COUNTRIES: ReadonlyArray<LocalizedOption> = [
+  { value: "سوريا", labelKey: "countrySyria" },
+  { value: "لبنان", labelKey: "countryLebanon" },
+  { value: "الأردن", labelKey: "countryJordan" },
+  { value: "تركيا", labelKey: "countryTurkey" },
+  { value: "العراق", labelKey: "countryIraq" },
+  { value: "ألمانيا", labelKey: "countryGermany" },
+  { value: "فرنسا", labelKey: "countryFrance" },
+  { value: "هولندا", labelKey: "countryNetherlands" },
+  { value: "السويد", labelKey: "countrySweden" },
+  { value: "المملكة المتحدة", labelKey: "countryUK" },
+  { value: "أخرى", labelKey: "countryOther" },
+];
+
+/** Syrian governorates for Step 2. Values are kept in Arabic; labels are localized. */
+export const SYRIAN_GOVERNORATES: ReadonlyArray<LocalizedOption> = [
+  { value: "دمشق", labelKey: "govDamascus" },
+  { value: "ريف دمشق", labelKey: "govRifDamascus" },
+  { value: "حلب", labelKey: "govAleppo" },
+  { value: "حمص", labelKey: "govHoms" },
+  { value: "حماة", labelKey: "govHama" },
+  { value: "اللاذقية", labelKey: "govLatakia" },
+  { value: "طرطوس", labelKey: "govTartus" },
+  { value: "دير الزور", labelKey: "govDeirEzzor" },
+  { value: "الرقة", labelKey: "govRaqqa" },
+  { value: "الحسكة", labelKey: "govHasakah" },
+  { value: "القنيطرة", labelKey: "govQuneitra" },
+  { value: "السويداء", labelKey: "govSweida" },
+  { value: "درعا", labelKey: "govDaraa" },
+  { value: "إدلب", labelKey: "govIdlib" },
 ];
 
 export const CATEGORY_BY_ID: Readonly<Record<ReportCategory, CategoryConfig>> =
@@ -625,12 +598,125 @@ export function getSubTypeConfig(categoryId: ReportCategory | string | undefined
   return cat.subTypes.find((s) => s.value === subTypeValue);
 }
 
+/** Resolves the localized label for a report category. */
+export function getCategoryLabel(t: SubmitT, category: ReportCategory | string | undefined): string {
+  const cat = getCategoryConfig(category);
+  return cat ? t(cat.labelKey) : String(category ?? "");
+}
+
+/** Resolves the localized description for a report category. */
+export function getCategoryDescription(t: SubmitT, category: ReportCategory | string | undefined): string {
+  const cat = getCategoryConfig(category);
+  return cat && cat.descriptionKey ? t(cat.descriptionKey) : "";
+}
+
+/** Resolves the localized label for a subtype. */
+export function getSubTypeLabel(t: SubmitT, categoryId: ReportCategory | string | undefined, subTypeValue: string | undefined): string {
+  const sub = getSubTypeConfig(categoryId, subTypeValue);
+  return sub ? t(sub.labelKey) : String(subTypeValue ?? "");
+}
+
+/** Resolves the localized description for a subtype. */
+export function getSubTypeDescription(t: SubmitT, categoryId: ReportCategory | string | undefined, subTypeValue: string | undefined): string {
+  const sub = getSubTypeConfig(categoryId, subTypeValue);
+  return sub && sub.descriptionKey ? t(sub.descriptionKey) : "";
+}
+
+/** Resolves the Arabic label for a subtype (used for the internal `entityRole` field). */
+export function getSubTypeLabelAr(categoryId: ReportCategory | string | undefined, subTypeValue: string | undefined): string {
+  const sub = getSubTypeConfig(categoryId, subTypeValue);
+  return sub ? arLabel(sub.labelKey) : String(subTypeValue ?? "");
+}
+
+/** Resolves the localized label for a detail flag. */
+export function getFlagLabel(t: SubmitT, flagValue: string | undefined): string {
+  const flag = Object.values(COMMON_FLAGS).find((f) => f.value === flagValue);
+  return flag ? t(flag.labelKey) : String(flagValue ?? "");
+}
+
+/** Resolves the localized label for a supporting-document option. */
+export function getDocumentLabel(t: SubmitT, docValue: string | undefined): string {
+  const doc = SUPPORTING_DOCUMENT_OPTIONS.find((d) => d.value === docValue);
+  return doc ? t(doc.labelKey) : String(docValue ?? "");
+}
+
+/** Resolves the localized label for a country option. */
+export function getCountryLabel(t: SubmitT, countryValue: string | undefined): string {
+  const country = COUNTRIES.find((c) => c.value === countryValue);
+  return country ? t(country.labelKey) : String(countryValue ?? "");
+}
+
+/** Resolves the localized label for a Syrian governorate. */
+export function getGovernorateLabel(t: SubmitT, governorateValue: string | undefined): string {
+  const gov = SYRIAN_GOVERNORATES.find((g) => g.value === governorateValue);
+  return gov ? t(gov.labelKey) : String(governorateValue ?? "");
+}
+
+/** Maps each selectable detail flag to the metadata field it surfaces and its i18n label key. */
+export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; labelKey: string }> = {
+  owner: { field: "ownerName", labelKey: "detailsOwnerName" },
+  partner: { field: "partnerName", labelKey: "detailsPartnerName" },
+  investor: { field: "investorName", labelKey: "detailsInvestorName" },
+  reception: { field: "receptionInfo", labelKey: "detailsReceptionInfo" },
+  labour: { field: "labourInfo", labelKey: "detailsLabourInfo" },
+  support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
+  club_name: { field: "clubName", labelKey: "detailsClubName" },
+  instructor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+  doctor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+  nurse: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+  student: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+};
+
+/** Canonical display order for detail fields on the review screen. */
+const DETAIL_FIELD_ORDER: DetailFieldId[] = [
+  "ownerName",
+  "partnerName",
+  "investorName",
+  "reportedPersonName",
+  "reportedPersonNickname",
+  "reportedPersonPhone",
+  "reportedPersonPosition",
+  "reportedPersonSocialMedia",
+  "carType",
+  "carPlate",
+  "driverPhone",
+  "driverName",
+  "taxiNumber",
+  "appName",
+  "propertyType",
+  "receptionInfo",
+  "labourInfo",
+  "supportDataInfo",
+  "clubName",
+];
+
+/**
+ * Returns the detail field IDs that should be shown for a given category/subtype,
+ * including any fields surfaced by selected detail flags. The result is deduplicated
+ * and ordered according to DETAIL_FIELD_ORDER.
+ */
+export function getRelevantDetailFieldIds(
+  categoryId: ReportCategory | string | undefined,
+  orgType: string | undefined,
+  detailFlags: string[] | undefined,
+): DetailFieldId[] {
+  const subTypeConfig = getSubTypeConfig(categoryId, orgType);
+  const relevant = new Set<DetailFieldId>(subTypeConfig?.detailFields ?? []);
+  for (const flag of detailFlags ?? []) {
+    const mapping = DETAIL_FLAG_FIELDS[flag];
+    if (mapping) {
+      relevant.add(mapping.field as DetailFieldId);
+    }
+  }
+  return DETAIL_FIELD_ORDER.filter((id) => relevant.has(id));
+}
+
 /** Default supporting-document checkbox options for Step 5 (تجربتك). */
-export const SUPPORTING_DOCUMENT_OPTIONS: ReadonlyArray<CategoryOption> = [
-  { value: "photos", labelAr: "صور", iconName: "Image" },
-  { value: "videos", labelAr: "فيديو", iconName: "Video" },
-  { value: "audio", labelAr: "تسجيلات صوتية", iconName: "Mic" },
-  { value: "documents", labelAr: "وثائق رسمية", iconName: "FileText" },
-  { value: "screenshots", labelAr: "لقطات شاشة", iconName: "Monitor" },
-  { value: "other", labelAr: "أخرى", iconName: "FileQuestion" },
+export const SUPPORTING_DOCUMENT_OPTIONS: ReadonlyArray<LocalizedOption> = [
+  { value: "photos", labelKey: "docPhotos", iconName: "Image" },
+  { value: "videos", labelKey: "docVideos", iconName: "Video" },
+  { value: "audio", labelKey: "docAudio", iconName: "Mic" },
+  { value: "documents", labelKey: "docDocuments", iconName: "FileText" },
+  { value: "screenshots", labelKey: "docScreenshots", iconName: "Monitor" },
+  { value: "other", labelKey: "docOther", iconName: "FileQuestion" },
 ];

@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { TIER_LABELS } from "@/lib/labels";
-import { getCategoryConfig, getSubTypeConfig, SUPPORTING_DOCUMENT_OPTIONS } from "@/lib/wizard/category-config";
+import {
+  getCategoryConfig,
+  getSubTypeConfig,
+  getCategoryLabel,
+  getSubTypeLabel,
+  getDocumentLabel,
+} from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
 
 interface SourceLink {
@@ -136,15 +142,92 @@ function displayValue(value: unknown): string {
   return String(value);
 }
 
-function formatLabels(values: string[], options: ReadonlyArray<{ value: string; labelAr: string; labelEn?: string }>, locale: string): string {
+function formatLabels(
+  values: string[],
+  t: (key: string) => string,
+  locale: string,
+): string {
   if (!values || values.length === 0) return "—";
   return values
-    .map((v) => {
-      const opt = options.find((o) => o.value === v);
-      const label = locale === "ar" ? opt?.labelAr : opt?.labelEn ?? opt?.labelAr;
-      return label ?? v;
-    })
-    .join("، ");
+    .map((v) => getDocumentLabel(t, v))
+    .join(locale === "ar" ? "، " : ", ");
+}
+
+function renderIcon(name: string | undefined, size?: number) {
+  const Icon = getIconByName(name);
+  return Icon ? createElement(Icon, { size }) : null;
+}
+
+function resolveCategoryLabel(sub: Submission, t: (key: string) => string) {
+  const cat = getCategoryConfig(sub.reportCategory ?? undefined);
+  if (!cat) return displayValue(sub.reportCategory);
+  return getCategoryLabel(t, cat.id);
+}
+
+function resolveSubTypeLabel(sub: Submission, t: (key: string) => string) {
+  const meta = sub.reportMetadata ?? {};
+  if (!meta.orgType) return displayValue(meta.orgType);
+  const label = getSubTypeLabel(t, sub.reportCategory ?? undefined, meta.orgType);
+  if (meta.orgType === "other" && meta.orgSubTypeOther) {
+    return `${label} — ${meta.orgSubTypeOther}`;
+  }
+  return label;
+}
+
+function MetadataRow({ label, value, link }: { label: string; value: unknown; link?: boolean }) {
+  const text = displayValue(value);
+  return (
+    <div className="meta-row">
+      <span className="meta-label">{label}</span>
+      {link && text !== "—" ? (
+        <a className="meta-value" href={String(value)} target="_blank" rel="noreferrer">{text}</a>
+      ) : (
+        <span className="meta-value">{text}</span>
+      )}
+    </div>
+  );
+}
+
+function SubmissionMetadata({ sub, locale, t }: { sub: Submission; locale: string; t: (key: string) => string }) {
+  const meta = sub.reportMetadata ?? {};
+  const cat = getCategoryConfig(sub.reportCategory ?? undefined);
+  const subTypeConfig = getSubTypeConfig(sub.reportCategory ?? undefined, meta.orgType);
+  const labels = locale === "ar" ? METADATA_LABELS_AR : METADATA_LABELS_EN;
+
+  return (
+    <section className="form-section mb-20">
+      <div className="form-section-title">{locale === "ar" ? "بيانات البلاغ المصنّفة" : "Categorized report data"}</div>
+
+      <div className="meta-row">
+        <span className="meta-label">{locale === "ar" ? "التصنيف" : "Category"}</span>
+        <span className="meta-value with-icon">
+          {renderIcon(cat?.iconName, 16)}
+          {resolveCategoryLabel(sub, t)}
+        </span>
+      </div>
+
+      <div className="meta-row">
+        <span className="meta-label">{locale === "ar" ? "النوع الفرعي" : "Sub-type"}</span>
+        <span className="meta-value with-icon">
+          {renderIcon(subTypeConfig?.iconName, 16)}
+          {resolveSubTypeLabel(sub, t)}
+        </span>
+      </div>
+
+      <div className="meta-row">
+        <span className="meta-label">{locale === "ar" ? "وثائق داعمة" : "Supporting documents"}</span>
+        <span className="meta-value">{formatLabels(meta.supportingDocuments ?? [], t, locale)}</span>
+      </div>
+
+      {Object.entries(labels).map(([key, label]) => {
+        const value = meta[key as keyof ReportMetadata];
+        if (key === "googleMapsLink") {
+          return <MetadataRow key={key} label={label} value={value} link />;
+        }
+        return <MetadataRow key={key} label={label} value={value} />;
+      })}
+    </section>
+  );
 }
 
 export default function ReviewerPage() {
@@ -152,6 +235,7 @@ export default function ReviewerPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Submission | null>(null);
   const t = useTranslations("reviewer");
+  const tSubmit = useTranslations("submit");
   const locale = useLocale();
 
   useEffect(() => {
@@ -163,7 +247,22 @@ export default function ReviewerPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function act(id: number, action: string, extra?: any) {
+  interface ActExtra {
+    triageConfirmedActor?: boolean | null;
+    triageConfirmedConduct?: boolean | null;
+    triageCategory?: string | null;
+    identityResolutionConfirmed?: boolean | null;
+    sourceVerification?: SourceVerification[];
+    evidenceStrength?: string | null;
+    privacyCheckPassed?: boolean | null;
+    phrasingApproved?: boolean | null;
+    privacyRechecked?: boolean | null;
+    isDeceased?: boolean | null;
+    rejectionNote?: string | null;
+    hasLawyerSignOff?: boolean;
+  }
+
+  async function act(id: number, action: string, extra?: ActExtra) {
     const res = await fetch("/api/review", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -179,7 +278,7 @@ export default function ReviewerPage() {
   }
 
   async function saveTriage(sub: Submission) {
-    const verifications = sub.sourceLinks.map((_, i) => (sub.sourceVerification?.[i] ?? { verified: false, supportsClaim: false, tier: "C", publisher: "" }));
+    const verifications = sub.sourceLinks.map((_, i) => (sub.sourceVerification?.[i] ?? { verified: false, supportsClaim: false, tier: "C" as const, publisher: "" }));
     await act(sub.id, "triage", {
       triageConfirmedActor: sub.triageConfirmedActor,
       triageConfirmedConduct: sub.triageConfirmedConduct,
@@ -206,84 +305,6 @@ export default function ReviewerPage() {
     updateSub(sub.id, { sourceVerification: updated });
   }
 
-  function resolveCategoryLabel(sub: Submission) {
-    const cat = getCategoryConfig(sub.reportCategory ?? undefined);
-    if (!cat) return displayValue(sub.reportCategory);
-    return locale === "ar" ? cat.labelAr : cat.labelEn;
-  }
-
-  function resolveSubTypeLabel(sub: Submission) {
-    const meta = sub.reportMetadata ?? {};
-    const cat = getCategoryConfig(sub.reportCategory ?? undefined);
-    const subType = getSubTypeConfig(sub.reportCategory ?? undefined, meta.orgType);
-    if (!subType) return displayValue(meta.orgType);
-    const label = locale === "ar" ? subType.labelAr : subType.labelEn ?? subType.labelAr;
-    if (meta.orgType === "other" && meta.orgSubTypeOther) {
-      return `${label} — ${meta.orgSubTypeOther}`;
-    }
-    return label;
-  }
-
-  function MetadataRow({ label, value, link }: { label: string; value: unknown; link?: boolean }) {
-    const text = displayValue(value);
-    return (
-      <div className="meta-row">
-        <span className="meta-label">{label}</span>
-        {link && text !== "—" ? (
-          <a className="meta-value" href={String(value)} target="_blank" rel="noreferrer">{text}</a>
-        ) : (
-          <span className="meta-value">{text}</span>
-        )}
-      </div>
-    );
-  }
-
-  function SubmissionMetadata({ sub }: { sub: Submission }) {
-    const meta = sub.reportMetadata ?? {};
-    const cat = getCategoryConfig(sub.reportCategory ?? undefined);
-    const subTypeConfig = getSubTypeConfig(sub.reportCategory ?? undefined, meta.orgType);
-    const CategoryIcon = getIconByName(cat?.iconName);
-    const SubTypeIcon = getIconByName(subTypeConfig?.iconName);
-    const labels = locale === "ar" ? METADATA_LABELS_AR : METADATA_LABELS_EN;
-
-    const docOptions = SUPPORTING_DOCUMENT_OPTIONS;
-
-    return (
-      <section className="form-section mb-20">
-        <div className="form-section-title">{locale === "ar" ? "بيانات البلاغ المصنّفة" : "Categorized report data"}</div>
-
-        <div className="meta-row">
-          <span className="meta-label">{locale === "ar" ? "التصنيف" : "Category"}</span>
-          <span className="meta-value with-icon">
-            {CategoryIcon ? <CategoryIcon size={16} /> : null}
-            {resolveCategoryLabel(sub)}
-          </span>
-        </div>
-
-        <div className="meta-row">
-          <span className="meta-label">{locale === "ar" ? "النوع الفرعي" : "Sub-type"}</span>
-          <span className="meta-value with-icon">
-            {SubTypeIcon ? <SubTypeIcon size={16} /> : null}
-            {resolveSubTypeLabel(sub)}
-          </span>
-        </div>
-
-        <div className="meta-row">
-          <span className="meta-label">{locale === "ar" ? "وثائق داعمة" : "Supporting documents"}</span>
-          <span className="meta-value">{formatLabels(meta.supportingDocuments ?? [], docOptions, locale)}</span>
-        </div>
-
-        {Object.entries(labels).map(([key, label]) => {
-          const value = meta[key as keyof ReportMetadata];
-          if (key === "googleMapsLink") {
-            return <MetadataRow key={key} label={label} value={value} link />;
-          }
-          return <MetadataRow key={key} label={label} value={value} />;
-        })}
-      </section>
-    );
-  }
-
   if (loading) return <p className="ds-body empty-text">{t("loading")}</p>;
 
   return (
@@ -298,14 +319,13 @@ export default function ReviewerPage() {
         <div className="reviewer-grid">
           {submissions.map((s) => {
             const cat = getCategoryConfig(s.reportCategory ?? undefined);
-            const CategoryIcon = getIconByName(cat?.iconName);
             return (
               <div key={s.id} className="reviewer-card">
                 <div className="rc-head">
                   <div>
                     <div className="rc-name">{s.entityName}</div>
                     <div className="rc-meta">
-                      {resolveSubTypeLabel(s)} · {resolveCategoryLabel(s)} · <span className="font-semibold">{s.status}</span>
+                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{s.status}</span>
                     </div>
                   </div>
                   <button className="btn primary btn-sm" onClick={() => setSelected(s)}>
@@ -314,8 +334,8 @@ export default function ReviewerPage() {
                 </div>
                 <div className="rc-desc">{s.allegationDescription}</div>
                 <div className="rc-foot">
-                  {CategoryIcon ? <CategoryIcon size={16} /> : null}
-                  <span>{resolveCategoryLabel(s)}</span>
+                  {renderIcon(cat?.iconName, 16)}
+                  <span>{resolveCategoryLabel(s, tSubmit)}</span>
                   <span className="dot" />
                   {t("sources")}: {Array.isArray(s.sourceLinks) ? s.sourceLinks.length : 0}
                 </div>
@@ -336,7 +356,7 @@ export default function ReviewerPage() {
               <button onClick={() => setSelected(null)} className="modal-close">×</button>
             </div>
 
-            <SubmissionMetadata sub={selected} />
+            <SubmissionMetadata sub={selected} locale={locale} t={tSubmit} />
 
             {/* Triage Form */}
             <section className="form-section mb-20">

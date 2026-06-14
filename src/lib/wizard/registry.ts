@@ -101,10 +101,6 @@ function indexOf(id: StepId): number {
   return STEPS.findIndex((s) => s.id === id);
 }
 
-function getStep(id: StepId): StepDef | undefined {
-  return STEPS.find((s) => s.id === id);
-}
-
 /**
  * A step is "complete" when BOTH gates pass:
  *  - the form-level `requires(form)` holds (or there is none), AND
@@ -157,14 +153,6 @@ export function firstIncompleteStep(state: WizardState): StepId {
 
 export function formSatisfiedSteps(form: WizardState["form"]): StepId[] {
   const out: StepId[] = [];
-  const skipState: WizardState = {
-    form,
-    currentStep: STEPS[0].id,
-    dirty: false,
-    visited: [],
-    completed: [],
-    entityChosen: false,
-  };
   for (const step of STEPS as readonly StepDef[]) {
     if (step.requires ? step.requires(form) : true) out.push(step.id as StepId);
   }
@@ -174,16 +162,16 @@ export function formSatisfiedSteps(form: WizardState["form"]): StepId[] {
 /* ---------- VISIBLE COUNT ---------- */
 
 /** Total visible steps (M) for progress. */
-export function visibleStepCount(_state: WizardState): number {
+export function visibleStepCount(): number {
   return STEPS.length;
 }
 
 /** 1-based position (N) of a step. */
-export function visibleStepIndex(id: StepId, _state: WizardState): number {
+export function visibleStepIndex(id: StepId): number {
   const idx = indexOf(id);
   return idx >= 0 ? idx + 1 : 0;
 }
 
-export function isCountedStep(id: StepId, _state: WizardState): boolean {
+export function isCountedStep(id: StepId): boolean {
   return STEPS.some((s) => s.id === id);
 }

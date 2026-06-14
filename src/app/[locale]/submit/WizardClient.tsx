@@ -112,7 +112,11 @@ export function WizardClient() {
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [affirmed, setAffirmed] = useState(false);
-  const [showRestore, setShowRestore] = useState(false);
+  const [showRestore, setShowRestore] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const draft = loadDraft<WizardState>();
+    return !!(draft && draft.form);
+  });
   const submittedRef = useRef(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef(state);
@@ -154,11 +158,6 @@ export function WizardClient() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
-
-  useEffect(() => {
-    const draft = loadDraft<WizardState>();
-    if (draft && draft.form) setShowRestore(true);
-  }, []);
 
   useEffect(() => {
     if (submittedRef.current) return;
@@ -299,8 +298,8 @@ export function WizardClient() {
   const stepTitle = stepDef ? t(stepDef.titleKey as never) : "";
   const hintKey = stepHintKey(state.currentStep, state.form);
   const stepHint = hintKey ? t(hintKey as never) : null;
-  const stepIndex = visibleStepIndex(state.currentStep, state);
-  const stepTotal = visibleStepCount(state);
+  const stepIndex = visibleStepIndex(state.currentStep);
+  const stepTotal = visibleStepCount();
   const isReview = state.currentStep === "review";
   const submitted = result?.ok === true;
 

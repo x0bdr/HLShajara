@@ -45,7 +45,11 @@ export function ArchiveHome({ entities, showHeader = true }: ArchiveHomeProps) {
   const toggle = (set: React.Dispatch<React.SetStateAction<Set<string>>>, val: string) => {
     set((prev) => {
       const next = new Set(prev);
-      next.has(val) ? next.delete(val) : next.add(val);
+      if (next.has(val)) {
+        next.delete(val);
+      } else {
+        next.add(val);
+      }
       return next;
     });
   };

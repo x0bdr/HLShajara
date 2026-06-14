@@ -9,10 +9,10 @@
  * `entityRole` so the legacy contract stays populated.
  */
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
-import { getCategoryConfig } from "@/lib/wizard/category-config";
+import { getCategoryConfig, getSubTypeLabel, getSubTypeDescription, getSubTypeLabelAr } from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
 import { CardSelect } from "./CardSelect";
 
@@ -23,7 +23,6 @@ interface EntityTypeNameStepProps {
 
 export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) {
   const t = useTranslations("submit");
-  const locale = useLocale();
   const meta = form.reportMetadata ?? {};
   const config = getCategoryConfig(form.reportCategory);
   const options = config?.subTypes ?? [];
@@ -58,16 +57,16 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
       dispatch({ type: "SET_METADATA", field: "orgSubTypeOther", value: "" });
     }
     clearDetailMetadata();
-    const label = options.find((o) => o.value === value)?.labelAr ?? value;
-    dispatch({ type: "SET_FIELD", field: "entityRole", value: label });
+    const labelAr = getSubTypeLabelAr(form.reportCategory, value);
+    dispatch({ type: "SET_FIELD", field: "entityRole", value: labelAr });
   }
 
   const cardOptions = options.map((opt) => {
     const Icon = getIconByName(opt.iconName);
     return {
       value: opt.value,
-      title: locale === "ar" ? opt.labelAr : opt.labelEn ?? opt.labelAr,
-      description: locale === "ar" ? opt.descriptionAr : opt.descriptionEn,
+      title: getSubTypeLabel(t, form.reportCategory, opt.value),
+      description: getSubTypeDescription(t, form.reportCategory, opt.value),
       icon: Icon ? <Icon size={22} /> : null,
     };
   });
@@ -78,7 +77,7 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
     if (cat === "commercial" && sub === "brand") return t("etnNameBrand");
     if (cat === "individuals") return t("etnNameIndividual");
     if (cat === "real_estate") return t("etnNameProperty");
-    if (cat === "tourism" && (sub === "taxi" || sub === "private_car")) return t("etnNameVehicle");
+    if (cat === "tourism" && (sub === "taxi" || sub === "private_car")) return t("etnNameVehicleOffice");
     return t("etnNameOrganization");
   }
 

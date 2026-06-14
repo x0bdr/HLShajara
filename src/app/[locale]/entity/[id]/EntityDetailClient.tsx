@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { EvidenceStrength, StatusBadge, LegalNote, SkeletonCard } from "@/components";
-import { TYPE_LABELS, STATUS_LABELS, EVIDENCE_LABELS, TIER_LABELS } from "@/lib/labels";
+import { TYPE_LABELS, EVIDENCE_LABELS, TIER_LABELS } from "@/lib/labels";
 import type { Entity, Lang } from "@/lib/types";
 
 export default function EntityDetailClient({ id }: { id: string }) {

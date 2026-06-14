@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { replies, entities } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { withAudit } from "@/db/persist";
-import { getSession, unauthorizedResponse, forbiddenResponse, require2FA } from "@/lib/session";
+import { getSession, forbiddenResponse, require2FA } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 

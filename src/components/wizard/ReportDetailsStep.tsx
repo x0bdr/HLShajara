@@ -11,10 +11,10 @@
  *  3. Subtype-driven fields (e.g. car/plate fields for taxis) when relevant.
  */
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
-import { getCategoryConfig, getSubTypeConfig, type DetailFieldId } from "@/lib/wizard/category-config";
+import { getCategoryConfig, getSubTypeConfig, getFlagLabel, type DetailFieldId, DETAIL_FLAG_FIELDS } from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
 import { CardSelect } from "./CardSelect";
 
@@ -23,22 +23,8 @@ interface ReportDetailsStepProps {
   dispatch: React.Dispatch<WizardAction>;
 }
 
-const FLAG_FIELDS: Record<
-  string,
-  { field: keyof ReportMetadata; labelKey: string }
-> = {
-  owner: { field: "ownerName", labelKey: "detailsOwnerName" },
-  partner: { field: "partnerName", labelKey: "detailsPartnerName" },
-  investor: { field: "investorName", labelKey: "detailsInvestorName" },
-  reception: { field: "receptionInfo", labelKey: "detailsReceptionInfo" },
-  labour: { field: "labourInfo", labelKey: "detailsLabourInfo" },
-  support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
-  club_name: { field: "clubName", labelKey: "detailsClubName" },
-};
-
 export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const t = useTranslations("submit");
-  const locale = useLocale();
   const meta = form.reportMetadata ?? {};
   const categoryConfig = getCategoryConfig(form.reportCategory);
   const subTypeConfig = getSubTypeConfig(form.reportCategory, meta.orgType);
@@ -61,7 +47,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
     dispatch({ type: "SET_METADATA", field: "detailFlags", value: next });
 
     if (!selected) {
-      const mapping = FLAG_FIELDS[value];
+      const mapping = DETAIL_FLAG_FIELDS[value];
       if (mapping) {
         dispatch({ type: "SET_METADATA", field: mapping.field, value: "" });
       }
@@ -72,13 +58,13 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
     const Icon = getIconByName(flag.iconName);
     return {
       value: flag.value,
-      title: locale === "ar" ? flag.labelAr : flag.labelEn ?? flag.labelAr,
+      title: getFlagLabel(t, flag.value),
       icon: Icon ? <Icon size={20} /> : null,
     };
   });
 
   const adaptiveFields = Array.from(selectedFlags)
-    .map((flag) => ({ flag, mapping: FLAG_FIELDS[flag] }))
+    .map((flag) => ({ flag, mapping: DETAIL_FLAG_FIELDS[flag] }))
     .filter(
       (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
         !!item.mapping && !visibleFields.has(item.mapping.field as DetailFieldId),

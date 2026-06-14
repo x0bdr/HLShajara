@@ -268,7 +268,7 @@ export default function PublicationsAdminClient() {
                   <select
                     className="ds-input"
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value as any })}
+                    onChange={(e) => setForm({ ...form, status: e.target.value as Post["status"] })}
                   >
                     <option value="draft">{locale === "ar" ? "مسودة" : "Draft"}</option>
                     <option value="published">{locale === "ar" ? "منشور" : "Published"}</option>

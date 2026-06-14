@@ -80,9 +80,9 @@ export async function GET(request: Request) {
 
     // Build conditions — public reads only from published projection
     const conditions = [isNotNull(entities.publishedAt)];
-    if (status) conditions.push(eq(entities.status, status as any));
-    if (type) conditions.push(eq(entities.type, type as any));
-    if (evidence) conditions.push(eq(entities.evidenceLevel, evidence as any));
+    if (status) conditions.push(eq(entities.status, status as EntityStatus));
+    if (type) conditions.push(eq(entities.type, type as EntityType));
+    if (evidence) conditions.push(eq(entities.evidenceLevel, evidence as "0" | "1" | "2" | "3" | "4"));
 
     if (q) {
       const pattern = `%${q}%`;

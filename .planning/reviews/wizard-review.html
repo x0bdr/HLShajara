@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HLShajara Submit Wizard — Full Step Review</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --critical: #ef4444;
+      --medium: #f59e0b;
+      --low: #3b82f6;
+      --border: #334155;
+      --code: #020617;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    h1, h2, h3 { color: #fff; margin-top: 2rem; }
+    h1 { border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .issue {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .issue h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+      letter-spacing: 0.03em;
+    }
+    .critical { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .medium { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .low { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .files { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0; }
+    .example {
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0;
+      font-family: "SF Mono", Monaco, monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+    .example-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .fix {
+      border-left: 3px solid var(--low);
+      padding-left: 0.75rem;
+      margin-top: 0.75rem;
+      color: #cbd5e1;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: #fff; background: rgba(255,255,255,0.03); }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    .summary-box {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+    }
+    .summary-box h3 { margin-top: 0; }
+    ul { padding-left: 1.25rem; }
+    li { margin-bottom: 0.35rem; }
+    a { color: #60a5fa; }
+  </style>
+</head>
+<body>
+
+<h1>HLShajara Submit Wizard — Full Step Review</h1>
+<p class="meta">Scope: all 8 wizard steps across all category/subtype flows.<br>Goal: eliminate duplicate fields and irrelevant data in every step.</p>
+
+<div class="summary-box">
+  <h3>Executive Summary</h3>
+  <p>The initial complaint — <em>"review page shows driver name / taxi fields for a travel company"</em> — is already fixed. The deeper review found two <strong>critical</strong> gaps and several duplication issues across the wizard:</p>
+  <ul>
+    <li><strong>Source links are never collected</strong> in the active wizard, even though the review and API expect them.</li>
+    <li><strong>Several detail flags are clickable but do nothing</strong> (name, phone, doctor, instructor, student, etc.).</li>
+    <li><strong>Duplicate data capture</strong> exists between <code>entity-type-name</code> and <code>report-details</code> for individuals and vehicle flows.</li>
+  </ul>
+</div>
+
+<h2>🚨 Critical Issues</h2>
+
+<div class="issue">
+  <h3><span class="badge critical">Critical</span> Source links (<code>sourceLinks</code>) are never collected</h3>
+  <div class="files">Files: <code>MediaEvidenceStep.tsx</code>, <code>WizardClient.tsx</code>, <code>EvidenceStep.tsx</code>, <code>rejection-map.ts</code></div>
+  <p>The active <code>media-evidence</code> step only collects a single optional <code>mediaLink</code>, file uploads, and notes. The <code>sourceLinks</code> array that the review screen renders and the API validates is never populated. A dedicated <code>EvidenceStep.tsx</code> component exists but is not rendered.</p>
+
+  <div class="example-label">What the intro promises:</div>
+  <div class="example">introRule2: "At least two independent credible public sources"</div>
+
+  <div class="example-label">What the review currently shows:</div>
+  <div class="example">Sources: — (empty because sourceLinks.length === 0)</div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Render the source-link repeater from <code>EvidenceStep.tsx</code> inside <code>MediaEvidenceStep.tsx</code> (or replace the step). Populate <code>form.sourceLinks</code> with URL, optional title, and source type.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge critical">Critical</span> Detail flags that do not map to any field</h3>
+  <div class="files">Files: <code>category-config.ts</code>, <code>ReportDetailsStep.tsx</code></div>
+  <p>Several categories expose selectable flag cards, but <code>DETAIL_FLAG_FIELDS</code> has no mapping for them. Selecting the card updates state but never reveals an input and never affects review.</p>
+
+  <table>
+    <tr><th>Category</th><th>Unmapped flags</th><th>What users see</th></tr>
+    <tr><td><code>individuals</code></td><td><code>name</code>, <code>phone</code>, <code>position</code>, <code>social</code></td><td>Cards that look active but produce no fields</td></tr>
+    <tr><td><code>educational</code></td><td><code>instructor</code></td><td>Card selected, no input shown</td></tr>
+    <tr><td><code>medical</code></td><td><code>doctor</code>, <code>nurse</code></td><td>Cards selected, no input shown</td></tr>
+    <tr><td><code>organizations</code></td><td><code>student</code></td><td>Card selected, no input shown</td></tr>
+  </table>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Either add mappings in <code>DETAIL_FLAG_FIELDS</code> (e.g., <code>name → reportedPersonName</code>) or remove the unmapped flags from each category's <code>detailFlags</code> array.</div>
+</div>
+
+<h2>⚠️ Medium Issues — Duplication & Gaps</h2>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> Individual name is collected twice</h3>
+  <div class="files">Files: <code>EntityTypeNameStep.tsx</code>, <code>ReportDetailsStep.tsx</code>, <code>category-config.ts</code></div>
+  <p>For the <code>individuals</code> category, the reported person's name is asked in step 2 (<code>entityName</code>) and again in step 4 (<code>reportedPersonName</code>).</p>
+
+  <div class="example-label">Step 2 label:</div>
+  <div class="example">etnNameIndividual: "اسم الشخص المُبلَّغ عنه"</div>
+
+  <div class="example-label">Step 4 label:</div>
+  <div class="example">detailsReportedName: "الاسم / الكنية المُبلَّغ عنه"</div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Remove <code>reportedPersonName</code> from all <code>individuals</code> subtypes' <code>detailFields</code> and rely on <code>entityName</code>. Keep <code>reportedPersonName</code> only if it is repurposed as "nickname".</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> Vehicle plate / app are collected twice</h3>
+  <div class="files">Files: <code>EntityTypeNameStep.tsx</code>, <code>ReportDetailsStep.tsx</code>, <code>category-config.ts</code></div>
+  <p>For <code>tourism &gt; taxi</code> and <code>tourism &gt; private_car</code>, step 2 asks for "plate / app name" while step 4 asks for the same identifiers separately.</p>
+
+  <div class="example-label">Step 2 label:</div>
+  <div class="example">etnNameVehicle: "رقم اللوحة / اسم التطبيق"</div>
+
+  <div class="example-label">Step 4 fields:</div>
+  <div class="example">carPlate, appName, taxiNumber, carType, driverName, driverPhone</div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Change the vehicle entity-name label to "Office / company name" and keep the granular vehicle identifiers in <code>report-details</code>.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> <code>reportedPersonNickname</code> is declared but never used</h3>
+  <div class="files">Files: <code>category-config.ts</code>, <code>ReportDetailsStep.tsx</code>, <code>ReviewStep.tsx</code>, <code>messages/*.json</code></div>
+  <p>The field exists in the type union, has Arabic/English labels, and is listed in the review mapping — but no subtype surfaces it and no input collects it. The review helper even maps its metadata key to <code>undefined</code>.</p>
+
+  <div class="example-label">ReviewStep mapping:</div>
+  <div class="example">reportedPersonNickname: undefined</div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Add a nickname input in <code>ReportDetailsStep</code> for relevant subtypes, or remove the dead field and its i18n keys.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> <code>allegationPeriod</code> is no longer collected</h3>
+  <div class="files">Files: <code>validation.ts</code>, <code>state.ts</code>, <code>ExperienceStep.tsx</code></div>
+  <p>The schema and initial state still include <code>allegationPeriod</code>, but the active <code>ExperienceStep</code> does not ask for it.</p>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Add a period input to <code>ExperienceStep</code> or remove the field from the schema/state if intentionally dropped.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> Review shows the country twice</h3>
+  <div class="files">Files: <code>ReviewStep.tsx</code>, <code>LocationInfoStep.tsx</code></div>
+  <p>The review renders a standalone <code>locCountry</code> row and then a <code>location</code> row that already starts with the same country.</p>
+
+  <div class="example-label">Current review output:</div>
+  <div class="example">
+Country: Syria<br>
+Location: Syria — Homs<br>
+Nearest point: —
+  </div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Remove the standalone <code>locCountry</code> row or merge country/city/nearest into one readable location line.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> Review does not show the media link</h3>
+  <div class="files">Files: <code>ReviewStep.tsx</code>, <code>MediaEvidenceStep.tsx</code></div>
+  <p><code>MediaEvidenceStep</code> collects <code>reportMetadata.mediaLink</code>, but the review Evidence group only renders <code>sourceLinks</code> and uploaded files.</p>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Add a review row for <code>reportMetadata.mediaLink</code> so users can verify the public media link they entered.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> Location data is hardcoded in Arabic</h3>
+  <div class="files">Files: <code>LocationInfoStep.tsx</code></div>
+  <p>The country and governorate dropdowns contain Arabic literals. In the English locale the dropdown still shows Arabic text.</p>
+
+  <div class="example-label">Example:</div>
+  <div class="example">{ value: "syria", label: "سوريا" }</div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Move country/governorate strings into <code>messages/ar.json</code> and <code>messages/en.json</code> and select by locale.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge medium">Medium</span> English labels missing for flags and options</h3>
+  <div class="files">Files: <code>category-config.ts</code>, <code>ExperienceStep.tsx</code>, <code>ReviewStep.tsx</code></div>
+  <p><code>COMMON_FLAGS</code>, <code>SUPPORTING_DOCUMENT_OPTIONS</code>, and many subtype labels only define <code>labelAr</code>. The English UI falls back to Arabic text.</p>
+
+  <div class="example-label">Example:</div>
+  <div class="example">{ value: "owner", labelAr: "المالك / الشركاء" } // no labelEn</div>
+
+  <div class="example-label">Suggested fix:</div>
+  <div class="fix">Add <code>labelEn</code> to all <code>CategoryOption</code> objects.</div>
+</div>
+
+<h2>💡 Low-Priority Polish</h2>
+
+<div class="issue">
+  <h3><span class="badge low">Low</span> Placeholder examples in contact inputs</h3>
+  <div class="files">Files: <code>AboutYouStep.tsx</code></div>
+  <p>Email placeholder is <code>name@example.com</code> and social placeholders use <code>@username</code>. These are example values, not neutral hints.</p>
+  <div class="fix">Replace with i18n keys such as <code>contactPlaceholderEmail</code> and <code>contactPlaceholderSocial</code>.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge low">Low</span> Unused legacy components</h3>
+  <div class="files">Files: <code>IdentityStep.tsx</code>, <code>DescribeStep.tsx</code>, <code>MediaStep.tsx</code>, <code>EvidenceStep.tsx</code>, <code>InputStep.tsx</code>, <code>SubmitClient.tsx</code></div>
+  <p>These components are no longer imported by the active wizard but still contain duplicate logic and labels that can drift.</p>
+  <div class="fix">Delete or move to a <code>legacy/</code> folder after confirming none are referenced.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge low">Low</span> Step-number comments are wrong</h3>
+  <div class="files">Files: <code>EntityTypeNameStep.tsx</code>, <code>LocationInfoStep.tsx</code></div>
+  <p>Comments say "Step 3" and "Step 2" but the registry order is <code>report-category → entity-type-name → location-info</code>.</p>
+  <div class="fix">Update or remove step numbers in comments.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge low">Low</span> Raw source-type slugs in review</h3>
+  <div class="files">Files: <code>ReviewStep.tsx</code></div>
+  <p>When source titles carry <code>[TYPE: court]</code> tokens, the review displays the raw slug <code>court</code> instead of the localized label.</p>
+  <div class="fix">Map the slug through existing <code>sourceType_*</code> i18n keys.</div>
+</div>
+
+<div class="issue">
+  <h3><span class="badge low">Low</span> Unused import in ReviewStep</h3>
+  <div class="files">Files: <code>ReviewStep.tsx</code></div>
+  <p><code>Button</code> is imported but not used.</p>
+  <div class="fix">Remove the import.</div>
+</div>
+
+<h2>Proposed Fix Order</h2>
+
+<table>
+  <tr><th>Batch</th><th>Issues</th><th>Why first?</th></tr>
+  <tr>
+    <td><strong>Batch 1 — Critical</strong></td>
+    <td>Source-link collection; unmapped detail flags</td>
+    <td>These break the submission contract and mislead users.</td>
+  </tr>
+  <tr>
+    <td><strong>Batch 2 — Duplication</strong></td>
+    <td>Individual name duplicate; vehicle plate/app duplicate; merge location review; add mediaLink review</td>
+    <td>Directly addresses your "no duplication" requirement.</td>
+  </tr>
+  <tr>
+    <td><strong>Batch 3 — Data gaps</strong></td>
+    <td>nickname, period, English labels, Arabic location data</td>
+    <td>Completeness and i18n quality.</td>
+  </tr>
+  <tr>
+    <td><strong>Batch 4 — Cleanup</strong></td>
+    <td>Legacy components, placeholders, comments, unused imports</td>
+    <td>Reduces maintenance surface.</td>
+  </tr>
+</table>
+
+<p class="meta" style="margin-top: 2rem;">Generated by parallel subagent review. The initial ReviewStep conditional-field fix is already committed.</p>
+
+</body>
+</html>

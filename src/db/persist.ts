@@ -7,7 +7,6 @@
  *   3. No incitement / hate tone in free-text fields
  */
 
-import type { db } from "./index";
 import { appendAuditLog } from "./audit";
 import type { userRoleEnum } from "./schema";
 import type { PersistResult } from "@/lib/screens";

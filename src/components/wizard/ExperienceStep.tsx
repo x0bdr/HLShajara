@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
 import { screenDescribeStep } from "@/lib/wizard/step-logic";
-import { SUPPORTING_DOCUMENT_OPTIONS } from "@/lib/wizard/category-config";
+import { SUPPORTING_DOCUMENT_OPTIONS, getDocumentLabel } from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
 import { CardSelect } from "./CardSelect";
 
@@ -53,7 +53,7 @@ export function ExperienceStep({ form, dispatch }: ExperienceStepProps) {
     const Icon = getIconByName(opt.iconName);
     return {
       value: opt.value,
-      title: locale === "ar" ? opt.labelAr : opt.labelEn ?? opt.labelAr,
+      title: getDocumentLabel(t, opt.value),
       icon: Icon ? <Icon size={22} /> : null,
     };
   });

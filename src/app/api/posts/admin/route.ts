@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { getSession, unauthorizedResponse, forbiddenResponse } from "@/lib/session";
+import { getSession, forbiddenResponse } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { withAudit } from "@/db/persist";
@@ -153,7 +153,7 @@ export async function PATCH(request: Request) {
     const actorId = Number(session.user.id);
     const actorRole = (session.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
-    const updateData: any = {
+    const updateData: Partial<typeof posts.$inferInsert> & { updatedAt: Date } = {
       updatedAt: new Date(),
     };
     if (slug !== undefined) updateData.slug = slug;

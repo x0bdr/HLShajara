@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { keyDecisions } from "@/db/schema";
-import { eq } from "drizzle-orm";
+
 import { getSession, forbiddenResponse, require2FA } from "@/lib/session";
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";

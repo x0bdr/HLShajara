@@ -13,6 +13,12 @@ import { useState, useEffect, type Dispatch } from "react";
 import { useTranslations } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
+import {
+  COUNTRIES,
+  SYRIAN_GOVERNORATES,
+  getCountryLabel,
+  getGovernorateLabel,
+} from "@/lib/wizard/category-config";
 import { composeLocation } from "@/lib/wizard/step-logic";
 import { screenPrivateTargeting } from "@/lib/screens";
 
@@ -20,37 +26,6 @@ interface LocationInfoStepProps {
   form: SubmitInput;
   dispatch: Dispatch<WizardAction>;
 }
-
-const COUNTRIES = [
-  { value: "سوريا", label: "سوريا" },
-  { value: "لبنان", label: "لبنان" },
-  { value: "الأردن", label: "الأردن" },
-  { value: "تركيا", label: "تركيا" },
-  { value: "العراق", label: "العراق" },
-  { value: "ألمانيا", label: "ألمانيا" },
-  { value: "فرنسا", label: "فرنسا" },
-  { value: "هولندا", label: "هولندا" },
-  { value: "السويد", label: "السويد" },
-  { value: "المملكة المتحدة", label: "المملكة المتحدة" },
-  { value: "أخرى", label: "أخرى" },
-];
-
-const SYRIAN_GOVERNORATES = [
-  "دمشق",
-  "ريف دمشق",
-  "حلب",
-  "حمص",
-  "حماة",
-  "اللاذقية",
-  "طرطوس",
-  "دير الزور",
-  "الرقة",
-  "الحسكة",
-  "القنيطرة",
-  "السويداء",
-  "درعا",
-  "إدلب",
-];
 
 const DEFAULT_COUNTRY = "سوريا";
 
@@ -130,7 +105,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
             <option value="">—</option>
             {COUNTRIES.map((c) => (
               <option key={c.value} value={c.value}>
-                {c.label}
+                {getCountryLabel(t, c.value)}
               </option>
             ))}
           </select>
@@ -148,8 +123,8 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
             >
               <option value="">—</option>
               {SYRIAN_GOVERNORATES.map((g) => (
-                <option key={g} value={g}>
-                  {g}
+                <option key={g.value} value={g.value}>
+                  {getGovernorateLabel(t, g.value)}
                 </option>
               ))}
             </select>

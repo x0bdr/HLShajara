@@ -204,7 +204,6 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
       const safe: Partial<SubmitInput> = {};
       for (const key of RESTORABLE_KEYS) {
         if (Object.prototype.hasOwnProperty.call(action.draft, key)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (safe as Record<string, unknown>)[key] = (action.draft as Record<string, unknown>)[key];
         }
       }

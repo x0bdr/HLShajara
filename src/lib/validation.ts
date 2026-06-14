@@ -9,7 +9,6 @@ import {
   entities,
   allegations,
   sources,
-  submissions,
   users,
 } from "@/db/schema";
 import { conductTypes, roleInConductTypes } from "@/lib/constants/conduct";

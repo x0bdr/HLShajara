@@ -29,7 +29,11 @@ export default function RepliesAdminClient() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function act(replyId: number, action: string, extra?: any) {
+  interface ActExtra {
+    correctionText?: string;
+  }
+
+  async function act(replyId: number, action: string, extra?: ActExtra) {
     const res = await fetch("/api/reply/admin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

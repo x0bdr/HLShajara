@@ -8,15 +8,19 @@
  */
 
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components";
-import type { SubmitInput, ReportCategory } from "@/lib/validation";
-import { getCategoryConfig, SUPPORTING_DOCUMENT_OPTIONS } from "@/lib/wizard/category-config";
+import type { SubmitInput, ReportCategory, ReportMetadata } from "@/lib/validation";
 import {
-  stripSourceType,
-  displayValue,
-} from "./review-helpers";
+  getCategoryConfig,
+  getRelevantDetailFieldIds,
+  getCategoryLabel,
+  getSubTypeLabel,
+  getDocumentLabel,
+  getCountryLabel,
+  type DetailFieldId,
+} from "@/lib/wizard/category-config";
+import { displayValue } from "./review-helpers";
 
-export { stripSourceType, displayValue } from "./review-helpers";
+export { displayValue } from "./review-helpers";
 
 export const REVIEW_GROUP_IDS = [
   "report-category",
@@ -27,6 +31,56 @@ export const REVIEW_GROUP_IDS = [
   "media-evidence",
   "about-you",
 ] as const;
+
+const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
+  ownerName: "detailsOwnerName",
+  reportedPersonName: "detailsReportedName",
+  reportedPersonNickname: "detailsReportedNickname",
+  reportedPersonPhone: "detailsReportedPhone",
+  reportedPersonPosition: "detailsReportedPosition",
+  reportedPersonSocialMedia: "detailsReportedSocial",
+  carType: "detailsCarType",
+  carPlate: "detailsCarPlate",
+  driverPhone: "detailsDriverPhone",
+  driverName: "detailsDriverName",
+  taxiNumber: "detailsTaxiNumber",
+  appName: "detailsAppName",
+  propertyType: "detailsPropertyType",
+  partnerName: "detailsPartnerName",
+  investorName: "detailsInvestorName",
+  receptionInfo: "detailsReceptionInfo",
+  labourInfo: "detailsLabourInfo",
+  supportDataInfo: "detailsSupportDataInfo",
+  clubName: "detailsClubName",
+};
+
+const DETAIL_FIELD_META_KEYS: Record<DetailFieldId, keyof ReportMetadata | undefined> = {
+  ownerName: "ownerName",
+  reportedPersonName: "reportedPersonName",
+  reportedPersonNickname: undefined,
+  reportedPersonPhone: "reportedPersonPhone",
+  reportedPersonPosition: "reportedPersonPosition",
+  reportedPersonSocialMedia: "reportedPersonSocialMedia",
+  carType: "carType",
+  carPlate: "carPlate",
+  driverPhone: "driverPhone",
+  driverName: "driverName",
+  taxiNumber: "taxiNumber",
+  appName: "appName",
+  propertyType: "propertyType",
+  partnerName: "partnerName",
+  investorName: "investorName",
+  receptionInfo: "receptionInfo",
+  labourInfo: "labourInfo",
+  supportDataInfo: "supportDataInfo",
+  clubName: "clubName",
+};
+
+function getDetailFieldValue(meta: ReportMetadata, fieldId: DetailFieldId): string | undefined {
+  const key = DETAIL_FIELD_META_KEYS[fieldId];
+  if (!key) return undefined;
+  return meta[key] as string | undefined;
+}
 
 interface ReviewStepProps {
   form: SubmitInput & { leadNote?: string };
@@ -48,18 +102,18 @@ export function ReviewStep({
   const t = useTranslations("submit");
   const locale = useLocale();
   const meta = form.reportMetadata ?? {};
+  const relevantDetailFields = getRelevantDetailFieldIds(
+    form.reportCategory,
+    meta.orgType,
+    meta.detailFlags,
+  );
   const categoryConfig = getCategoryConfig(form.reportCategory as ReportCategory);
   const categoryLabel = categoryConfig
-    ? locale === "ar"
-      ? categoryConfig.labelAr
-      : categoryConfig.labelEn
+    ? getCategoryLabel(t, categoryConfig.id)
     : displayValue(form.reportCategory);
 
-  const subType = categoryConfig?.subTypes.find((s) => s.value === meta.orgType);
-  const subTypeLabel = subType
-    ? locale === "ar"
-      ? subType.labelAr
-      : subType.labelEn ?? subType.labelAr
+  const subTypeLabel = meta.orgType
+    ? getSubTypeLabel(t, form.reportCategory, meta.orgType)
     : displayValue(meta.orgType);
 
   const submitDisabled = submitting || !affirmed;
@@ -100,7 +154,7 @@ export function ReviewStep({
         </div>
         <div className="review-row">
           <span className="k">{t("locCountry")}</span>
-          <span className="v">{displayValue(meta.country)}</span>
+          <span className="v">{meta.country ? getCountryLabel(t, meta.country) : displayValue(meta.country)}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("location")}</span>
@@ -168,78 +222,12 @@ export function ReviewStep({
             {t("reviewEdit")}
           </button>
         </div>
-        <div className="review-row">
-          <span className="k">{t("detailsOwnerName")}</span>
-          <span className="v">{displayValue(meta.ownerName)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsReportedName")}</span>
-          <span className="v">{displayValue(meta.reportedPersonName)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsReportedPhone")}</span>
-          <span className="v">{displayValue(meta.reportedPersonPhone)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsReportedPosition")}</span>
-          <span className="v">{displayValue(meta.reportedPersonPosition)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsReportedSocial")}</span>
-          <span className="v">{displayValue(meta.reportedPersonSocialMedia)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsCarType")}</span>
-          <span className="v">{displayValue(meta.carType)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsCarPlate")}</span>
-          <span className="v">{displayValue(meta.carPlate)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsDriverPhone")}</span>
-          <span className="v">{displayValue(meta.driverPhone)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsDriverName")}</span>
-          <span className="v">{displayValue(meta.driverName)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsTaxiNumber")}</span>
-          <span className="v">{displayValue(meta.taxiNumber)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsAppName")}</span>
-          <span className="v">{displayValue(meta.appName)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsPropertyType")}</span>
-          <span className="v">{displayValue(meta.propertyType)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsPartnerName")}</span>
-          <span className="v">{displayValue(meta.partnerName)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsInvestorName")}</span>
-          <span className="v">{displayValue(meta.investorName)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsReceptionInfo")}</span>
-          <span className="v">{displayValue(meta.receptionInfo)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsLabourInfo")}</span>
-          <span className="v">{displayValue(meta.labourInfo)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsSupportDataInfo")}</span>
-          <span className="v">{displayValue(meta.supportDataInfo)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("detailsClubName")}</span>
-          <span className="v">{displayValue(meta.clubName)}</span>
-        </div>
+        {relevantDetailFields.map((fieldId) => (
+          <div className="review-row" key={fieldId}>
+            <span className="k">{t(DETAIL_FIELD_LABEL_KEYS[fieldId])}</span>
+            <span className="v">{displayValue(getDetailFieldValue(meta, fieldId))}</span>
+          </div>
+        ))}
       </div>
 
       {/* Experience */}
@@ -264,15 +252,8 @@ export function ReviewStep({
             {(meta.supportingDocuments ?? []).length === 0
               ? displayValue("")
               : (meta.supportingDocuments ?? [])
-                  .map((v) => {
-                    const opt = SUPPORTING_DOCUMENT_OPTIONS.find((o) => o.value === v);
-                    return opt
-                      ? locale === "ar"
-                        ? opt.labelAr
-                        : opt.labelEn ?? opt.labelAr
-                      : v;
-                  })
-                  .join("، ")}
+                  .map((v) => getDocumentLabel(t, v))
+                  .join(locale === "ar" ? "، " : ", ")}
           </span>
         </div>
       </div>
@@ -290,31 +271,8 @@ export function ReviewStep({
           </button>
         </div>
         <div className="review-row">
-          <span className="k">
-            {t("reviewSourcesShort")}
-            <span className="filter-badge">{form.sourceLinks.length}</span>
-          </span>
-          <span className="v">
-            {form.sourceLinks.length === 0 ? (
-              displayValue("")
-            ) : (
-              <span className="review-sources flex-col">
-                {form.sourceLinks.map((row, i) => {
-                  const { type } = stripSourceType(row.title ?? "");
-                  return (
-                    <span key={i} className="flex-col">
-                      <span className="ds-mono">{row.url}</span>
-                      {type ? (
-                        <span className="ds-caption">
-                          {t("reviewSourceTypeLabel")}: {type}
-                        </span>
-                      ) : null}
-                    </span>
-                  );
-                })}
-              </span>
-            )}
-          </span>
+          <span className="k">{t("mediaLink")}</span>
+          <span className="v">{displayValue(meta.mediaLink)}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("mediaTitle")}</span>
@@ -384,14 +342,15 @@ export function ReviewStep({
         ) : null}
 
         <div className="wizard-nav flex-between mt-16">
-          <Button
-            variant="primary"
+          <button
+            type="button"
+            className="btn primary"
             disabled={submitDisabled}
             aria-disabled={submitDisabled}
             onClick={onSubmit}
           >
             {submitting ? t("submitting") : t("submitButton")}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

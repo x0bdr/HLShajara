@@ -9,10 +9,10 @@
  * Notifies the parent via `onConfirm` so choice steps can auto-advance.
  */
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { SubmitInput } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
-import { REPORT_CATEGORIES } from "@/lib/wizard/category-config";
+import { REPORT_CATEGORIES, getCategoryLabel, getCategoryDescription } from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
 import { CardSelect } from "./CardSelect";
 
@@ -24,14 +24,13 @@ interface ReportCategoryStepProps {
 
 export function ReportCategoryStep({ form, dispatch, onConfirm }: ReportCategoryStepProps) {
   const t = useTranslations("submit");
-  const locale = useLocale();
 
   const options = REPORT_CATEGORIES.map((cat) => {
     const Icon = getIconByName(cat.iconName);
     return {
       value: cat.id,
-      title: locale === "ar" ? cat.labelAr : cat.labelEn,
-      description: locale === "ar" ? cat.descAr : cat.descEn,
+      title: getCategoryLabel(t, cat.id),
+      description: getCategoryDescription(t, cat.id),
       icon: Icon ? <Icon size={24} /> : null,
     };
   });

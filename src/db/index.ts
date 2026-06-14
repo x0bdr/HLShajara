@@ -2,16 +2,18 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
+type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
 
-function getDb() {
+let _db: DrizzleDb | null = null;
+
+function getDb(): DrizzleDb | null {
   if (_db) return _db;
 
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     // During static build, return a mock db that won't be used
     if (process.env.NEXT_PHASE === "phase-production-build") {
-      return null as any;
+      return null;
     }
     throw new Error("DATABASE_URL is not set");
   }
@@ -21,10 +23,11 @@ function getDb() {
   return _db;
 }
 
-export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
+export const db = new Proxy({} as DrizzleDb, {
   get(_, prop) {
     const d = getDb();
-    return (d as any)[prop];
+    if (!d) return undefined;
+    return d[prop as keyof DrizzleDb];
   },
 });
 

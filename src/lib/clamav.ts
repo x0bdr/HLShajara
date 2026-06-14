@@ -5,7 +5,7 @@
 
 import { exec } from "child_process";
 import { promisify } from "util";
-import { createWriteStream, promises as fs } from "fs";
+import { promises as fs } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
@@ -17,17 +17,25 @@ export interface ScanResult {
   error?: string;
 }
 
+interface ExecError extends Error {
+  stdout?: string;
+}
+
+function isExecError(err: unknown): err is ExecError {
+  return err instanceof Error && "stdout" in err;
+}
+
 async function scanWithClamdscan(filePath: string): Promise<ScanResult | null> {
   try {
-    const { stdout, stderr } = await execAsync(`clamdscan --no-summary "${filePath}"`, { timeout: 30_000 });
+    const { stdout } = await execAsync(`clamdscan --no-summary "${filePath}"`, { timeout: 30_000 });
     if (stdout.includes("OK")) return { clean: true };
     if (stdout.includes("FOUND")) {
       const match = stdout.match(/: (.+) FOUND/);
       return { clean: false, virus: match?.[1] ?? "unknown" };
     }
     return null;
-  } catch (err: any) {
-    if (err.stdout?.includes("FOUND")) {
+  } catch (err) {
+    if (isExecError(err) && err.stdout?.includes("FOUND")) {
       const match = err.stdout.match(/: (.+) FOUND/);
       return { clean: false, virus: match?.[1] ?? "unknown" };
     }
@@ -44,8 +52,8 @@ async function scanWithClamscan(filePath: string): Promise<ScanResult | null> {
       return { clean: false, virus: match?.[1] ?? "unknown" };
     }
     return null;
-  } catch (err: any) {
-    if (err.stdout?.includes("FOUND")) {
+  } catch (err) {
+    if (isExecError(err) && err.stdout?.includes("FOUND")) {
       const match = err.stdout.match(/: (.+) FOUND/);
       return { clean: false, virus: match?.[1] ?? "unknown" };
     }

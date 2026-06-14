@@ -5,7 +5,7 @@ import { submissions } from "@/db/schema";
 import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
 import { triageFromConduct } from "@/lib/constants/conduct";
-import { getSession, unauthorizedResponse } from "@/lib/session";
+import { getSession } from "@/lib/session";
 import { rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -30,7 +30,6 @@ export async function POST(request: Request) {
       entityRole: data.entityRole,
       entityType: data.entityType,
       allegationDescription: data.allegationDescription,
-      sourceCount: data.sourceLinks.length,
       sourceLinks: data.sourceLinks,
     });
 

@@ -3,8 +3,9 @@
 /**
  * MediaEvidenceStep — Step 6 of the v1.5 category-based wizard.
  *
- * Collects optional public-media link, supporting file uploads (with drag-and-drop),
- * and additional notes. Sources are no longer required at intake.
+ * Collects optional media evidence only: a public-media link, supporting file
+ * uploads (with drag-and-drop), and additional notes. Source links are no longer
+ * collected at intake.
  */
 
 import { useRef, useState, type Dispatch } from "react";

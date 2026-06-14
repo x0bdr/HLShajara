@@ -38,7 +38,11 @@ export default function LoginClient() {
           return;
         }
 
-        if ((res.data as any)?.twoFactorRedirect) {
+        interface SignInData {
+          twoFactorRedirect?: boolean;
+        }
+
+        if ((res.data as SignInData | undefined)?.twoFactorRedirect) {
           setNeedsTOTP(true);
           setLoading(false);
           return;
@@ -63,7 +67,7 @@ export default function LoginClient() {
       }
 
       window.location.href = redirectTo;
-    } catch (err) {
+    } catch {
       setError(t("invalidCredentials"));
       setLoading(false);
     }
@@ -72,33 +76,34 @@ export default function LoginClient() {
   return (
     <>
       <div className="login-card">
-        <div className="page-header-center" style={{ marginBottom: 24 }}>
+        <div className="login-header">
           <div className="ds-h1">{t("title")}</div>
         </div>
 
-        {error && (
-          <div className="login-error">
-            {error}
-          </div>
-        )}
+        {error && <div className="login-error">{error}</div>}
 
         <div className="login-social">
           <button
             type="button"
             className="btn twitter"
-            onClick={() => authClient.signIn.social({ provider: "twitter", callbackURL: redirectTo })}
+            onClick={() =>
+              authClient.signIn.social({
+                provider: "twitter",
+                callbackURL: redirectTo,
+              })
+            }
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
             </svg>
-            {locale === "ar" ? "تسجيل الدخول بـ X" : "Sign in with X"}
+            {t("signInWithX")}
           </button>
           <div className="login-divider">
-            <span>{locale === "ar" ? "أو" : "OR"}</span>
+            <span>{t("or")}</span>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <form onSubmit={handleSubmit} className="login-form">
           {!needsTOTP ? (
             <>
               <div className="form-field">
@@ -113,7 +118,7 @@ export default function LoginClient() {
               </div>
               <div className="form-field">
                 <label>{t("password")}</label>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div className="login-password-row">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -124,12 +129,9 @@ export default function LoginClient() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    className="btn secondary"
-                    style={{ whiteSpace: "nowrap" }}
+                    className="btn secondary login-show-btn"
                   >
-                    {showPassword
-                      ? (locale === "ar" ? "إخفاء" : "Hide")
-                      : (locale === "ar" ? "إظهار" : "Show")}
+                    {showPassword ? t("hide") : t("show")}
                   </button>
                 </div>
               </div>
@@ -146,20 +148,16 @@ export default function LoginClient() {
                 onChange={(e) => setTotpCode(e.target.value)}
                 required
                 autoFocus
-                className="ds-input"
-                style={{ letterSpacing: 8, textAlign: "center" }}
+                className="ds-input login-totp-input"
               />
-              <p className="ds-caption" style={{ marginTop: 8, color: "var(--fg2)" }}>
-                {t("totpRequired")}
-              </p>
+              <p className="ds-caption login-totp-hint">{t("totpRequired")}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="btn primary"
-            style={{ justifyContent: "center" }}
+            className="btn primary login-submit"
           >
             {loading ? t("redirecting") : t("submit")}
           </button>

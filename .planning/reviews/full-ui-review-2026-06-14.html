@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HLShajara — Full UI Review</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --surface: #171a21;
+      --panel: #1d212b;
+      --ink: #e7e9ee;
+      --muted: #9aa3b2;
+      --line: #2a2f3a;
+      --brand: #30a46c;
+      --warn: #f5a524;
+      --crit: #e5484d;
+      --accent: #5b8def;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 80px; }
+    header.top {
+      background: linear-gradient(135deg, #11141b, #1a1f2b);
+      border-bottom: 1px solid var(--line);
+      padding: 38px 0 28px;
+      margin-bottom: 8px;
+    }
+    header.top .wrap { padding-bottom: 0; }
+    .eyebrow {
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    h1 { font-size: 30px; margin: 8px 0 6px; line-height: 1.25; }
+    .sub { color: var(--muted); font-size: 14px; }
+    h2 { font-size: 22px; margin: 44px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); color: #fff; }
+    h3 { font-size: 17px; margin: 28px 0 10px; color: #fff; }
+    h4 { font-size: 15px; margin: 20px 0 8px; color: var(--ink); }
+    p { margin: 10px 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 6px;
+      color: #cbd3e1;
+    }
+    pre {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      overflow-x: auto;
+    }
+    pre code { background: transparent; border: none; padding: 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 13.5px;
+    }
+    th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; }
+    th { background: var(--panel); color: #fff; font-weight: 600; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    ul, ol { padding-left: 1.4rem; }
+    li { margin: 6px 0; }
+    hr { border: none; border-top: 1px solid var(--line); margin: 32px 0; }
+    .crit { color: var(--crit); font-weight: 600; }
+    .warn { color: var(--warn); font-weight: 600; }
+    .good { color: var(--brand); font-weight: 600; }
+    blockquote {
+      margin: 14px 0;
+      padding: 10px 16px;
+      border-left: 3px solid var(--line);
+      background: var(--panel);
+      border-radius: 0 8px 8px 0;
+      color: #cdd4df;
+    }
+    @media (max-width: 640px) {
+      h1 { font-size: 24px; }
+      h2 { font-size: 19px; }
+      table { font-size: 12px; }
+      th, td { padding: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="eyebrow">HLShajara · لستَ شجرة</div>
+      <h1>Full UI Review</h1>
+      <div class="sub">Generated 2026-06-14 · Build passes · Lint has 73 errors</div>
+    </div>
+  </header>
+  <main class="wrap">
+    <h1 id="hlshajara-full-ui-review">HLShajara — Full UI Review</h1>
+<p><strong>Date:</strong> 2026-06-14<br />
+<strong>Scope:</strong> entire public UI, design-system implementation, and the active <code>/submit</code> wizard<br />
+<strong>Against:</strong> <code>DESIGN ASSETS/</code> design system, <code>.planning/UI-SPEC.md</code> v1.5 wizard contract, original <code>HLShajara-UI-Audit-v1.2-Plan.pdf</code><br />
+<strong>Build status:</strong> <code>next build</code> passes, <code>tsc --noEmit</code> passes, i18n parity passes, wizard a11y/step-logic checks pass<br />
+<strong>Lint status:</strong> 73 errors / 32 warnings (see §7)</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The v1.2 frontend-polish milestone has largely landed: every public page now uses <code>PageShell</code>, the dashboard is token-driven, archive cards are clickable, pagination/skeletons/error states exist, and the bilingual shell is mechanically sound. If scored with the original six-pillar rubric, the product would now land in the <strong>21–23 / 24</strong> range, up from 16/24.</p>
+<p>The active wizard (<code>/submit</code>) is the <strong>v1.5 category-based flow</strong> documented in <code>.planning/UI-SPEC.md</code>. It intentionally shifts public-source collection to the reviewer console and allows optional contact/identifier metadata to aid reviewer follow-up. The remaining ship-level gap is <strong>incomplete English localization of config-driven wizard labels</strong>; in the EN locale users still see Arabic category/subtype/flag/location strings, which breaks the bilingual promise.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Grade</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Visual consistency / design tokens</td>
+<td>B+</td>
+<td>Pages are unified, but token drift and hardcoded values remain</td>
+</tr>
+<tr>
+<td>Interaction / navigation</td>
+<td>A−</td>
+<td>Shell, pagination, cards, and history all work</td>
+</tr>
+<tr>
+<td>Bilingual + RTL</td>
+<td>B</td>
+<td>Shell parity is good; wizard config labels are largely Arabic-only</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>B+</td>
+<td>Wizard passes automated checks; modals and focus need work</td>
+</tr>
+<tr>
+<td>Safety / product correctness</td>
+<td>B</td>
+<td>Wizard aligns with v1.5 spec; reviewer-side source attachment is the chosen model</td>
+</tr>
+<tr>
+<td>Code hygiene</td>
+<td>C</td>
+<td>Lint errors, dead code, undefined CSS tokens</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Highest-priority next actions:</strong>
+1. Fully localize wizard labels (categories, subtypes, flags, countries, governorates, document options) into <code>messages/*.json</code>.
+2. Delete dead code (<code>SubmitClient.tsx</code>, legacy wizard steps).
+3. Add missing CSS tokens or replace usages.
+4. Fix lint errors.
+5. Close modal focus and RTL physical-property gaps.</p>
+<hr />
+<h2 id="1-original-v12-audit-findings-current-status">1. Original v1.2 Audit Findings — Current Status</h2>
+<p>From <code>HLShajara-UI-Audit-v1.2-Plan.pdf</code> (2026-05-31, score 16/24 → target 22/24):</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Finding</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Pages without Header/Footer</td>
+<td><strong>Fixed</strong></td>
+<td>All routes now wrapped in <code>PageShell.tsx</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Dashboard rainbow colors</td>
+<td><strong>Fixed</strong></td>
+<td>Dashboard uses token-driven <code>dash-grid</code> cards</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Evidence cards not clickable</td>
+<td><strong>Fixed</strong></td>
+<td><code>ArchiveHome</code> and <code>RecordClient</code> pass <code>onOpen</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>No pagination</td>
+<td><strong>Fixed</strong></td>
+<td><code>/api/entity</code> supports page/limit; archive/record render pagination</td>
+</tr>
+<tr>
+<td>5</td>
+<td>No skeletons/error states</td>
+<td><strong>Fixed</strong></td>
+<td><code>Skeleton</code>/<code>SkeletonCard</code> used on record, entity, dashboard</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Inline styles instead of <code>.ds-*</code></td>
+<td><strong>Partial</strong></td>
+<td>Reduced, but still ~120 inline-style matches; Profile/Login worst</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Mobile filter UX</td>
+<td><strong>Fixed</strong></td>
+<td>Collapsible filter sidebar below 860 px</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Translation gaps</td>
+<td><strong>Partial</strong></td>
+<td><code>messages/*.json</code> parity passes, but config-driven wizard labels are not in messages</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-six-pillar-re-score">2. Six-Pillar Re-Score</h2>
+<table>
+<thead>
+<tr>
+<th>Pillar</th>
+<th>Score</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Copywriting</td>
+<td>3/4</td>
+<td>Message parity passes; wizard config labels and separators are not fully localized.</td>
+</tr>
+<tr>
+<td>Visuals</td>
+<td>4/4</td>
+<td>Unified shell, consistent card language, clickable cards, pagination, skeletons.</td>
+</tr>
+<tr>
+<td>Color</td>
+<td>3/4</td>
+<td>Dashboard fixed; hardcoded hex/rgba still exist in hero, Twitter button, publications.</td>
+</tr>
+<tr>
+<td>Typography</td>
+<td>3/4</td>
+<td><code>.ds-*</code> adopted widely; arbitrary px sizes and inline font styles persist.</td>
+</tr>
+<tr>
+<td>Spacing</td>
+<td>3/4</td>
+<td><code>page-container-narrow</code> consistent; many off-scale px gaps/paddings in <code>hlshajara.css</code>.</td>
+</tr>
+<tr>
+<td>Experience Design</td>
+<td>3/4</td>
+<td>Navigation and loading are solid; bilingual localization is the main remaining gap.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Estimated current score: 22–23 / 24</strong> (visual/interaction gains offset by copy/localization gaps).</p>
+<hr />
+<h2 id="3-critical-product-issues-active-wizard">3. Critical Product Issues (Active Wizard)</h2>
+<h3 id="31-english-locale-shows-arabic-labels-p0">3.1 English locale shows Arabic labels (P0)</h3>
+<ul>
+<li><code>LocationInfoStep.tsx</code> hardcodes <code>COUNTRIES</code> and <code>SYRIAN_GOVERNORATES</code> in Arabic.</li>
+<li><code>category-config.ts</code> <code>subTypes</code>, <code>COMMON_FLAGS</code>, and <code>SUPPORTING_DOCUMENT_OPTIONS</code> often have only <code>labelAr</code>.</li>
+<li><code>ReviewStep.tsx</code> joins supporting documents with an Arabic comma (<code>"، "</code>) regardless of locale.</li>
+</ul>
+<p><strong>Fix:</strong> Move all user-visible wizard labels into <code>messages/ar.json</code> + <code>messages/en.json</code>; select by locale.</p>
+<h3 id="32-duplicate-data-capture-medium">3.2 Duplicate data capture (MEDIUM)</h3>
+<ul>
+<li>Individual name is asked in <code>EntityTypeNameStep</code> (<code>entityName</code>) and again in <code>ReportDetailsStep</code> (<code>reportedPersonName</code>).</li>
+<li>Vehicle plate/app are asked in <code>EntityTypeNameStep</code> and again in <code>ReportDetailsStep</code>.</li>
+</ul>
+<p><strong>Fix:</strong> Collect identity once; keep granular identifiers only in details if needed.</p>
+<h3 id="33-review-shows-country-twice-omits-media-link-low">3.3 Review shows country twice; omits media link (LOW)</h3>
+<ul>
+<li><code>ReviewStep</code> renders a standalone <code>locCountry</code> row plus a <code>location</code> row that already includes the country.</li>
+<li><code>mediaLink</code> collected in <code>MediaEvidenceStep</code> is not shown in review.</li>
+</ul>
+<p><strong>Fix:</strong> Merge location into one row; add media link row.</p>
+<hr />
+<h2 id="4-design-system-visual-audit">4. Design-System &amp; Visual Audit</h2>
+<h3 id="41-whats-working">4.1 What's working</h3>
+<ul>
+<li><code>PageShell</code> unifies Header + Footer + main wrapper across every route.</li>
+<li><code>src/styles/tokens.css</code> is the source of truth; most components use semantic tokens (<code>--bg</code>, <code>--surface</code>, <code>--fg1</code>, <code>--brand</code>, etc.).</li>
+<li>Logical CSS properties dominate (<code>margin-inline</code>, <code>padding-inline</code>, <code>border-inline-start</code>), so RTL mirroring is largely automatic.</li>
+<li>Arabic-Indic numerals are used in wizard counters via <code>Intl.NumberFormat(..., { numberingSystem: "arab" })</code>.</li>
+</ul>
+<h3 id="42-undefined-missing-tokens">4.2 Undefined / missing tokens</h3>
+<p>These CSS custom properties are referenced but not defined in <code>src/styles/tokens.css</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Used at</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--bg2</code></td>
+<td><code>hlshajara.css:1296</code>, <code>AboutYouStep.tsx:250</code></td>
+<td>Invalid/transparent background</td>
+</tr>
+<tr>
+<td><code>--card</code></td>
+<td><code>hlshajara.css:1283</code></td>
+<td>Invalid card background</td>
+</tr>
+<tr>
+<td><code>--brass-400</code></td>
+<td><code>hlshajara.css:954</code></td>
+<td>Missing accent step</td>
+</tr>
+<tr>
+<td><code>--brick-200</code>, <code>--brick-50</code>, <code>--brick-600</code></td>
+<td><code>hlshajara.css:726,1188,1460</code>, <code>auth/error/page.tsx:38</code></td>
+<td>Missing rejection scale</td>
+</tr>
+<tr>
+<td><code>--green-300</code>, <code>--green-400</code></td>
+<td><code>hlshajara.css:1397,1459</code></td>
+<td>Missing brand scale</td>
+</tr>
+<tr>
+<td><code>--brand-50</code></td>
+<td><code>hlshajara.css:191</code></td>
+<td>Has fallback only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fix:</strong> Add the missing scale steps to <code>tokens.css</code>, or replace usages with existing tokens.</p>
+<h3 id="43-hardcoded-values-and-principle-violations">4.3 Hardcoded values and principle violations</h3>
+<p><code>src/components/hlshajara.css</code> contains hardcoded hex/rgba values and effects that violate the design system's "no gradients / no saturated UI colors" rule:</p>
+<ul>
+<li>Radial/linear gradients in <code>.hero-dramatic</code> (lines 399, 923–934).</li>
+<li>Hardcoded black/brass shadows and text shadows (lines 414, 947, 960).</li>
+<li>Pure <code>#000</code> / <code>#fff</code> Twitter/X button (line 1428–1429).</li>
+<li>One-off border colors like <code>#E4C4BD</code> (line 641).</li>
+<li>Dark-mode surface colors not in tokens (lines 983–988, 1097–1106).</li>
+</ul>
+<p><strong>Fix:</strong> Replace with token-based equivalents or document explicit exceptions.</p>
+<h3 id="44-typography-spacing-drift">4.4 Typography &amp; spacing drift</h3>
+<ul>
+<li><code>.hero-title</code> 32–36 px vs token <code>--text-xl</code> 28 px.</li>
+<li><code>.section-title</code> 28–32 px vs scale.</li>
+<li><code>.legal .t</code> letter-spacing 0.05 em vs token <code>--tracking-caps</code> 0.08 em.</li>
+<li>371 hardcoded pixel declarations for padding/gap/radius in <code>hlshajara.css</code>.</li>
+</ul>
+<p><strong>Fix:</strong> Map component sizes to <code>--text-*</code>, <code>--space-*</code>, <code>--radius-*</code>, <code>--tracking-*</code>, <code>--leading-*</code> tokens.</p>
+<h3 id="45-tailwind-v4-is-effectively-dead-code">4.5 Tailwind v4 is effectively dead code</h3>
+<ul>
+<li><code>tailwindcss@^4</code> and <code>@tailwindcss/postcss</code> are installed.</li>
+<li>There is no <code>tailwind.config.ts</code> and no <code>@theme</code> block.</li>
+<li><code>design_handoff_hlshajara/tailwind.tokens.ts</code> is not imported anywhere.</li>
+<li><code>src/app/globals.css</code> (only <code>@import "tailwindcss";</code>) is not imported by any layout.</li>
+<li>Custom CSS classes like <code>.text-fg2</code>, <code>.font-semibold</code> are defined in <code>hlshajara.css</code>, not Tailwind.</li>
+</ul>
+<p><strong>Fix:</strong> Either wire tokens into Tailwind v4 via <code>@theme</code> and adopt utility classes, or remove Tailwind dependencies and commit to the custom-CSS approach.</p>
+<h3 id="46-components-that-still-feel-stitched-together">4.6 Components that still feel "stitched together"</h3>
+<ol>
+<li><strong>Login / Profile vs. core site</strong></li>
+<li>Login uses a black Twitter/X button (<code>#000</code>) and a custom divider.</li>
+<li><code>ProfileClient.tsx</code> is almost entirely inline-styled and lacks <code>.card</code>/<code>.form-section</code> rhythm.</li>
+<li><strong>Reviewer / admin vs. public pages</strong></li>
+<li>Dense metadata tables and inline-flex layouts; no shared card language.</li>
+<li><strong>Publications vs. archive</strong></li>
+<li>Uses <code>var(--green-900)</code> titles and undefined <code>--card</code>/<code>--bg2</code>; article body styling is separate from token type scale.</li>
+<li><strong>Old vs. new submit flow</strong></li>
+<li><code>SubmitClient.tsx</code> (legacy flat form) and unused legacy steps (<code>DescribeStep</code>, <code>IdentityStep</code>, <code>InputStep</code>, <code>MediaStep</code>) remain in the tree.</li>
+</ol>
+<hr />
+<h2 id="5-accessibility">5. Accessibility</h2>
+<h3 id="51-whats-working">5.1 What's working</h3>
+<ul>
+<li>Wizard passes <code>scripts/wizard-a11y-check.js</code>:</li>
+<li><code>role="radiogroup"</code> / <code>role="radio"</code> on choice cards.</li>
+<li><code>aria-checked</code> reflects selection.</li>
+<li>Roving tabindex + Arrow/Enter/Space handling.</li>
+<li>Single <code>aria-live="polite"</code> announcer.</li>
+<li>Focus moves to step heading on step change.</li>
+<li><code>aria-current="step"</code> on active progress pill.</li>
+<li>Every form control has a label association.</li>
+<li>Errors use <code>role="alert"</code> / <code>role="status"</code> / <code>aria-describedby</code>.</li>
+</ul>
+<h3 id="52-issues">5.2 Issues</h3>
+<ul>
+<li><strong>Modals do not trap focus</strong> or return focus to the trigger (reviewer/admin triage modals).</li>
+<li><strong>Choice cards use <code>onPointerUp</code></strong> instead of <code>onClick</code>; switch/voice users may not trigger them.</li>
+<li><strong>Multi-select cards use roving tabindex</strong> (radio pattern) for checkboxes, which is non-standard.</li>
+<li><strong>Card mount focus</strong> can override the panel heading focus.</li>
+<li><strong>No Home/End key handling</strong> in choice grids.</li>
+<li><strong><code>WizardPanel.tsx</code> focus may skip the draft-restore banner</strong> on initial load.</li>
+<li><strong>No <code>loading.tsx</code> or <code>error.tsx</code></strong> route boundaries under <code>src/app/[locale]/</code>.</li>
+</ul>
+<hr />
+<h2 id="6-rtl-bilingual">6. RTL / Bilingual</h2>
+<h3 id="61-strengths">6.1 Strengths</h3>
+<ul>
+<li><code>layout.tsx</code> sets <code>&lt;html dir="rtl"&gt;</code> for Arabic.</li>
+<li>Logical properties used throughout wizard and shell.</li>
+<li>Arabic-Indic numerals in counters.</li>
+<li><code>[dir=rtl] .ds-mono { direction: ltr; text-align: right; }</code> for machine strings.</li>
+</ul>
+<h3 id="62-gaps">6.2 Gaps</h3>
+<ul>
+<li><strong>Arabic-only location lists</strong> in <code>LocationInfoStep.tsx</code>.</li>
+<li><strong>Arabic-only category/subtype/flag/document labels</strong> in <code>category-config.ts</code>.</li>
+<li><strong>Hardcoded Arabic comma</strong> in <code>ReviewStep.tsx</code> supporting-document list.</li>
+<li><strong>Back chevron uses <code>U+2039</code></strong>; bidi mirroring is not guaranteed across browsers.</li>
+<li><strong>Publications blockquote/list</strong> use physical <code>border-right</code> / <code>margin-left</code> (lines 1393, 1396 of <code>hlshajara.css</code>).</li>
+<li><strong>Placeholders</strong> (<code>name@example.com</code>, <code>@username</code>) are LTR English inside an Arabic UI.</li>
+</ul>
+<hr />
+<h2 id="7-code-hygiene">7. Code Hygiene</h2>
+<ul>
+<li><strong>Lint:</strong> <code>npm run lint</code> reports <strong>73 errors, 32 warnings</strong> (as of 2026-06-14).</li>
+<li><code>any</code> types in <code>src/lib/clamav.ts</code>, <code>src/lib/session.ts</code>.</li>
+<li>Many unused variables/imports in wizard code (<code>registry.ts</code>, <code>state.ts</code>, <code>step-logic.ts</code>, <code>validation.ts</code>).</li>
+<li><strong>Dead code:</strong></li>
+<li><code>src/app/[locale]/submit/SubmitClient.tsx</code> — no longer imported.</li>
+<li><code>src/components/wizard/DescribeStep.tsx</code>, <code>IdentityStep.tsx</code>, <code>InputStep.tsx</code>, <code>MediaStep.tsx</code> — unreferenced.</li>
+<li><strong>Unused i18n keys:</strong> <code>reviewGroupActor</code>, <code>reviewGroupConduct</code>, <code>reviewGroupDescription</code>, <code>reviewGroupEvidence</code>, <code>reviewGroupMedia</code> are translated but unused.</li>
+<li><strong>TypeScript / build:</strong> <code>tsc --noEmit</code> and <code>next build</code> both pass.</li>
+</ul>
+<hr />
+<h2 id="8-mobile-responsiveness">8. Mobile Responsiveness</h2>
+<ul>
+<li>Header nav wraps below 860 px; no hamburger menu. Usable but cramped on small screens.</li>
+<li>Archive filters collapse into a toggle sidebar — good.</li>
+<li>Record filter selects wrap; acceptable but tall.</li>
+<li>Publications grid collapses 3 → 2 → 1 column — good.</li>
+<li>Reviewer/admin modals use fixed <code>padding:28px</code> with <code>max-width:720px</code>; consume too much viewport on phones.</li>
+<li>Wizard form rows collapse to a single column on narrow screens.</li>
+</ul>
+<hr />
+<h2 id="9-recommendations-prioritized">9. Recommendations (Prioritized)</h2>
+<h3 id="p0-ship-blocking">P0 — Ship-blocking</h3>
+<ol>
+<li><strong>Fully localize wizard labels</strong> into <code>messages/*.json</code> for EN/AR parity (categories, subtypes, flags, countries, governorates, document options, separators).</li>
+</ol>
+<h3 id="p1-high-quality">P1 — High quality</h3>
+<ol>
+<li>Delete <code>SubmitClient.tsx</code> and unused legacy wizard steps.</li>
+<li>Add missing CSS tokens (<code>--bg2</code>, <code>--card</code>, <code>--brass-400</code>, <code>--brick-*</code>, <code>--green-300/400</code>) or replace usages.</li>
+<li>Replace hardcoded hero/gradient/social-button colors with tokens.</li>
+<li>Fix lint errors (<code>any</code>, unused vars/imports).</li>
+<li>Trap focus and return focus in reviewer/admin modals.</li>
+<li>Fix RTL physical properties in publications blockquote/list.</li>
+</ol>
+<h3 id="p2-polish">P2 — Polish</h3>
+<ol>
+<li>Standardize <code>ProfileClient.tsx</code> and login page on token classes.</li>
+<li>Decide Tailwind strategy: wire tokens or remove deps.</li>
+<li>Add <code>loading.tsx</code> / <code>error.tsx</code> route boundaries.</li>
+<li>Add a mobile hamburger menu for the header.</li>
+<li>Reduce hardcoded px spacing in <code>hlshajara.css</code>.</li>
+</ol>
+<hr />
+<h2 id="10-bottom-line">10. Bottom Line</h2>
+<p>HLShajara's visual shell and navigation are now coherent and largely meet the v1.2 audit target. The wizard model is now documented in <code>.planning/UI-SPEC.md</code> as the v1.5 category-based flow. The remaining ship-level task is completing English localization of config-driven wizard labels so the EN and AR experiences are equivalent. After that, the P1/P2 cleanup (dead code, tokens, lint, modal/RTL polish) will bring the codebase in line with the design system.</p>
+  </main>
+</body>
+</html>

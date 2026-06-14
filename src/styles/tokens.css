@@ -16,6 +16,8 @@
   --green-700: #264D2E;   /* ← primary brand green (the seal) */
   --green-600: #34663C;
   --green-500: #4A8052;
+  --green-400: #6A9E6E;
+  --green-300: #96BD99;
   --green-200: #BFD2C0;
   --green-100: #E2EBE2;
   --green-50:  #F0F4EF;
@@ -43,19 +45,25 @@
   --brass-700: #6E4D1C;
   --brass-600: #8A6224;
   --brass-500: #9A6B2B;   /* ← the accent */
+  --brass-400: #B3883A;
   --brass-300: #CDA86A;
   --brass-150: #ECDFC4;
   --brass-50:  #F6EFDF;
 
   /* Muted brick — corrections, rejections, takedowns. Used sparingly. */
   --brick-700: #6F2B22;
+  --brick-600: #7F3226;
   --brick-500: #8C3A2E;
+  --brick-200: #D9B8B2;
   --brick-100: #F0DED9;
+  --brick-50:  #F9F2F0;
 
   /* ============ COLOR — SEMANTIC ============ */
   --bg:            var(--paper);
+  --bg2:           var(--stone-50);
   --surface:       var(--paper-raised);
   --surface-sunk:  var(--stone-100);
+  --card:          var(--paper-raised);
   --fg1:           var(--stone-950);   /* primary text */
   --fg2:           var(--stone-600);   /* secondary text */
   --fg3:           var(--stone-400);   /* tertiary / meta */
@@ -65,7 +73,27 @@
   --brand:         var(--green-700);
   --brand-hover:   var(--green-800);
   --brand-press:   var(--green-900);
+  --brand-50:      rgba(38, 77, 46, 0.05);
   --focus-ring:    var(--brass-500);
+
+  /* Translucent utility colors used across components. Derived from the
+     palette above so dark-mode / theme changes stay coherent. */
+  --overlay:           rgba(27, 26, 22, 0.55);
+  --header-bg:         color-mix(in srgb, var(--paper) 92%, transparent);
+  --hero-glow:         color-mix(in srgb, var(--green-700) 5%, transparent);
+  --hero-seal-shadow:  color-mix(in srgb, var(--green-700) 16%, transparent);
+  --text-shadow:       color-mix(in srgb, var(--stone-950) 30%, transparent);
+  --drop-shadow:       color-mix(in srgb, var(--stone-950) 40%, transparent);
+
+  --dark-glass:        color-mix(in srgb, var(--surface) 6%, transparent);
+  --dark-glass-hover:  color-mix(in srgb, var(--surface) 10%, transparent);
+  --dark-glass-border: color-mix(in srgb, var(--surface) 12%, transparent);
+  --dark-glass-subtle: color-mix(in srgb, var(--surface) 4%, transparent);
+
+  --accent-line:       color-mix(in srgb, var(--brass-500) 20%, transparent);
+  --accent-line-strong:color-mix(in srgb, var(--brass-500) 25%, transparent);
+  --accent-glow:       color-mix(in srgb, var(--brass-500) 15%, transparent);
+  --accent-glow-strong:color-mix(in srgb, var(--brass-500) 40%, transparent);
 
   /* Evidence-strength ladder (sources.json.evidence_strength_labels).
      Neutral → brass ramp → institutional green at the strongest rung. */

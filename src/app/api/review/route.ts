@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
     /* ---------- TRIAGE ---------- */
     if (action === "triage") {
-      const updateData: any = {
+      const updateData: Partial<typeof submissions.$inferInsert> = {
         triageConfirmedActor: body.triageConfirmedActor ?? submission.triageConfirmedActor,
         triageConfirmedConduct: body.triageConfirmedConduct ?? submission.triageConfirmedConduct,
         triageCategory: body.triageCategory ?? submission.triageCategory,
@@ -238,8 +238,16 @@ export async function POST(request: Request) {
       );
 
       // Create sources from verified submission links
+      interface SourceVerification {
+        tier?: "A" | "B" | "C";
+        publisher?: string;
+        contentHash?: string;
+        snapshotUrl?: string;
+        verified?: boolean;
+      }
+
       const sourceLinks = Array.isArray(submission.sourceLinks) ? submission.sourceLinks : [];
-      const sourceVerification = (submission.sourceVerification as any[]) ?? [];
+      const sourceVerification = (submission.sourceVerification as SourceVerification[]) ?? [];
       for (let i = 0; i < sourceLinks.length; i++) {
         const link = sourceLinks[i];
         const verification = sourceVerification[i] ?? {};

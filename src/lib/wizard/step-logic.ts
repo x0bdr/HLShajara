@@ -136,7 +136,7 @@ export function requiresEntityTypeName(form: SubmitInput): boolean {
   );
 }
 
-export function requiresReportDetails(_form: SubmitInput): boolean {
+export function requiresReportDetails(): boolean {
   // Details are optional hints; any answer (including none) is acceptable.
   return true;
 }
@@ -145,11 +145,11 @@ export function requiresExperience(form: SubmitInput): boolean {
   return form.allegationDescription.trim().length >= 20;
 }
 
-export function requiresMediaEvidence(_form: SubmitInput): boolean {
+export function requiresMediaEvidence(): boolean {
   // Sources are optional at intake; this step collects optional media only.
   return true;
 }
 
-export function requiresAboutYou(_form: SubmitInput): boolean {
+export function requiresAboutYou(): boolean {
   return true;
 }

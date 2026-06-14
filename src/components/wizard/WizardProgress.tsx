@@ -54,16 +54,16 @@ export function WizardProgress({ state, onJump }: WizardProgressProps) {
 
   // M (visible total) and N (current position) come from the registry so a
   // branch-skipped step (e.g. the Individual-branch "1b") never miscounts (WIZ-04).
-  const total = visibleStepCount(state);
-  const currentN = visibleStepIndex(state.currentStep, state);
+  const total = visibleStepCount();
+  const currentN = visibleStepIndex(state.currentStep);
 
   // Only steps that count toward the visible flow get a pill; skipped branch
   // steps are excluded so the row matches the "Step N of M" denominator.
-  const visibleSteps = STEPS.filter((s) => isCountedStep(s.id, state));
+  const visibleSteps = STEPS.filter((s) => isCountedStep(s.id));
 
   function statusFor(stepId: StepId): PillStatus {
     if (stepId === state.currentStep) return "current";
-    const n = visibleStepIndex(stepId, state);
+    const n = visibleStepIndex(stepId);
     // A pill is "done" when it sits before the current step AND was visited.
     if (n > 0 && n < currentN && state.visited.includes(stepId)) return "done";
     return "upcoming";

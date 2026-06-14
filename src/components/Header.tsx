@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
@@ -11,6 +12,8 @@ export function Header() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = "main-nav";
 
   const switchLocale = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
@@ -53,12 +56,13 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="site-nav" aria-label="Main">
+        <nav id={menuId} className={`site-nav${menuOpen ? " is-open" : ""}`} aria-label="Main">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={`/${locale}${link.href}`}
               className={`site-nav-link${isActive(link.href) ? " active" : ""}`}
+              onClick={() => setMenuOpen(false)}
             >
               {link.label}
             </Link>
@@ -66,6 +70,24 @@ export function Header() {
         </nav>
 
         <div className="site-actions">
+          <button
+            type="button"
+            className="site-menu-btn"
+            aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
+            aria-expanded={menuOpen}
+            aria-controls={menuId}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            {menuOpen ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            )}
+          </button>
           <Link href={`/${locale}/submit`} className="btn primary btn-sm">
             {t("submit")}
           </Link>
