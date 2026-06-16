@@ -3,6 +3,7 @@
 import {
   Baby,
   Banknote,
+  BookOpen,
   Briefcase,
   Building,
   Building2,
@@ -64,6 +65,7 @@ import {
 const ICON_MAP: Record<string, LucideIcon> = {
   Baby,
   Banknote,
+  BookOpen,
   Briefcase,
   Building,
   Building2,
