@@ -55,6 +55,11 @@ const labourEntrySchema = z.object({
   role: z.string().max(255),
 });
 
+const academicStaffEntrySchema = z.object({
+  name: z.string().max(255),
+  role: z.string().max(255),
+});
+
 /** Category-specific metadata captured by the new wizard. */
 export const reportMetadataSchema = z.object({
   country: z.string().max(100).optional(),
@@ -101,6 +106,7 @@ export const reportMetadataSchema = z.object({
   receptionInfo: z.string().max(255).optional(),
   labourInfo: z.string().max(255).optional(),
   labourEntries: z.array(labourEntrySchema).optional(),
+  academicStaff: z.array(academicStaffEntrySchema).optional(),
   supportDataInfo: z.string().max(256).optional(),
   clubName: z.string().max(255).optional(),
   supportingDocuments: z.array(z.string().max(100)).optional(),

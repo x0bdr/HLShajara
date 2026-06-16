@@ -38,7 +38,8 @@ export type DetailFieldId =
   | "labourInfo"
   | "labourEntries"
   | "supportDataInfo"
-  | "clubName";
+  | "clubName"
+  | "academicStaff";
 
 export interface LocalizedOption {
   value: string;
@@ -706,7 +707,7 @@ export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; l
   labour: { field: "labourEntries", labelKey: "detailsLabourInfo" },
   support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
   club_name: { field: "clubName", labelKey: "detailsClubName" },
-  academic_staff: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+  academic_staff: { field: "academicStaff", labelKey: "detailsAcademicStaff" },
   instructor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
   professor: { field: "professorName", labelKey: "detailsProfessorName" },
   university_doctor: { field: "universityDoctorName", labelKey: "detailsUniversityDoctorName" },
@@ -719,6 +720,7 @@ export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; l
 const DETAIL_FIELD_ORDER: DetailFieldId[] = [
   "ownerNames",
   "investorNames",
+  "academicStaff",
   "reportedPersonName",
   "professorName",
   "universityDoctorName",

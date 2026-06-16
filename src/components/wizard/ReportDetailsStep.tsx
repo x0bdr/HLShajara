@@ -50,7 +50,8 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
         const isArray =
           mapping.field === "ownerNames" ||
           mapping.field === "investorNames" ||
-          mapping.field === "labourEntries";
+          mapping.field === "labourEntries" ||
+          mapping.field === "academicStaff";
         dispatch({ type: "SET_METADATA", field: mapping.field, value: isArray ? [] : "" });
       }
     }
@@ -74,7 +75,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
       (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
         !!item.mapping &&
         !visibleFields.has(item.mapping.field as DetailFieldId) &&
-        !["ownerNames", "investorNames", "labourEntries"].includes(item.mapping.field),
+        !["ownerNames", "investorNames", "labourEntries", "academicStaff"].includes(item.mapping.field),
     );
 
   // ---- array helpers ----
@@ -91,6 +92,11 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const labourEntries = meta.labourEntries ?? [];
   function setLabourEntries(next: { name: string; role: string }[]) {
     setDetail("labourEntries", next);
+  }
+
+  const academicStaff = meta.academicStaff ?? [];
+  function setAcademicStaff(next: { name: string; role: string }[]) {
+    setDetail("academicStaff", next);
   }
 
   return (
@@ -155,6 +161,20 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           addLabel={t("addLabour")}
           onChange={setLabourEntries}
           t={t}
+          namePlaceholder={t("labourName")}
+          rolePlaceholder={t("labourRole")}
+        />
+      )}
+
+      {selectedFlags.has("academic_staff") && (
+        <LabourArrayField
+          label={t("detailsAcademicStaff")}
+          entries={academicStaff}
+          addLabel={t("addAcademicStaff")}
+          onChange={setAcademicStaff}
+          t={t}
+          namePlaceholder={t("academicStaffName")}
+          rolePlaceholder={t("academicStaffRole")}
         />
       )}
 
@@ -395,12 +415,16 @@ function LabourArrayField({
   addLabel,
   onChange,
   t,
+  namePlaceholder,
+  rolePlaceholder,
 }: {
   label: string;
   entries: { name: string; role: string }[];
   addLabel: string;
   onChange: (next: { name: string; role: string }[]) => void;
   t: (k: string) => string;
+  namePlaceholder?: string;
+  rolePlaceholder?: string;
 }) {
   function add() {
     onChange([...entries, { name: "", role: "" }]);
@@ -424,7 +448,7 @@ function LabourArrayField({
               <input
                 type="text"
                 className="ds-input"
-                placeholder={t("labourName")}
+                placeholder={namePlaceholder ?? t("labourName")}
                 value={entry.name}
                 onChange={(e) => update(index, { name: e.target.value })}
               />
@@ -433,7 +457,7 @@ function LabourArrayField({
               <input
                 type="text"
                 className="ds-input"
-                placeholder={t("labourRole")}
+                placeholder={rolePlaceholder ?? t("labourRole")}
                 value={entry.role}
                 onChange={(e) => update(index, { role: e.target.value })}
               />

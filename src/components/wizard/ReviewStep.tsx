@@ -43,6 +43,7 @@ export const REVIEW_GROUP_IDS = [
 const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
   ownerName: "detailsOwnerName",
   ownerNames: "detailsOwnerName",
+  academicStaff: "detailsAcademicStaff",
   reportedPersonName: "detailsReportedName",
   professorName: "detailsProfessorName",
   universityDoctorName: "detailsUniversityDoctorName",
@@ -70,6 +71,7 @@ const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
 const DETAIL_FIELD_META_KEYS: Record<DetailFieldId, keyof ReportMetadata | undefined> = {
   ownerName: "ownerName",
   ownerNames: "ownerNames",
+  academicStaff: "academicStaff",
   reportedPersonName: "reportedPersonName",
   professorName: "professorName",
   universityDoctorName: "universityDoctorName",
@@ -109,6 +111,15 @@ function getDetailFieldDisplay(
   }
   if (fieldId === "labourEntries") {
     const arr = meta.labourEntries ?? [];
+    return arr.length
+      ? arr
+          .filter((e) => e.name || e.role)
+          .map((e) => (e.name && e.role ? `${e.name} (${e.role})` : e.name || e.role))
+          .join(locale === "ar" ? "، " : ", ")
+      : undefined;
+  }
+  if (fieldId === "academicStaff") {
+    const arr = meta.academicStaff ?? [];
     return arr.length
       ? arr
           .filter((e) => e.name || e.role)
