@@ -129,8 +129,10 @@ export function requiresLocationInfo(form: SubmitInput): boolean {
 }
 
 export function requiresEntityTypeName(form: SubmitInput): boolean {
+  const nameRequired = form.reportCategory !== "individuals";
+  const nameOk = !nameRequired || form.entityName.trim().length > 0;
   return (
-    form.entityName.trim().length > 0 &&
+    nameOk &&
     form.reportCategory.trim().length > 0 &&
     (form.reportMetadata?.orgType ?? "").trim().length > 0
   );

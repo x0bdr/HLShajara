@@ -75,6 +75,9 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
     clearDetailMetadata();
     const labelAr = getSubTypeLabelAr(form.reportCategory, value);
     dispatch({ type: "SET_FIELD", field: "entityRole", value: labelAr });
+    if (form.reportCategory === "individuals") {
+      dispatch({ type: "SET_FIELD", field: "entityName", value: "" });
+    }
   }
 
   const cardOptions = options.map((opt) => {
@@ -125,19 +128,21 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
         </div>
       )}
 
-      <div className="form-field">
-        <label htmlFor="etn-name">{entityNameLabel()}</label>
-        <input
-          id="etn-name"
-          type="text"
-          className="ds-input"
-          required
-          value={form.entityName}
-          onChange={(e) =>
-            dispatch({ type: "SET_FIELD", field: "entityName", value: e.target.value })
-          }
-        />
-      </div>
+      {form.reportCategory !== "individuals" && (
+        <div className="form-field">
+          <label htmlFor="etn-name">{entityNameLabel()}</label>
+          <input
+            id="etn-name"
+            type="text"
+            className="ds-input"
+            required
+            value={form.entityName}
+            onChange={(e) =>
+              dispatch({ type: "SET_FIELD", field: "entityName", value: e.target.value })
+            }
+          />
+        </div>
+      )}
     </div>
   );
 }

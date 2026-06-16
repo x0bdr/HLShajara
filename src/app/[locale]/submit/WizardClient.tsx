@@ -58,8 +58,12 @@ function hasText(v: unknown): v is string {
 }
 
 function buildSubmitPayload(form: SubmitInput): Record<string, unknown> {
+  const fallbackName =
+    form.reportCategory === "individuals" && !form.entityName.trim()
+      ? form.entityRole
+      : form.entityName;
   const payload: Record<string, unknown> = {
-    entityName: form.entityName,
+    entityName: fallbackName,
     entityType: form.entityType,
     reportCategory: form.reportCategory,
     reportMetadata: form.reportMetadata,

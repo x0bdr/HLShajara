@@ -149,7 +149,7 @@ export type InsertSource = z.infer<typeof insertSourceSchema>;
 /* ---------- SUBMISSION (public intake) ---------- */
 
 export const submitSchema = z.object({
-  entityName: z.string().min(1).max(255),
+  entityName: z.string().max(255),
   entityType: z.enum([
     "individual",
     "organization",
@@ -200,7 +200,13 @@ export const submitSchema = z.object({
   submitterEmail: z.string().email().optional().or(z.literal("")),
   submitterName: z.string().max(255).optional(),
   isAnonymous: z.boolean().default(true),
-});
+}).refine(
+  (data) => data.reportCategory === "individuals" || data.entityName.trim().length > 0,
+  {
+    message: "Entity name is required",
+    path: ["entityName"],
+  }
+);
 
 export type SubmitInput = z.infer<typeof submitSchema>;
 

@@ -269,10 +269,12 @@ export function ReviewStep({
             <span className="v">{displayValue(meta.orgSubTypeOther)}</span>
           </div>
         )}
-        <div className="review-row">
-          <span className="k">{t("etnName")}</span>
-          <span className="v">{displayValue(form.entityName)}</span>
-        </div>
+        {form.reportCategory !== "individuals" && (
+          <div className="review-row">
+            <span className="k">{t("etnName")}</span>
+            <span className="v">{displayValue(form.entityName)}</span>
+          </div>
+        )}
       </div>
 
       {/* Details */}
