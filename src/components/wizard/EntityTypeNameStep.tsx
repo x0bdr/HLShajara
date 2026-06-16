@@ -36,6 +36,8 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
     dispatch({ type: "SET_METADATA", field: "investorNames", value: [] });
     dispatch({ type: "SET_METADATA", field: "labourEntries", value: [] });
     dispatch({ type: "SET_METADATA", field: "reportedPersonName", value: "" });
+    dispatch({ type: "SET_METADATA", field: "professorName", value: "" });
+    dispatch({ type: "SET_METADATA", field: "universityDoctorName", value: "" });
     dispatch({ type: "SET_METADATA", field: "reportedPersonPhone", value: "" });
     dispatch({ type: "SET_METADATA", field: "reportedPersonPosition", value: "" });
     dispatch({ type: "SET_METADATA", field: "reportedPersonSocialMedia", value: "" });

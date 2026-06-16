@@ -17,6 +17,8 @@ export type DetailFieldId =
   | "ownerName"
   | "ownerNames"
   | "reportedPersonName"
+  | "professorName"
+  | "universityDoctorName"
   | "reportedPersonNickname"
   | "reportedPersonPhone"
   | "reportedPersonPosition"
@@ -78,6 +80,8 @@ const COMMON_FLAGS: Record<string, LocalizedOption> = {
   doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
   nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
   instructor: { value: "instructor", labelKey: "flagInstructor", iconName: "UserCheck" },
+  professor: { value: "professor", labelKey: "flagProfessor", iconName: "UserCheck" },
+  universityDoctor: { value: "university_doctor", labelKey: "flagUniversityDoctor", iconName: "GraduationCap" },
   investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
   student: { value: "student", labelKey: "flagStudent", iconName: "GraduationCap" },
   clubName: { value: "club_name", labelKey: "flagClubName", iconName: "Flag" },
@@ -217,18 +221,18 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
       {
-        value: "professor",
-        labelKey: "subEducationalProfessor",
-        descriptionKey: "subEducationalProfessorDesc",
-        iconName: "UserCheck",
-        detailFields: ["ownerNames", "reportedPersonName", "reportedPersonPosition"],
+        value: "schools",
+        labelKey: "subEducationalSchools",
+        descriptionKey: "subEducationalSchoolsDesc",
+        iconName: "School",
+        detailFields: ["ownerNames"],
       },
       {
-        value: "university_doctor",
-        labelKey: "subEducationalUniversityDoctor",
-        descriptionKey: "subEducationalUniversityDoctorDesc",
+        value: "universities",
+        labelKey: "subEducationalUniversities",
+        descriptionKey: "subEducationalUniversitiesDesc",
         iconName: "GraduationCap",
-        detailFields: ["ownerNames", "reportedPersonName", "reportedPersonPosition"],
+        detailFields: ["ownerNames"],
       },
       {
         value: "kindergarten",
@@ -238,7 +242,15 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.instructor, COMMON_FLAGS.supportData],
+    detailFlags: [
+      COMMON_FLAGS.owner,
+      COMMON_FLAGS.investor,
+      COMMON_FLAGS.labour,
+      COMMON_FLAGS.instructor,
+      COMMON_FLAGS.professor,
+      COMMON_FLAGS.universityDoctor,
+      COMMON_FLAGS.supportData,
+    ],
   },
   {
     id: "service",
@@ -655,6 +667,8 @@ export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; l
   support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
   club_name: { field: "clubName", labelKey: "detailsClubName" },
   instructor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+  professor: { field: "professorName", labelKey: "detailsProfessorName" },
+  university_doctor: { field: "universityDoctorName", labelKey: "detailsUniversityDoctorName" },
   doctor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
   nurse: { field: "reportedPersonName", labelKey: "detailsReportedName" },
   student: { field: "reportedPersonName", labelKey: "detailsReportedName" },
@@ -665,6 +679,8 @@ const DETAIL_FIELD_ORDER: DetailFieldId[] = [
   "ownerNames",
   "investorNames",
   "reportedPersonName",
+  "professorName",
+  "universityDoctorName",
   "reportedPersonNickname",
   "reportedPersonPhone",
   "reportedPersonPosition",

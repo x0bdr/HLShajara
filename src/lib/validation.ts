@@ -80,6 +80,8 @@ export const reportMetadataSchema = z.object({
   ownerName: z.string().max(255).optional(),
   ownerNames: z.array(z.string().max(255)).optional(),
   reportedPersonName: z.string().max(255).optional(),
+  professorName: z.string().max(255).optional(),
+  universityDoctorName: z.string().max(255).optional(),
   reportedPersonNickname: z.string().max(255).optional(),
   reportedPersonPhone: z.string().max(100).optional(),
   reportedPersonPosition: z.string().max(255).optional(),
