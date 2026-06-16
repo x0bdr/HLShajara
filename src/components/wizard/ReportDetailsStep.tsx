@@ -51,7 +51,9 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           mapping.field === "ownerNames" ||
           mapping.field === "investorNames" ||
           mapping.field === "labourEntries" ||
-          mapping.field === "academicStaff";
+          mapping.field === "academicStaff" ||
+          mapping.field === "doctors" ||
+          mapping.field === "nurses";
         dispatch({ type: "SET_METADATA", field: mapping.field, value: isArray ? [] : "" });
       }
     }
@@ -75,7 +77,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
       (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
         !!item.mapping &&
         !visibleFields.has(item.mapping.field as DetailFieldId) &&
-        !["ownerNames", "investorNames", "labourEntries", "academicStaff"].includes(item.mapping.field),
+        !["ownerNames", "investorNames", "labourEntries", "academicStaff", "doctors", "nurses"].includes(item.mapping.field),
     );
 
   // ---- array helpers ----
@@ -97,6 +99,16 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const academicStaff = meta.academicStaff ?? [];
   function setAcademicStaff(next: { name: string; role: string }[]) {
     setDetail("academicStaff", next);
+  }
+
+  const doctors = meta.doctors ?? [];
+  function setDoctors(next: string[]) {
+    setDetail("doctors", next);
+  }
+
+  const nurses = meta.nurses ?? [];
+  function setNurses(next: string[]) {
+    setDetail("nurses", next);
   }
 
   return (
@@ -175,6 +187,24 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           t={t}
           namePlaceholder={t("academicStaffName")}
           rolePlaceholder={t("academicStaffRole")}
+        />
+      )}
+
+      {selectedFlags.has("doctor") && (
+        <StringArrayField
+          label={t("detailsDoctors")}
+          values={doctors}
+          addLabel={t("addDoctor")}
+          onChange={setDoctors}
+        />
+      )}
+
+      {selectedFlags.has("nurse") && (
+        <StringArrayField
+          label={t("detailsNurses")}
+          values={nurses}
+          addLabel={t("addNurse")}
+          onChange={setNurses}
         />
       )}
 

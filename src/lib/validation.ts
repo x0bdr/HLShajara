@@ -107,6 +107,8 @@ export const reportMetadataSchema = z.object({
   labourInfo: z.string().max(255).optional(),
   labourEntries: z.array(labourEntrySchema).optional(),
   academicStaff: z.array(academicStaffEntrySchema).optional(),
+  doctors: z.array(z.string().max(255)).optional(),
+  nurses: z.array(z.string().max(255)).optional(),
   supportDataInfo: z.string().max(256).optional(),
   clubName: z.string().max(255).optional(),
   supportingDocuments: z.array(z.string().max(100)).optional(),

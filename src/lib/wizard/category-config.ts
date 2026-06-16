@@ -40,7 +40,9 @@ export type DetailFieldId =
   | "labourEntries"
   | "supportDataInfo"
   | "clubName"
-  | "academicStaff";
+  | "academicStaff"
+  | "doctors"
+  | "nurses";
 
 export interface LocalizedOption {
   value: string;
@@ -82,6 +84,8 @@ const COMMON_FLAGS: Record<string, LocalizedOption> = {
   labour: { value: "labour", labelKey: "flagLabour", iconName: "Users" },
   supportData: { value: "support_data", labelKey: "flagSupportData", iconName: "FileText" },
   academicStaff: { value: "academic_staff", labelKey: "flagAcademicStaff", iconName: "GraduationCap" },
+  doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
+  nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
   investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
   student: { value: "student", labelKey: "flagStudent", iconName: "GraduationCap" },
   clubName: { value: "club_name", labelKey: "flagClubName", iconName: "Flag" },
@@ -459,7 +463,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.doctor, COMMON_FLAGS.nurse, COMMON_FLAGS.supportData],
   },
   {
     id: "organizations",
@@ -745,8 +749,8 @@ export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; l
   instructor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
   professor: { field: "professorName", labelKey: "detailsProfessorName" },
   university_doctor: { field: "universityDoctorName", labelKey: "detailsUniversityDoctorName" },
-  doctor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
-  nurse: { field: "reportedPersonName", labelKey: "detailsReportedName" },
+  doctor: { field: "doctors", labelKey: "detailsDoctors" },
+  nurse: { field: "nurses", labelKey: "detailsNurses" },
   student: { field: "reportedPersonName", labelKey: "detailsReportedName" },
 };
 
@@ -755,6 +759,8 @@ const DETAIL_FIELD_ORDER: DetailFieldId[] = [
   "ownerNames",
   "investorNames",
   "academicStaff",
+  "doctors",
+  "nurses",
   "reportedPersonName",
   "professorName",
   "universityDoctorName",

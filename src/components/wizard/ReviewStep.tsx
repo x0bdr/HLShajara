@@ -44,6 +44,8 @@ const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
   ownerName: "detailsOwnerName",
   ownerNames: "detailsOwnerName",
   academicStaff: "detailsAcademicStaff",
+  doctors: "detailsDoctors",
+  nurses: "detailsNurses",
   reportedPersonName: "detailsReportedName",
   professorName: "detailsProfessorName",
   universityDoctorName: "detailsUniversityDoctorName",
@@ -72,6 +74,8 @@ const DETAIL_FIELD_META_KEYS: Record<DetailFieldId, keyof ReportMetadata | undef
   ownerName: "ownerName",
   ownerNames: "ownerNames",
   academicStaff: "academicStaff",
+  doctors: "doctors",
+  nurses: "nurses",
   reportedPersonName: "reportedPersonName",
   professorName: "professorName",
   universityDoctorName: "universityDoctorName",
@@ -107,6 +111,14 @@ function getDetailFieldDisplay(
   }
   if (fieldId === "investorNames") {
     const arr = meta.investorNames ?? [];
+    return arr.length ? arr.join(locale === "ar" ? "، " : ", ") : undefined;
+  }
+  if (fieldId === "doctors") {
+    const arr = meta.doctors ?? [];
+    return arr.length ? arr.join(locale === "ar" ? "، " : ", ") : undefined;
+  }
+  if (fieldId === "nurses") {
+    const arr = meta.nurses ?? [];
     return arr.length ? arr.join(locale === "ar" ? "، " : ", ") : undefined;
   }
   if (fieldId === "labourEntries") {
