@@ -81,8 +81,6 @@ const COMMON_FLAGS: Record<string, LocalizedOption> = {
   owner: { value: "owner", labelKey: "flagOwner", iconName: "UserCog" },
   labour: { value: "labour", labelKey: "flagLabour", iconName: "Users" },
   supportData: { value: "support_data", labelKey: "flagSupportData", iconName: "FileText" },
-  doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
-  nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
   academicStaff: { value: "academic_staff", labelKey: "flagAcademicStaff", iconName: "GraduationCap" },
   investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
   student: { value: "student", labelKey: "flagStudent", iconName: "GraduationCap" },
@@ -461,7 +459,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.doctor, COMMON_FLAGS.nurse, COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
   },
   {
     id: "organizations",
