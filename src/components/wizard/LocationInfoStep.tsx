@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import type { SubmitInput, ContactMethodType } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
-import { COUNTRIES, getCountryLabel } from "@/lib/wizard/category-config";
+import { COUNTRIES, COUNTRY_DIAL_CODES, getCountryLabel } from "@/lib/wizard/category-config";
 import { screenPrivateTargeting } from "@/lib/screens";
 import { ContactMethodPicker } from "./ContactMethodPicker";
 
@@ -52,6 +52,9 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
       dispatch({ type: "SET_METADATA", field: "country", value: DEFAULT_COUNTRY });
       dispatch({ type: "SET_FIELD", field: "allegationLocation", value: DEFAULT_COUNTRY });
     }
+    if (!meta.contactPhoneCountryCode && country) {
+      dispatch({ type: "SET_METADATA", field: "contactPhoneCountryCode", value: COUNTRY_DIAL_CODES[country] ?? "" });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -59,6 +62,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
     setCountry(value);
     dispatch({ type: "SET_METADATA", field: "country", value });
     dispatch({ type: "SET_FIELD", field: "allegationLocation", value: value || DEFAULT_COUNTRY });
+    dispatch({ type: "SET_METADATA", field: "contactPhoneCountryCode", value: COUNTRY_DIAL_CODES[value] ?? "" });
   }
 
   const [address, setAddress] = useState(meta.address ?? "");
@@ -90,6 +94,10 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   function onContactPhoneChange(value: string) {
     setContactError(value.length > 0 && !PHONE_RE.test(value));
     dispatch({ type: "SET_METADATA", field: "contactPhone", value });
+  }
+
+  function onContactPhoneCountryCodeChange(value: string) {
+    dispatch({ type: "SET_METADATA", field: "contactPhoneCountryCode", value });
   }
 
   return (
@@ -159,16 +167,42 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
 
       <div className="form-field">
         <label htmlFor="loc-contact">{t("locContact")}</label>
-        <input
-          id="loc-contact"
-          type="text"
-          inputMode="tel"
-          className="ds-input"
-          aria-invalid={contactError || undefined}
-          aria-describedby={contactError ? "loc-contact-error" : undefined}
-          value={meta.contactPhone ?? ""}
-          onChange={(e) => onContactPhoneChange(e.target.value)}
-        />
+        <div className="form-row" style={{ alignItems: "stretch", gap: 6 }}>
+          <div className="form-field" style={{ flex: "0 0 110px", minWidth: 110, marginBottom: 0 }}>
+            <select
+              id="loc-contact-code"
+              className="ds-select"
+              value={meta.contactPhoneCountryCode ?? ""}
+              style={{ height: 38, padding: "0 6px" }}
+              aria-label={t("countryCodeLabel")}
+              onChange={(e) => onContactPhoneCountryCodeChange(e.target.value)}
+            >
+              <option value="">—</option>
+              {COUNTRIES.map((c) => {
+                const code = COUNTRY_DIAL_CODES[c.value];
+                if (!code) return null;
+                return (
+                  <option key={c.value} value={code}>
+                    {getCountryLabel(t, c.value)} {code}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <div className="form-field" style={{ flex: 1, minWidth: 120, marginBottom: 0 }}>
+            <input
+              id="loc-contact"
+              type="text"
+              inputMode="tel"
+              className="ds-input"
+              style={{ height: 38 }}
+              aria-invalid={contactError || undefined}
+              aria-describedby={contactError ? "loc-contact-error" : undefined}
+              value={meta.contactPhone ?? ""}
+              onChange={(e) => onContactPhoneChange(e.target.value)}
+            />
+          </div>
+        </div>
         {contactError && (
           <p id="loc-contact-error" className="legal-error" role="alert">
             {t("locContactError")}
@@ -230,6 +264,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           methods={socialMethods}
           onChange={setSocialMethods}
           allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "website"]}
+          defaultCountryCode={COUNTRY_DIAL_CODES[country] ?? ""}
         />
       </div>
     </div>

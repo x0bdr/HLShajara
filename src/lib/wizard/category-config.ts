@@ -588,6 +588,21 @@ export const SYRIAN_GOVERNORATES: ReadonlyArray<LocalizedOption> = [
   { value: "إدلب", labelKey: "govIdlib" },
 ];
 
+/** Country dialing codes keyed by the Arabic country names used in COUNTRIES. */
+export const COUNTRY_DIAL_CODES: Readonly<Record<string, string>> = {
+  "سوريا": "+963",
+  "لبنان": "+961",
+  "الأردن": "+962",
+  "تركيا": "+90",
+  "العراق": "+964",
+  "ألمانيا": "+49",
+  "فرنسا": "+33",
+  "هولندا": "+31",
+  "السويد": "+46",
+  "المملكة المتحدة": "+44",
+  "أخرى": "",
+};
+
 export const CATEGORY_BY_ID: Readonly<Record<ReportCategory, CategoryConfig>> =
   REPORT_CATEGORIES.reduce((acc, c) => {
     acc[c.id] = c;

@@ -198,6 +198,7 @@
     "contactMethodsEmpty": "No contact methods added yet.",
     "contactMethod": "Contact method",
     "contactMethodValue": "Value",
+    "countryCodeLabel": "Country code",
     "addContactMethod": "Add contact method",
     "removeContactMethod": "Remove",
     "contactType_x": "X",

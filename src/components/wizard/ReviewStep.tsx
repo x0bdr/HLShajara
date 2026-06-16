@@ -215,7 +215,13 @@ export function ReviewStep({
         </div>
         <div className="review-row">
           <span className="k">{t("locContact")}</span>
-          <span className="v">{displayValue(meta.contactPhone)}</span>
+          <span className="v">
+            {displayValue(
+              [meta.contactPhoneCountryCode, meta.contactPhone]
+                .filter(Boolean)
+                .join(" ")
+            )}
+          </span>
         </div>
         <div className="review-row">
           <span className="k">{t("locWebsite")}</span>
@@ -380,7 +386,10 @@ export function ReviewStep({
                 {(meta.contactMethods ?? []).length === 0
                   ? displayValue("")
                   : (meta.contactMethods ?? [])
-                      .map((m) => `${t(`contactType_${m.type}`)}: ${m.value}`)
+                      .map((m) => {
+                        const prefix = m.countryCode ? `${m.countryCode} ` : "";
+                        return `${t(`contactType_${m.type}`)}: ${prefix}${m.value}`;
+                      })
                       .join(" · ")}
               </span>
             </div>

@@ -3,14 +3,17 @@
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import type { ContactMethodType } from "@/lib/validation";
+import { COUNTRIES, COUNTRY_DIAL_CODES, getCountryLabel } from "@/lib/wizard/category-config";
 
-type MethodItem = { type: ContactMethodType; value: string };
+type MethodItem = { type: ContactMethodType; value: string; countryCode?: string };
 
 interface ContactMethodPickerProps {
   methods: MethodItem[];
   disabled?: boolean;
   onChange: (next: MethodItem[]) => void;
   allowTypes?: ContactMethodType[];
+  /** Default country dial code for newly added phone/WhatsApp methods. */
+  defaultCountryCode?: string;
 }
 
 const ALL_METHODS: ContactMethodType[] = [
@@ -116,13 +119,22 @@ export function ContactMethodPicker({
   disabled = false,
   onChange,
   allowTypes = ALL_METHODS,
+  defaultCountryCode = "",
 }: ContactMethodPickerProps) {
   const t = useTranslations("submit");
   const menuRef = useRef<HTMLDetailsElement>(null);
 
+  function needsCountryCode(type: ContactMethodType): boolean {
+    return type === "phone" || type === "whatsapp";
+  }
+
   function addMethod(type: ContactMethodType) {
     if (methods.some((m) => m.type === type)) return;
-    onChange([...methods, { type, value: "" }]);
+    const item: MethodItem = { type, value: "" };
+    if (needsCountryCode(type)) {
+      item.countryCode = defaultCountryCode || "";
+    }
+    onChange([...methods, item]);
     menuRef.current?.removeAttribute("open");
   }
 
@@ -130,8 +142,8 @@ export function ContactMethodPicker({
     onChange(methods.filter((_, i) => i !== index));
   }
 
-  function updateMethod(index: number, value: string) {
-    onChange(methods.map((m, i) => (i === index ? { ...m, value } : m)));
+  function updateMethod(index: number, patch: Partial<MethodItem>) {
+    onChange(methods.map((m, i) => (i === index ? { ...m, ...patch } : m)));
   }
 
   const availableMethods = allowTypes.filter(
@@ -163,6 +175,31 @@ export function ContactMethodPicker({
             <ContactMethodIcon type={method.type} size={16} />
           </div>
 
+          {needsCountryCode(method.type) && (
+            <div className="form-field" style={{ flex: "0 0 110px", minWidth: 110, marginBottom: 0 }}>
+              <select
+                id={`contact-code-${method.type}-${index}`}
+                className="ds-select"
+                disabled={disabled}
+                value={method.countryCode ?? ""}
+                style={{ height: 38, padding: "0 6px" }}
+                aria-label={`${t("countryCodeLabel")} (${t(labelKeyFor(method.type))})`}
+                onChange={(e) => updateMethod(index, { countryCode: e.target.value })}
+              >
+                <option value="">—</option>
+                {COUNTRIES.map((c) => {
+                  const code = COUNTRY_DIAL_CODES[c.value];
+                  if (!code) return null;
+                  return (
+                    <option key={c.value} value={code}>
+                      {getCountryLabel(t, c.value)} {code}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
+
           <div className="form-field" style={{ flex: 1, minWidth: 120, marginBottom: 0 }}>
             <input
               id={`contact-value-${method.type}-${index}`}
@@ -173,7 +210,7 @@ export function ContactMethodPicker({
               style={{ height: 38, padding: "8px 10px" }}
               aria-label={`${t("contactMethodValue")} (${t(labelKeyFor(method.type))})`}
               placeholder={placeholderFor(method.type, t)}
-              onChange={(e) => updateMethod(index, e.target.value)}
+              onChange={(e) => updateMethod(index, { value: e.target.value })}
             />
           </div>
 

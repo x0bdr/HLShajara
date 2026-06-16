@@ -198,6 +198,7 @@
     "contactMethodsEmpty": "لم تُضف أي وسيلة تواصل بعد.",
     "contactMethod": "وسيلة التواصل",
     "contactMethodValue": "القيمة",
+    "countryCodeLabel": "رمز الدولة",
     "addContactMethod": "إضافة وسيلة تواصل",
     "removeContactMethod": "إزالة",
     "contactType_x": "X",

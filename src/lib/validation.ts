@@ -45,6 +45,7 @@ export type ContactMethodType = (typeof contactMethodTypes)[number];
 export const contactMethodSchema = z.object({
   type: z.enum(contactMethodTypes),
   value: z.string().max(255),
+  countryCode: z.string().max(10).optional(),
 });
 
 export type ContactMethod = z.infer<typeof contactMethodSchema>;
@@ -69,6 +70,7 @@ export const reportMetadataSchema = z.object({
       message: "Contact phone must contain only numbers",
     })
     .optional(),
+  contactPhoneCountryCode: z.string().max(10).optional(),
   websiteName: z.string().max(255).optional(),
   entityEmail: z.union([z.string().email().max(255), z.literal("")]).optional(),
   googleMapsLink: z.string().max(2048).optional(),
