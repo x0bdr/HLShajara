@@ -21,6 +21,7 @@ const ALL_METHODS: ContactMethodType[] = [
   "whatsapp",
   "tiktok",
   "phone",
+  "email",
   "website",
 ];
 
