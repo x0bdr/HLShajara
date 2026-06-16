@@ -345,6 +345,8 @@
     "subIndividualsDeliveryAppDesc": "App delivery courier",
     "subIndividualsCraftsman": "Craftsman",
     "subIndividualsCraftsmanDesc": "Painter, electrician, plumber, blacksmith, carpenter, other",
+    "subIndividualsOther": "Other",
+    "subIndividualsOtherDesc": "A person that does not match any other option",
     "subEducationalAcademy": "Academies",
     "subEducationalAcademyDesc": "Educational or training academy",
     "subEducationalInstitute": "Institutes",

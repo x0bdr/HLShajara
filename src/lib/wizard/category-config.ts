@@ -189,6 +189,13 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         iconName: "Wrench",
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
       },
+      {
+        value: "other",
+        labelKey: "subIndividualsOther",
+        descriptionKey: "subIndividualsOtherDesc",
+        iconName: "HelpCircle",
+        detailFields: ["reportedPersonName", "reportedPersonPosition"],
+      },
     ],
     detailFlags: [],
   },

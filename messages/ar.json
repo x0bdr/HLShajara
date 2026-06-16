@@ -345,6 +345,8 @@
     "subIndividualsDeliveryAppDesc": "مندوب توصيل عبر تطبيق",
     "subIndividualsCraftsman": "حِرفي",
     "subIndividualsCraftsmanDesc": "دهان، كهربائي، سباك، حداد، نجار، غير ذلك",
+    "subIndividualsOther": "غير ذلك",
+    "subIndividualsOtherDesc": "شخص لا يتناسب مع أي خيار آخر",
     "subEducationalAcademy": "أكاديميات",
     "subEducationalAcademyDesc": "أكاديمية تعليمية أو تدريبية",
     "subEducationalInstitute": "معاهد",
