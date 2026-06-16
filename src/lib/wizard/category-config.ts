@@ -190,7 +190,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.supportData],
+    detailFlags: [],
   },
   {
     id: "educational",
