@@ -12,6 +12,7 @@
 
 import type { ReportCategory, ReportMetadata } from "@/lib/validation";
 import arMessages from "../../../messages/ar.json";
+import worldCountries from "world-countries";
 
 export type DetailFieldId =
   | "ownerName"
@@ -41,9 +42,10 @@ export type DetailFieldId =
 
 export interface LocalizedOption {
   value: string;
-  labelKey: string;
+  labelKey?: string;
   descriptionKey?: string;
   iconName?: string;
+  countryCode?: string;
 }
 
 export interface SubTypeConfig extends LocalizedOption {
@@ -555,20 +557,40 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
   },
 ];
 
+function getArabicCommonName(country: (typeof worldCountries)[number]): string {
+  return country.translations.ara?.common ?? country.translations.ara?.official ?? country.name.common;
+}
+
 /** Country options for Step 2. Values are kept in Arabic to avoid breaking existing data. */
-export const COUNTRIES: ReadonlyArray<LocalizedOption> = [
-  { value: "سوريا", labelKey: "countrySyria" },
-  { value: "لبنان", labelKey: "countryLebanon" },
-  { value: "الأردن", labelKey: "countryJordan" },
-  { value: "تركيا", labelKey: "countryTurkey" },
-  { value: "العراق", labelKey: "countryIraq" },
-  { value: "ألمانيا", labelKey: "countryGermany" },
-  { value: "فرنسا", labelKey: "countryFrance" },
-  { value: "هولندا", labelKey: "countryNetherlands" },
-  { value: "السويد", labelKey: "countrySweden" },
-  { value: "المملكة المتحدة", labelKey: "countryUK" },
-  { value: "أخرى", labelKey: "countryOther" },
-];
+export const COUNTRIES: ReadonlyArray<LocalizedOption> = (() => {
+  const list = worldCountries
+    .filter((c) => c.cca2 !== "IL")
+    .map((c) => {
+      const arabicName = getArabicCommonName(c);
+      const value = c.cca2 === "PS" ? "فلسطين (الأراضي المحتلة)" : arabicName;
+      return {
+        value,
+        countryCode: c.cca2,
+      };
+    })
+    .sort((a, b) => a.value.localeCompare(b.value, "ar"));
+
+  return [...list, { value: "أخرى", labelKey: "countryOther" }];
+})();
+
+/** Country dialing codes keyed by the Arabic country names used in COUNTRIES. */
+export const COUNTRY_DIAL_CODES: Readonly<Record<string, string>> = (() => {
+  const map: Record<string, string> = {};
+  for (const c of worldCountries) {
+    if (c.cca2 === "IL") continue;
+    const arabicName = getArabicCommonName(c);
+    const value = c.cca2 === "PS" ? "فلسطين (الأراضي المحتلة)" : arabicName;
+    const dial = c.cca2 === "PS" ? "+970" : `${c.idd.root}${c.idd.suffixes?.[0] ?? ""}`;
+    map[value] = dial;
+  }
+  map["أخرى"] = "";
+  return map;
+})();
 
 /** Syrian governorates for Step 2. Values are kept in Arabic; labels are localized. */
 export const SYRIAN_GOVERNORATES: ReadonlyArray<LocalizedOption> = [
@@ -587,21 +609,6 @@ export const SYRIAN_GOVERNORATES: ReadonlyArray<LocalizedOption> = [
   { value: "درعا", labelKey: "govDaraa" },
   { value: "إدلب", labelKey: "govIdlib" },
 ];
-
-/** Country dialing codes keyed by the Arabic country names used in COUNTRIES. */
-export const COUNTRY_DIAL_CODES: Readonly<Record<string, string>> = {
-  "سوريا": "+963",
-  "لبنان": "+961",
-  "الأردن": "+962",
-  "تركيا": "+90",
-  "العراق": "+964",
-  "ألمانيا": "+49",
-  "فرنسا": "+33",
-  "هولندا": "+31",
-  "السويد": "+46",
-  "المملكة المتحدة": "+44",
-  "أخرى": "",
-};
 
 export const CATEGORY_BY_ID: Readonly<Record<ReportCategory, CategoryConfig>> =
   REPORT_CATEGORIES.reduce((acc, c) => {
@@ -635,7 +642,7 @@ export function getCategoryDescription(t: SubmitT, category: ReportCategory | st
 /** Resolves the localized label for a subtype. */
 export function getSubTypeLabel(t: SubmitT, categoryId: ReportCategory | string | undefined, subTypeValue: string | undefined): string {
   const sub = getSubTypeConfig(categoryId, subTypeValue);
-  return sub ? t(sub.labelKey) : String(subTypeValue ?? "");
+  return sub ? t(sub.labelKey ?? sub.value) : String(subTypeValue ?? "");
 }
 
 /** Resolves the localized description for a subtype. */
@@ -647,31 +654,46 @@ export function getSubTypeDescription(t: SubmitT, categoryId: ReportCategory | s
 /** Resolves the Arabic label for a subtype (used for the internal `entityRole` field). */
 export function getSubTypeLabelAr(categoryId: ReportCategory | string | undefined, subTypeValue: string | undefined): string {
   const sub = getSubTypeConfig(categoryId, subTypeValue);
-  return sub ? arLabel(sub.labelKey) : String(subTypeValue ?? "");
+  return sub ? arLabel(sub.labelKey ?? sub.value) : String(subTypeValue ?? "");
 }
 
 /** Resolves the localized label for a detail flag. */
 export function getFlagLabel(t: SubmitT, flagValue: string | undefined): string {
   const flag = Object.values(COMMON_FLAGS).find((f) => f.value === flagValue);
-  return flag ? t(flag.labelKey) : String(flagValue ?? "");
+  return flag ? t(flag.labelKey ?? flag.value) : String(flagValue ?? "");
 }
 
 /** Resolves the localized label for a supporting-document option. */
 export function getDocumentLabel(t: SubmitT, docValue: string | undefined): string {
   const doc = SUPPORTING_DOCUMENT_OPTIONS.find((d) => d.value === docValue);
-  return doc ? t(doc.labelKey) : String(docValue ?? "");
+  return doc ? t(doc.labelKey ?? doc.value) : String(docValue ?? "");
 }
 
-/** Resolves the localized label for a country option. */
-export function getCountryLabel(t: SubmitT, countryValue: string | undefined): string {
+/** Resolves the localized label for a country option (with flag emoji). */
+export function getCountryLabel(t: SubmitT, locale: string, countryValue: string | undefined): string {
   const country = COUNTRIES.find((c) => c.value === countryValue);
-  return country ? t(country.labelKey) : String(countryValue ?? "");
+  if (!country) return String(countryValue ?? "");
+  if (countryValue === "أخرى") return t("countryOther");
+  if (country.countryCode) {
+    const flag = getFlagEmoji(country.countryCode);
+    const name = country.countryCode === "PS"
+      ? (locale === "ar" ? "فلسطين (الأراضي المحتلة)" : "Palestine (Occupied Territory)")
+      : new Intl.DisplayNames(locale, { type: "region" }).of(country.countryCode);
+    return `${flag} ${name}`;
+  }
+  return country.labelKey ? t(country.labelKey) : String(countryValue ?? "");
+}
+
+function getFlagEmoji(countryCode: string): string {
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
 }
 
 /** Resolves the localized label for a Syrian governorate. */
 export function getGovernorateLabel(t: SubmitT, governorateValue: string | undefined): string {
   const gov = SYRIAN_GOVERNORATES.find((g) => g.value === governorateValue);
-  return gov ? t(gov.labelKey) : String(governorateValue ?? "");
+  return gov ? t(gov.labelKey ?? gov.value) : String(governorateValue ?? "");
 }
 
 /** Maps each selectable detail flag to the metadata field it surfaces and its i18n label key. */

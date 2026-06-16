@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { ContactMethodType } from "@/lib/validation";
 import { COUNTRIES, COUNTRY_DIAL_CODES, getCountryLabel } from "@/lib/wizard/category-config";
 
@@ -122,6 +122,7 @@ export function ContactMethodPicker({
   defaultCountryCode = "",
 }: ContactMethodPickerProps) {
   const t = useTranslations("submit");
+  const locale = useLocale();
   const menuRef = useRef<HTMLDetailsElement>(null);
 
   function needsCountryCode(type: ContactMethodType): boolean {
@@ -192,7 +193,7 @@ export function ContactMethodPicker({
                   if (!code) return null;
                   return (
                     <option key={c.value} value={code}>
-                      {getCountryLabel(t, c.value)} {code}
+                      {getCountryLabel(t, locale, c.value)} {code}
                     </option>
                   );
                 })}

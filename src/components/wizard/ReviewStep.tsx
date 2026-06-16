@@ -201,7 +201,7 @@ export function ReviewStep({
         </div>
         <div className="review-row">
           <span className="k">{t("locCountry")}</span>
-          <span className="v">{meta.country ? getCountryLabel(t, meta.country) : displayValue(meta.country)}</span>
+          <span className="v">{meta.country ? getCountryLabel(t, locale, meta.country) : displayValue(meta.country)}</span>
         </div>
         {meta.governorate && (
           <div className="review-row">

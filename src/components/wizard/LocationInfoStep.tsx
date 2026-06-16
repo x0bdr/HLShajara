@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { SubmitInput, ContactMethodType } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
 import { COUNTRIES, COUNTRY_DIAL_CODES, getCountryLabel } from "@/lib/wizard/category-config";
@@ -42,6 +42,7 @@ const SYRIAN_GOVERNORATES = [
 
 export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const t = useTranslations("submit");
+  const locale = useLocale();
 
   const meta = form.reportMetadata ?? {};
   const [country, setCountry] = useState(meta.country || DEFAULT_COUNTRY);
@@ -114,7 +115,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           <option value="">—</option>
           {COUNTRIES.map((c) => (
             <option key={c.value} value={c.value}>
-              {getCountryLabel(t, c.value)}
+              {getCountryLabel(t, locale, c.value)}
             </option>
           ))}
         </select>
@@ -183,7 +184,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
                 if (!code) return null;
                 return (
                   <option key={c.value} value={code}>
-                    {getCountryLabel(t, c.value)} {code}
+                    {getCountryLabel(t, locale, c.value)} {code}
                   </option>
                 );
               })}
