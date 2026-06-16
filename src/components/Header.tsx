@@ -48,9 +48,7 @@ export function Header() {
       : isStaff
         ? [{ href: "/reviewer", label: t("reviewer") }]
         : []),
-    isSignedIn
-      ? { href: "/profile", label: t("profile") }
-      : { href: "/login", label: t("login") },
+    ...(isSignedIn ? [{ href: "/profile", label: t("profile") }] : []),
   ];
 
   return (

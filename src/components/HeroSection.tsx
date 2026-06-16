@@ -24,7 +24,7 @@ export function HeroSection() {
           />
         </div>
         <div className="hero-badge">
-          {locale === "ar" ? "تأسست ٣٠ مايو ٢٠٢٦" : "Founded May 30, 2026"}
+          {locale === "ar" ? "تأسست 30 مايو 2026" : "Founded May 30, 2026"}
         </div>
         <h1 className="hero-title">
           {t("title")}

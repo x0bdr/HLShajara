@@ -26,24 +26,26 @@ const V15_EXPECTED = [
   "q_reportCategory", "q_locationInfo", "q_entityTypeName", "q_reportDetails",
   "q_experience", "q_mediaEvidence", "q_aboutYou",
   // location info fields
-  "locCountry", "locCity", "locCityHint",
-  "locNearest", "locNearestHint",
-  "locContact", "locWebsite", "locMaps", "locMapsHint", "locMapsError", "locSocial",
+  "locCountry", "locAtLeastOne", "locAddress",
+  "locContact", "locWebsite", "locEmail", "locMaps", "locMapsError", "locSocial",
   // entity type/name fields
   "etnType", "etnName", "etnOtherSpecify",
   // report details fields
-  "detailsHint", "detailsFlags", "detailsOwnerName", "detailsReportedName",
-  "detailsReportedNickname", "detailsReportedPhone", "detailsReportedPosition",
-  "detailsReportedSocial", "detailsCarType", "detailsCarPlate",
-  "detailsDriverPhone", "detailsDriverName", "detailsTaxiNumber",
-  "detailsAppName", "detailsPropertyType",
+  "detailsHint", "detailsFlags", "detailsOwnerName", "detailsInvestorName",
+  "detailsLabourInfo", "detailsSupportDataInfo", "detailsOtherPersonHint",
+  "detailsReportedName", "detailsReportedNickname", "detailsReportedPhone",
+  "detailsReportedPosition", "detailsReportedSocial", "detailsCarType",
+  "detailsCarPlate", "detailsDriverPhone", "detailsDriverName",
+  "detailsTaxiNumber", "detailsAppName", "detailsPropertyType",
   // experience
   "expLabel", "expHint", "expDocuments",
   // hints
   "hintReportCategory", "hintLocationInfo", "hintEntityType", "hintEntityName",
   "hintExperience", "hintMediaEvidence",
   // media/evidence
-  "mediaNotes",
+  "mediaNotes", "mediaFileLabel",
+  // array add buttons
+  "addOwner", "addInvestor", "addLabour", "labourName", "labourRole",
   // review groups
   "reviewGroupCategory", "reviewGroupLocation", "reviewGroupEntity",
   "reviewGroupDetails", "reviewGroupExperience",

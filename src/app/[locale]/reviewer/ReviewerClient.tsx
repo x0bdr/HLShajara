@@ -31,6 +31,7 @@ interface ReportMetadata {
   orgSubTypeOther?: string;
   supportingDocuments?: string[];
   ownerName?: string;
+  ownerNames?: string[];
   reportedPersonName?: string;
   reportedPersonNickname?: string;
   reportedPersonPhone?: string;
@@ -45,11 +46,26 @@ interface ReportMetadata {
   propertyType?: string;
   country?: string;
   city?: string;
+  address?: string;
   nearestLocation?: string;
   contactPhone?: string;
   websiteName?: string;
+  entityEmail?: string;
   googleMapsLink?: string;
   socialMediaAccounts?: string;
+  socialContactMethods?: { type: string; value: string }[];
+  investorNames?: string[];
+  labourEntries?: { name: string; role: string }[];
+  supportDataInfo?: string;
+}
+
+interface SourceFile {
+  hash: string;
+  filename: string;
+  originalName: string;
+  url: string;
+  size: number;
+  label?: string;
 }
 
 interface Submission {
@@ -60,6 +76,7 @@ interface Submission {
   allegationDescription: string;
   status: string;
   sourceLinks: SourceLink[];
+  sourceFiles: SourceFile[];
   createdAt: string;
   reportCategory: string | null;
   reportMetadata: ReportMetadata | null;
@@ -82,6 +99,7 @@ interface Submission {
 const METADATA_LABELS_AR: Record<string, string> = {
   orgSubTypeOther: "نوع آخر (مُحدَّد)",
   ownerName: "المالك / الشركاء",
+  ownerNames: "المالك / الشريك / الشركاء",
   reportedPersonName: "الاسم / الكنية المُبلَّغ عنه",
   reportedPersonPhone: "رقم الهاتف",
   reportedPersonPosition: "المنصب / المهنة",
@@ -95,22 +113,28 @@ const METADATA_LABELS_AR: Record<string, string> = {
   propertyType: "نوع العقار",
   partnerName: "الشريك / الشركاء",
   investorName: "المستثمر / رئيس النادي",
+  investorNames: "المستثمر / المستثمرين",
   receptionInfo: "استقبال / مكتب أمامي",
   labourInfo: "عمال / موظفون",
-  supportDataInfo: "بيانات داعمة",
+  labourEntries: "عمال / موظفون",
+  supportDataInfo: "غير ذلك",
   clubName: "اسم النادي / الجمعية",
   country: "الدولة",
   city: "المحافظة / المدينة",
+  address: "العنوان",
   nearestLocation: "أقرب نقطة / منطقة",
-  contactPhone: "رقم تواصل",
-  websiteName: "الموقع / المتجر",
+  contactPhone: "رقم تواصل الجهة",
+  websiteName: "رابط الموقع الإلكتروني للجهة",
+  entityEmail: "إيميل الجهة",
   googleMapsLink: "رابط Google Maps",
   socialMediaAccounts: "حسابات التواصل",
+  socialContactMethods: "حسابات التواصل",
 };
 
 const METADATA_LABELS_EN: Record<string, string> = {
   orgSubTypeOther: "Other type (specified)",
   ownerName: "Owner / partners",
+  ownerNames: "Owner / partner / partners",
   reportedPersonName: "Reported person name",
   reportedPersonPhone: "Phone number",
   reportedPersonPosition: "Position / occupation",
@@ -124,17 +148,22 @@ const METADATA_LABELS_EN: Record<string, string> = {
   propertyType: "Property type",
   partnerName: "Partner name(s)",
   investorName: "Investor / club president",
+  investorNames: "Investor / investors",
   receptionInfo: "Reception / front desk",
   labourInfo: "Labour / employees",
-  supportDataInfo: "Supportive data",
+  labourEntries: "Labour / employees",
+  supportDataInfo: "Other",
   clubName: "Club / association name",
   country: "Country",
   city: "State / City",
+  address: "Address",
   nearestLocation: "Nearest point / area",
-  contactPhone: "Contact number",
-  websiteName: "Website / e-shop",
+  contactPhone: "Entity contact number",
+  websiteName: "Entity website link",
+  entityEmail: "Entity email",
   googleMapsLink: "Google Maps link",
   socialMediaAccounts: "Social accounts",
+  socialContactMethods: "Social accounts",
 };
 
 function displayValue(value: unknown): string {
@@ -166,6 +195,98 @@ function formatLabels(
 function renderIcon(name: string | undefined, size?: number) {
   const Icon = getIconByName(name);
   return Icon ? createElement(Icon, { size }) : null;
+}
+
+function exportSubmissionToPDF(sub: Submission, locale: string) {
+  const labels = locale === "ar" ? METADATA_LABELS_AR : METADATA_LABELS_EN;
+  const meta = sub.reportMetadata ?? {};
+  const dir = locale === "ar" ? "rtl" : "ltr";
+  const align = locale === "ar" ? "right" : "left";
+
+  function fmtValue(key: string, value: unknown): string {
+    if (value === null || value === undefined) return "—";
+    if (Array.isArray(value) && value.length === 0) return "—";
+    if (key === "ownerNames" || key === "investorNames") {
+      return (value as string[]).join(locale === "ar" ? "، " : ", ");
+    }
+    if (key === "labourEntries") {
+      return (value as { name?: string; role?: string }[])
+        .filter((e) => e.name || e.role)
+        .map((e) => (e.name && e.role ? `${e.name} (${e.role})` : e.name || e.role))
+        .join(locale === "ar" ? "، " : ", ");
+    }
+    if (key === "socialContactMethods") {
+      return (value as { type: string; value: string }[]).map((m) => `${m.type}: ${m.value}`).join(" · ");
+    }
+    if (key === "supportingDocuments") {
+      return (value as string[]).map((v) => {
+        const doc = ["photos", "videos", "audio", "documents", "screenshots", "other"].find((d) => d === v);
+        return doc ? (locale === "ar" ? {
+          photos: "صور", videos: "فيديو", audio: "تسجيلات صوتية", documents: "وثائق رسمية", screenshots: "لقطات شاشة", other: "أخرى",
+        }[v] : {
+          photos: "Photos", videos: "Videos", audio: "Audio recordings", documents: "Official documents", screenshots: "Screenshots", other: "Other",
+        }[v]) : v;
+      }).join(locale === "ar" ? "، " : ", ");
+    }
+    return String(value);
+  }
+
+  const metaRows = Object.entries(labels).map(([key, label]) => {
+    const value = meta[key as keyof ReportMetadata];
+    return `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-weight:600;width:35%">${label}</td><td style="padding:6px 10px;border:1px solid #ddd">${fmtValue(key, value)}</td></tr>`;
+  }).join("");
+
+  const mediaRows = sub.sourceFiles.length
+    ? sub.sourceFiles.map((f) => `<tr><td style="padding:6px 10px;border:1px solid #ddd">${f.label ? `${f.label} — ` : ""}${f.originalName}</td><td style="padding:6px 10px;border:1px solid #ddd"><a href="${f.url}" target="_blank">${f.url}</a></td></tr>`).join("")
+    : `<tr><td colspan="2" style="padding:6px 10px;border:1px solid #ddd">—</td></tr>`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html dir="${dir}">
+    <head>
+      <meta charset="utf-8">
+      <title>${locale === "ar" ? "بلاغ" : "Report"} #${sub.id}</title>
+      <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 24px; color: #111; }
+        h1 { font-size: 22px; margin-bottom: 8px; }
+        h2 { font-size: 16px; margin-top: 24px; margin-bottom: 8px; }
+        p { margin: 4px 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 14px; }
+        td { vertical-align: top; }
+        .section { margin-bottom: 20px; }
+      </style>
+    </head>
+    <body>
+      <h1 style="text-align:${align}">${sub.entityName}</h1>
+      <p style="text-align:${align}">${resolveSubTypeLabel(sub, () => "")} · ${resolveCategoryLabel(sub, () => "")}</p>
+
+      <div class="section">
+        <h2 style="text-align:${align}">${locale === "ar" ? "وصف البلاغ" : "Report Description"}</h2>
+        <p style="text-align:${align};white-space:pre-wrap">${sub.allegationDescription}</p>
+      </div>
+
+      <div class="section">
+        <h2 style="text-align:${align}">${locale === "ar" ? "بيانات البلاغ المصنّفة" : "Categorized Report Data"}</h2>
+        <table>${metaRows}</table>
+      </div>
+
+      <div class="section">
+        <h2 style="text-align:${align}">${locale === "ar" ? "الوسائط الداعمة" : "Supporting Media"}</h2>
+        <table>
+          <thead><tr><th style="padding:6px 10px;border:1px solid #ddd;text-align:${align}">${locale === "ar" ? "الوسيط" : "Media"}</th><th style="padding:6px 10px;border:1px solid #ddd;text-align:${align}">${locale === "ar" ? "الرابط" : "Link"}</th></tr></thead>
+          <tbody>${mediaRows}</tbody>
+        </table>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 300);
 }
 
 function resolveCategoryLabel(sub: Submission, t: (key: string) => string) {
@@ -233,6 +354,23 @@ function SubmissionMetadata({ sub, locale, t }: { sub: Submission; locale: strin
         const value = meta[key as keyof ReportMetadata];
         if (key === "googleMapsLink") {
           return <MetadataRow key={key} label={label} value={value} link />;
+        }
+        if (key === "ownerNames" || key === "investorNames") {
+          const arr = (value as string[] | undefined) ?? [];
+          return <MetadataRow key={key} label={label} value={arr.join(locale === "ar" ? "، " : ", ")} />;
+        }
+        if (key === "labourEntries") {
+          const arr = (value as { name?: string; role?: string }[] | undefined) ?? [];
+          const text = arr
+            .filter((e) => e.name || e.role)
+            .map((e) => (e.name && e.role ? `${e.name} (${e.role})` : e.name || e.role))
+            .join(locale === "ar" ? "، " : ", ");
+          return <MetadataRow key={key} label={label} value={text} />;
+        }
+        if (key === "socialContactMethods") {
+          const arr = (value as { type: string; value: string }[] | undefined) ?? [];
+          const text = arr.map((m) => `${m.type}: ${m.value}`).join(" · ");
+          return <MetadataRow key={key} label={label} value={text} />;
         }
         return <MetadataRow key={key} label={label} value={value} />;
       })}
@@ -542,6 +680,10 @@ export default function ReviewerPage() {
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button className="btn primary" onClick={() => saveTriage(selected)}>
                 {locale === "ar" ? "حفظ الفلترة" : "Save Triage"}
+              </button>
+
+              <button className="btn ghost" onClick={() => exportSubmissionToPDF(selected, locale)}>
+                {locale === "ar" ? "تصدير PDF" : "Export PDF"}
               </button>
 
               {selected.status === "pending" && (

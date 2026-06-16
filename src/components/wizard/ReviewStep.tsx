@@ -4,11 +4,11 @@
  * ReviewStep — terminal read-only summary for the v1.5 category-based wizard.
  *
  * Renders seven semantic groups (Category, Location, Entity, Details, Experience,
- * Evidence, You), each with an Edit link to the first step of that group.
+ * Supporting Media, You), each with an Edit link to the first step of that group.
  */
 
 import { useLocale, useTranslations } from "next-intl";
-import type { SubmitInput, ReportCategory, ReportMetadata } from "@/lib/validation";
+import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import {
   getCategoryConfig,
   getRelevantDetailFieldIds,
@@ -34,6 +34,7 @@ export const REVIEW_GROUP_IDS = [
 
 const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
   ownerName: "detailsOwnerName",
+  ownerNames: "detailsOwnerName",
   reportedPersonName: "detailsReportedName",
   reportedPersonNickname: "detailsReportedNickname",
   reportedPersonPhone: "detailsReportedPhone",
@@ -48,14 +49,17 @@ const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
   propertyType: "detailsPropertyType",
   partnerName: "detailsPartnerName",
   investorName: "detailsInvestorName",
+  investorNames: "detailsInvestorName",
   receptionInfo: "detailsReceptionInfo",
   labourInfo: "detailsLabourInfo",
+  labourEntries: "detailsLabourInfo",
   supportDataInfo: "detailsSupportDataInfo",
   clubName: "detailsClubName",
 };
 
 const DETAIL_FIELD_META_KEYS: Record<DetailFieldId, keyof ReportMetadata | undefined> = {
   ownerName: "ownerName",
+  ownerNames: "ownerNames",
   reportedPersonName: "reportedPersonName",
   reportedPersonNickname: undefined,
   reportedPersonPhone: "reportedPersonPhone",
@@ -70,13 +74,36 @@ const DETAIL_FIELD_META_KEYS: Record<DetailFieldId, keyof ReportMetadata | undef
   propertyType: "propertyType",
   partnerName: "partnerName",
   investorName: "investorName",
+  investorNames: "investorNames",
   receptionInfo: "receptionInfo",
   labourInfo: "labourInfo",
+  labourEntries: "labourEntries",
   supportDataInfo: "supportDataInfo",
   clubName: "clubName",
 };
 
-function getDetailFieldValue(meta: ReportMetadata, fieldId: DetailFieldId): string | undefined {
+function getDetailFieldDisplay(
+  meta: ReportMetadata,
+  fieldId: DetailFieldId,
+  locale: string,
+): string | undefined {
+  if (fieldId === "ownerNames") {
+    const arr = meta.ownerNames ?? [];
+    return arr.length ? arr.join(locale === "ar" ? "، " : ", ") : undefined;
+  }
+  if (fieldId === "investorNames") {
+    const arr = meta.investorNames ?? [];
+    return arr.length ? arr.join(locale === "ar" ? "، " : ", ") : undefined;
+  }
+  if (fieldId === "labourEntries") {
+    const arr = meta.labourEntries ?? [];
+    return arr.length
+      ? arr
+          .filter((e) => e.name || e.role)
+          .map((e) => (e.name && e.role ? `${e.name} (${e.role})` : e.name || e.role))
+          .join(locale === "ar" ? "، " : ", ")
+      : undefined;
+  }
   const key = DETAIL_FIELD_META_KEYS[fieldId];
   if (!key) return undefined;
   return meta[key] as string | undefined;
@@ -84,19 +111,15 @@ function getDetailFieldValue(meta: ReportMetadata, fieldId: DetailFieldId): stri
 
 interface ReviewStepProps {
   form: SubmitInput & { leadNote?: string };
-  affirmed: boolean;
   submitting: boolean;
   onEdit: (stepId: string) => void;
-  onAffirmChange: (checked: boolean) => void;
   onSubmit: () => void;
 }
 
 export function ReviewStep({
   form,
-  affirmed,
   submitting,
   onEdit,
-  onAffirmChange,
   onSubmit,
 }: ReviewStepProps) {
   const t = useTranslations("submit");
@@ -107,7 +130,7 @@ export function ReviewStep({
     meta.orgType,
     meta.detailFlags,
   );
-  const categoryConfig = getCategoryConfig(form.reportCategory as ReportCategory);
+  const categoryConfig = getCategoryConfig(form.reportCategory);
   const categoryLabel = categoryConfig
     ? getCategoryLabel(t, categoryConfig.id)
     : displayValue(form.reportCategory);
@@ -116,12 +139,8 @@ export function ReviewStep({
     ? getSubTypeLabel(t, form.reportCategory, meta.orgType)
     : displayValue(meta.orgType);
 
-  const submitDisabled = submitting || !affirmed;
-
   return (
     <div className="flex-col">
-      <div className="t">{t("reviewTitle")}</div>
-
       {/* Category */}
       <div className="review-group">
         <div className="head flex-between">
@@ -157,12 +176,8 @@ export function ReviewStep({
           <span className="v">{meta.country ? getCountryLabel(t, meta.country) : displayValue(meta.country)}</span>
         </div>
         <div className="review-row">
-          <span className="k">{t("location")}</span>
-          <span className="v">{displayValue(form.allegationLocation)}</span>
-        </div>
-        <div className="review-row">
-          <span className="k">{t("locNearest")}</span>
-          <span className="v">{displayValue(meta.nearestLocation)}</span>
+          <span className="k">{t("locAddress")}</span>
+          <span className="v">{displayValue(meta.address)}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("locContact")}</span>
@@ -173,12 +188,22 @@ export function ReviewStep({
           <span className="v">{displayValue(meta.websiteName)}</span>
         </div>
         <div className="review-row">
+          <span className="k">{t("locEmail")}</span>
+          <span className="v">{displayValue(meta.entityEmail)}</span>
+        </div>
+        <div className="review-row">
           <span className="k">{t("locMaps")}</span>
           <span className="v">{displayValue(meta.googleMapsLink)}</span>
         </div>
         <div className="review-row">
           <span className="k">{t("locSocial")}</span>
-          <span className="v">{displayValue(meta.socialMediaAccounts)}</span>
+          <span className="v">
+            {(meta.socialContactMethods ?? []).length === 0
+              ? displayValue("")
+              : (meta.socialContactMethods ?? [])
+                  .map((m) => `${t(`contactType_${m.type}`)}: ${m.value}`)
+                  .join(" · ")}
+          </span>
         </div>
       </div>
 
@@ -222,12 +247,15 @@ export function ReviewStep({
             {t("reviewEdit")}
           </button>
         </div>
-        {relevantDetailFields.map((fieldId) => (
-          <div className="review-row" key={fieldId}>
-            <span className="k">{t(DETAIL_FIELD_LABEL_KEYS[fieldId])}</span>
-            <span className="v">{displayValue(getDetailFieldValue(meta, fieldId))}</span>
-          </div>
-        ))}
+        {relevantDetailFields.map((fieldId) => {
+          const value = getDetailFieldDisplay(meta, fieldId, locale);
+          return (
+            <div className="review-row" key={fieldId}>
+              <span className="k">{t(DETAIL_FIELD_LABEL_KEYS[fieldId])}</span>
+              <span className="v">{displayValue(value)}</span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Experience */}
@@ -258,7 +286,7 @@ export function ReviewStep({
         </div>
       </div>
 
-      {/* Evidence */}
+      {/* Supporting Media */}
       <div className="review-group">
         <div className="head flex-between">
           <span className="ds-eyebrow">{t("reviewGroupEvidence")}</span>
@@ -279,7 +307,9 @@ export function ReviewStep({
           <span className="v">
             {form.sourceFiles.length === 0
               ? displayValue("")
-              : form.sourceFiles.map((f) => f.originalName).join(", ")}
+              : form.sourceFiles.map((f) => `${f.label ? `${f.label} — ` : ""}${f.originalName}`).join(
+                  locale === "ar" ? "، " : ", "
+                )}
           </span>
         </div>
         <div className="review-row">
@@ -325,28 +355,12 @@ export function ReviewStep({
       </div>
 
       <div className="review-affirm">
-        <label className="flex-between" htmlFor="review-affirm-check">
-          <input
-            id="review-affirm-check"
-            type="checkbox"
-            checked={affirmed}
-            onChange={(e) => onAffirmChange(e.target.checked)}
-          />
-          <span className="ds-body-sm">{t("affirm")}</span>
-        </label>
-
-        {!affirmed ? (
-          <div className="legal legal-error mt-16" role="status">
-            <p>{t("errAffirmGate")}</p>
-          </div>
-        ) : null}
-
         <div className="wizard-nav flex-between mt-16">
           <button
             type="button"
             className="btn primary"
-            disabled={submitDisabled}
-            aria-disabled={submitDisabled}
+            disabled={submitting}
+            aria-disabled={submitting}
             onClick={onSubmit}
           >
             {submitting ? t("submitting") : t("submitButton")}

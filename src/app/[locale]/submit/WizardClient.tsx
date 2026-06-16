@@ -92,6 +92,8 @@ function buildSubmitPayload(form: SubmitInput): Record<string, unknown> {
     payload.allegationClassification = form.allegationClassification.trim();
   if (hasText(form.leadNote)) payload.leadNote = form.leadNote.trim();
   if (hasText(form.submitterEmail)) payload.submitterEmail = form.submitterEmail.trim();
+  const emailMethod = form.reportMetadata?.contactMethods?.find((m) => m.type === "email" && hasText(m.value));
+  if (emailMethod) payload.submitterEmail = emailMethod.value.trim();
   if (hasText(form.submitterName)) payload.submitterName = form.submitterName.trim();
   return payload;
 }
@@ -111,7 +113,6 @@ export function WizardClient() {
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [affirmed, setAffirmed] = useState(false);
   const [showRestore, setShowRestore] = useState(() => {
     if (typeof window === "undefined") return false;
     const draft = loadDraft<WizardState>();
@@ -238,7 +239,6 @@ export function WizardClient() {
   function discardDraft() {
     clearDraft();
     dispatch({ type: "RESET" });
-    setAffirmed(false);
     setShowRestore(false);
     goTo(STEPS[0].id, true);
   }
@@ -285,7 +285,6 @@ export function WizardClient() {
 
   function submitAnother() {
     setResult(null);
-    setAffirmed(false);
     setSubmitting(false);
     submittedRef.current = false;
     clearDraft();
@@ -353,10 +352,8 @@ export function WizardClient() {
         {isReview ? (
           <ReviewStep
             form={state.form}
-            affirmed={affirmed}
             submitting={submitting}
             onEdit={(id) => goTo(id as StepId)}
-            onAffirmChange={setAffirmed}
             onSubmit={handleSubmit}
           />
         ) : state.currentStep === "report-category" ? (

@@ -85,6 +85,7 @@ export type WizardAction =
   | { type: "REMOVE_SOURCE"; index: number }
   | { type: "ADD_FILE"; file: SubmitInput["sourceFiles"][number] }
   | { type: "REMOVE_FILE"; index: number }
+  | { type: "SET_FILE_LABEL"; index: number; value: string }
   | { type: "GOTO_STEP"; step: StepId }
   | { type: "COMPLETE_STEP"; step: StepId }
   | { type: "INVALIDATE_SUBTYPE"; entityType: SubmitInput["entityType"] }
@@ -164,6 +165,13 @@ export const wizardReducer: Reducer<WizardState, WizardAction> = (state, action)
           sourceFiles: state.form.sourceFiles.filter((_, i) => i !== action.index),
         },
       };
+
+    case "SET_FILE_LABEL": {
+      const sourceFiles = state.form.sourceFiles.map((f, i) =>
+        i === action.index ? { ...f, label: action.value } : f
+      );
+      return { ...state, dirty: true, form: { ...state.form, sourceFiles } };
+    }
 
     case "GOTO_STEP":
       return {

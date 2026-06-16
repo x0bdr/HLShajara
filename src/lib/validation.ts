@@ -36,6 +36,7 @@ export const contactMethodTypes = [
   "whatsapp",
   "phone",
   "email",
+  "website",
 ] as const;
 
 export type ContactMethodType = (typeof contactMethodTypes)[number];
@@ -47,21 +48,31 @@ export const contactMethodSchema = z.object({
 
 export type ContactMethod = z.infer<typeof contactMethodSchema>;
 
+const labourEntrySchema = z.object({
+  name: z.string().max(255),
+  role: z.string().max(255),
+});
+
 /** Category-specific metadata captured by the new wizard. */
 export const reportMetadataSchema = z.object({
   country: z.string().max(100).optional(),
   state: z.string().max(100).optional(),
   city: z.string().max(100).optional(),
   nearestLocation: z.string().max(200).optional(),
+  address: z.string().max(300).optional(),
   contactPhone: z.string().max(100).optional(),
   websiteName: z.string().max(255).optional(),
+  entityEmail: z.string().max(255).optional(),
   googleMapsLink: z.string().max(2048).optional(),
   socialMediaAccounts: z.string().max(500).optional(),
+  socialContactMethods: z.array(contactMethodSchema).optional(),
   orgType: z.string().max(100).optional(),
   orgSubType: z.string().max(100).optional(),
   orgSubTypeOther: z.string().max(255).optional(),
   ownerName: z.string().max(255).optional(),
+  ownerNames: z.array(z.string().max(255)).optional(),
   reportedPersonName: z.string().max(255).optional(),
+  reportedPersonNickname: z.string().max(255).optional(),
   reportedPersonPhone: z.string().max(100).optional(),
   reportedPersonPosition: z.string().max(255).optional(),
   reportedPersonSocialMedia: z.string().max(500).optional(),
@@ -74,9 +85,11 @@ export const reportMetadataSchema = z.object({
   propertyType: z.string().max(100).optional(),
   partnerName: z.string().max(255).optional(),
   investorName: z.string().max(255).optional(),
+  investorNames: z.array(z.string().max(255)).optional(),
   receptionInfo: z.string().max(255).optional(),
   labourInfo: z.string().max(255).optional(),
-  supportDataInfo: z.string().max(500).optional(),
+  labourEntries: z.array(labourEntrySchema).optional(),
+  supportDataInfo: z.string().max(256).optional(),
   clubName: z.string().max(255).optional(),
   supportingDocuments: z.array(z.string().max(100)).optional(),
   detailFlags: z.array(z.string().max(100)).optional(),
@@ -168,6 +181,7 @@ export const submitSchema = z.object({
         originalName: z.string(),
         url: z.string(),
         size: z.number(),
+        label: z.string().optional(),
       })
     )
     .default([]),

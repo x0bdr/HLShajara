@@ -1,30 +1,23 @@
 "use client";
 
 /**
- * LocationInfoStep — Step 2 of the v1.5 category-based wizard (معلومات).
+ * LocationInfoStep — Step 2 of the v1.5 category-based wizard (معلومات الجهة).
  *
- * Captures coarse location (country required, state/city/nearest optional),
- * contact/website, social-media accounts, and an optional Google Maps link.
- * For Syria the city/state is a dropdown of governorates; for other countries
- * it is a free-text field.
+ * Captures country, address, contact/website/email, social-media accounts, and
+ * an optional Google Maps link. City/state fields were removed per Phase 34.
  */
 
-import { useState, useEffect, type Dispatch } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import type { SubmitInput } from "@/lib/validation";
+import type { SubmitInput, ContactMethodType } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
-import {
-  COUNTRIES,
-  SYRIAN_GOVERNORATES,
-  getCountryLabel,
-  getGovernorateLabel,
-} from "@/lib/wizard/category-config";
-import { composeLocation } from "@/lib/wizard/step-logic";
+import { COUNTRIES, getCountryLabel } from "@/lib/wizard/category-config";
 import { screenPrivateTargeting } from "@/lib/screens";
+import { ContactMethodPicker } from "./ContactMethodPicker";
 
 interface LocationInfoStepProps {
   form: SubmitInput;
-  dispatch: Dispatch<WizardAction>;
+  dispatch: React.Dispatch<WizardAction>;
 }
 
 const DEFAULT_COUNTRY = "سوريا";
@@ -33,52 +26,26 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const t = useTranslations("submit");
 
   const meta = form.reportMetadata ?? {};
-  const seeded = (form.allegationLocation ?? "").split(" — ");
-  const initialCountry = seeded[0] || meta.country || DEFAULT_COUNTRY;
-  const [country, setCountry] = useState(initialCountry);
-  const [city, setCity] = useState(seeded.length > 1 ? seeded.slice(1).join(" — ") : meta.city ?? "");
-  const isSyria = country === DEFAULT_COUNTRY;
+  const [country, setCountry] = useState(meta.country || DEFAULT_COUNTRY);
 
-  // Seed the composed location when the step mounts if we defaulted to Syria.
   useEffect(() => {
-    if (!form.allegationLocation && initialCountry === DEFAULT_COUNTRY) {
+    if (!form.allegationLocation) {
       dispatch({ type: "SET_METADATA", field: "country", value: DEFAULT_COUNTRY });
-      dispatch({
-        type: "SET_FIELD",
-        field: "allegationLocation",
-        value: DEFAULT_COUNTRY,
-      });
+      dispatch({ type: "SET_FIELD", field: "allegationLocation", value: DEFAULT_COUNTRY });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [nearest, setNearest] = useState(meta.nearestLocation ?? "");
-
-  function writeLocation(nextCountry: string, nextCity: string) {
-    dispatch({
-      type: "SET_FIELD",
-      field: "allegationLocation",
-      value: composeLocation(nextCountry, nextCity),
-    });
-  }
-
   function onCountryChange(value: string) {
     setCountry(value);
-    setCity(""); // reset city when country changes
     dispatch({ type: "SET_METADATA", field: "country", value });
-    dispatch({ type: "SET_METADATA", field: "city", value: "" });
-    writeLocation(value, "");
+    dispatch({ type: "SET_FIELD", field: "allegationLocation", value: value || DEFAULT_COUNTRY });
   }
 
-  function onCityChange(value: string) {
-    setCity(value);
-    dispatch({ type: "SET_METADATA", field: "city", value });
-    writeLocation(country, value);
-  }
-
-  function onNearestChange(value: string) {
-    setNearest(value);
-    dispatch({ type: "SET_METADATA", field: "nearestLocation", value });
+  const [address, setAddress] = useState(meta.address ?? "");
+  function onAddressChange(value: string) {
+    setAddress(value);
+    dispatch({ type: "SET_METADATA", field: "address", value });
   }
 
   const [mapsLink, setMapsLink] = useState(meta.googleMapsLink ?? "");
@@ -86,74 +53,48 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
 
   function onMapsLinkChange(value: string) {
     setMapsLink(value);
-    // Reject a personal social link inline; empty is fine (optional).
     setMapsLinkError(value.trim().length > 0 && screenPrivateTargeting(value));
+  }
+
+  const socialMethods = meta.socialContactMethods ?? [];
+  function setSocialMethods(next: { type: ContactMethodType; value: string }[]) {
+    dispatch({ type: "SET_METADATA", field: "socialContactMethods", value: next });
   }
 
   return (
     <div className="flex-col">
-      <div className="form-row">
-        <div className="form-field">
-          <label htmlFor="loc-country">{t("locCountry")}</label>
-          <select
-            id="loc-country"
-            className="ds-select"
-            required
-            value={country}
-            onChange={(e) => onCountryChange(e.target.value)}
-          >
-            <option value="">—</option>
-            {COUNTRIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {getCountryLabel(t, c.value)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-field">
-          <label htmlFor="loc-city">{t("locCity")}</label>
-          {isSyria ? (
-            <select
-              id="loc-city"
-              className="ds-select"
-              value={city}
-              aria-describedby="loc-city-hint"
-              onChange={(e) => onCityChange(e.target.value)}
-            >
-              <option value="">—</option>
-              {SYRIAN_GOVERNORATES.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {getGovernorateLabel(t, g.value)}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              id="loc-city"
-              type="text"
-              className="ds-input"
-              value={city}
-              aria-describedby="loc-city-hint"
-              onChange={(e) => onCityChange(e.target.value)}
-            />
-          )}
-          <p id="loc-city-hint" className="ds-caption">{t("locCityHint")}</p>
-        </div>
+      <div className="form-field">
+        <label htmlFor="loc-country">{t("locCountry")}</label>
+        <select
+          id="loc-country"
+          className="ds-select"
+          required
+          value={country}
+          onChange={(e) => onCountryChange(e.target.value)}
+        >
+          <option value="">—</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {getCountryLabel(t, c.value)}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-field">
-        <label htmlFor="loc-nearest">{t("locNearest")}</label>
+        <label htmlFor="loc-address">{t("locAddress")}</label>
         <input
-          id="loc-nearest"
+          id="loc-address"
           type="text"
           className="ds-input"
-          value={nearest}
-          aria-describedby="loc-nearest-hint"
-          onChange={(e) => onNearestChange(e.target.value)}
+          value={address}
+          onChange={(e) => onAddressChange(e.target.value)}
         />
-        <p id="loc-nearest-hint" className="ds-caption">{t("locNearestHint")}</p>
       </div>
+
+      <p className="ds-caption" style={{ marginTop: 4, marginBottom: 4 }}>
+        {t("locAtLeastOne")}
+      </p>
 
       <div className="form-field">
         <label htmlFor="loc-contact">{t("locContact")}</label>
@@ -172,11 +113,24 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         <label htmlFor="loc-website">{t("locWebsite")}</label>
         <input
           id="loc-website"
-          type="text"
+          type="url"
           className="ds-input"
           value={meta.websiteName ?? ""}
           onChange={(e) =>
             dispatch({ type: "SET_METADATA", field: "websiteName", value: e.target.value })
+          }
+        />
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="loc-email">{t("locEmail")}</label>
+        <input
+          id="loc-email"
+          type="email"
+          className="ds-input"
+          value={meta.entityEmail ?? ""}
+          onChange={(e) =>
+            dispatch({ type: "SET_METADATA", field: "entityEmail", value: e.target.value })
           }
         />
       </div>
@@ -189,14 +143,13 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           className="ds-input"
           value={mapsLink}
           aria-invalid={mapsLinkError || undefined}
-          aria-describedby={mapsLinkError ? "loc-maps-error" : "loc-maps-hint"}
+          aria-describedby={mapsLinkError ? "loc-maps-error" : undefined}
           onChange={(e) => {
             onMapsLinkChange(e.target.value);
             dispatch({ type: "SET_METADATA", field: "googleMapsLink", value: e.target.value });
           }}
           onBlur={(e) => onMapsLinkChange(e.target.value)}
         />
-        <p id="loc-maps-hint" className="ds-caption">{t("locMapsHint")}</p>
         {mapsLinkError && (
           <p id="loc-maps-error" className="legal-error" role="alert">
             {t("locMapsError")}
@@ -205,15 +158,11 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
       </div>
 
       <div className="form-field">
-        <label htmlFor="loc-social">{t("locSocial")}</label>
-        <input
-          id="loc-social"
-          type="text"
-          className="ds-input"
-          value={meta.socialMediaAccounts ?? ""}
-          onChange={(e) =>
-            dispatch({ type: "SET_METADATA", field: "socialMediaAccounts", value: e.target.value })
-          }
+        <label>{t("locSocial")}</label>
+        <ContactMethodPicker
+          methods={socialMethods}
+          onChange={setSocialMethods}
+          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "website"]}
         />
       </div>
     </div>

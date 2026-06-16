@@ -145,17 +145,35 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
         {form.sourceFiles.length > 0 && (
           <div className="flex-col mt-16">
             {form.sourceFiles.map((file, i) => (
-              <div key={i} className="card flex-between">
-                <span className="ds-body-sm">
-                  {file.originalName} ({(file.size / 1024).toFixed(1)} KB)
-                </span>
-                <button
-                  type="button"
-                  className="btn ghost"
-                  onClick={() => dispatch({ type: "REMOVE_FILE", index: i })}
-                >
-                  {t("removeFile")}
-                </button>
+              <div key={i} className="card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="flex-between">
+                  <span className="ds-body-sm">
+                    {file.originalName} ({(file.size / 1024).toFixed(1)} KB)
+                  </span>
+                  <button
+                    type="button"
+                    className="btn ghost"
+                    onClick={() => dispatch({ type: "REMOVE_FILE", index: i })}
+                  >
+                    {t("removeFile")}
+                  </button>
+                </div>
+                <div className="form-field" style={{ marginBottom: 0 }}>
+                  <input
+                    id={`media-file-label-${i}`}
+                    type="text"
+                    className="ds-input"
+                    value={file.label ?? ""}
+                    placeholder={t("mediaFileLabel")}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "SET_FILE_LABEL",
+                        index: i,
+                        value: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
             ))}
           </div>
