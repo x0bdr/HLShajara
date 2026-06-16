@@ -12,6 +12,7 @@
 
 import type { ReportCategory, ReportMetadata } from "@/lib/validation";
 import arMessages from "../../../messages/ar.json";
+import * as countryCodesList from "country-codes-list";
 import worldCountries from "world-countries";
 
 export type DetailFieldId =
@@ -603,6 +604,20 @@ export const COUNTRIES: ReadonlyArray<LocalizedOption> = (() => {
   return [...list, { value: "أخرى", labelKey: "countryOther" }];
 })();
 
+const CALLING_CODE_BY_CCA2: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  const records = countryCodesList.customArray({
+    countryCode: "{countryCode}",
+    countryCallingCode: "{countryCallingCode}",
+  });
+  for (const r of records) {
+    if (r.countryCallingCode) {
+      map[r.countryCode] = `+${r.countryCallingCode}`;
+    }
+  }
+  return map;
+})();
+
 /** Country dialing codes keyed by the Arabic country names used in COUNTRIES. */
 export const COUNTRY_DIAL_CODES: Readonly<Record<string, string>> = (() => {
   const map: Record<string, string> = {};
@@ -610,8 +625,8 @@ export const COUNTRY_DIAL_CODES: Readonly<Record<string, string>> = (() => {
     if (c.cca2 === "IL") continue;
     const arabicName = getArabicCommonName(c);
     const value = c.cca2 === "PS" ? "فلسطين (الأراضي المحتلة)" : arabicName;
-    const dial = c.cca2 === "PS" ? "+970" : `${c.idd.root}${c.idd.suffixes?.[0] ?? ""}`;
-    map[value] = dial;
+    const dial = c.cca2 === "PS" ? "+970" : CALLING_CODE_BY_CCA2[c.cca2];
+    if (dial) map[value] = dial;
   }
   map["أخرى"] = "";
   return map;
