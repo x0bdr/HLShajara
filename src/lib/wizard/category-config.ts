@@ -536,6 +536,27 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
       {
+        value: "villa",
+        labelKey: "subRealEstateVilla",
+        descriptionKey: "subRealEstateVillaDesc",
+        iconName: "Castle",
+        detailFields: ["ownerNames"],
+      },
+      {
+        value: "chalet",
+        labelKey: "subRealEstateChalet",
+        descriptionKey: "subRealEstateChaletDesc",
+        iconName: "TreePine",
+        detailFields: ["ownerNames"],
+      },
+      {
+        value: "farm",
+        labelKey: "subRealEstateFarm",
+        descriptionKey: "subRealEstateFarmDesc",
+        iconName: "Wheat",
+        detailFields: ["ownerNames"],
+      },
+      {
         value: "land",
         labelKey: "subRealEstateLand",
         descriptionKey: "subRealEstateLandDesc",

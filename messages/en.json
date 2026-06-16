@@ -431,6 +431,8 @@
     "subRealEstateApartmentDesc": "Residential apartment",
     "subRealEstateVilla": "Villas",
     "subRealEstateVillaDesc": "Villa or large house",
+    "subRealEstateChalet": "Chalets",
+    "subRealEstateChaletDesc": "Chalet or resort house",
     "subRealEstateFarm": "Farms",
     "subRealEstateFarmDesc": "Farm or agricultural land",
     "subRealEstateLand": "Lands",

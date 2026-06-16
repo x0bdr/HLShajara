@@ -431,6 +431,8 @@
     "subRealEstateApartmentDesc": "شقة سكنية",
     "subRealEstateVilla": "فلل",
     "subRealEstateVillaDesc": "فيلا أو منزل كبير",
+    "subRealEstateChalet": "شاليهات",
+    "subRealEstateChaletDesc": "شاليه أو استراحة",
     "subRealEstateFarm": "مزارع",
     "subRealEstateFarmDesc": "مزرعة أو أرض زراعية",
     "subRealEstateLand": "أراضي",
