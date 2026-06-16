@@ -23,6 +23,23 @@ interface LocationInfoStepProps {
 const DEFAULT_COUNTRY = "سوريا";
 const PHONE_RE = /^[\d\s\+\-\(\)]*$/;
 
+const SYRIAN_GOVERNORATES = [
+  "دمشق",
+  "ريف دمشق",
+  "حلب",
+  "حمص",
+  "حماة",
+  "اللاذقية",
+  "طرطوس",
+  "السويداء",
+  "درعا",
+  "القنيطرة",
+  "إدلب",
+  "الرقة",
+  "الحسكة",
+  "دير الزور",
+];
+
 export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const t = useTranslations("submit");
 
@@ -48,6 +65,13 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   function onAddressChange(value: string) {
     setAddress(value);
     dispatch({ type: "SET_METADATA", field: "address", value });
+  }
+
+  const isSyria = country === "سوريا";
+  const [governorate, setGovernorate] = useState(meta.governorate ?? "");
+  function onGovernorateChange(value: string) {
+    setGovernorate(value);
+    dispatch({ type: "SET_METADATA", field: "governorate", value });
   }
 
   const [mapsLink, setMapsLink] = useState(meta.googleMapsLink ?? "");
@@ -88,6 +112,25 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         </select>
       </div>
 
+      {isSyria && (
+        <div className="form-field">
+          <label htmlFor="loc-governorate">{t("locGovernorate")}</label>
+          <select
+            id="loc-governorate"
+            className="ds-select"
+            value={governorate}
+            onChange={(e) => onGovernorateChange(e.target.value)}
+          >
+            <option value="">—</option>
+            {SYRIAN_GOVERNORATES.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="form-field">
         <label htmlFor="loc-address">{t("locAddress")}</label>
         <input
@@ -120,6 +163,19 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
             {t("locContactError")}
           </p>
         )}
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="loc-email">{t("locEmail")}</label>
+        <input
+          id="loc-email"
+          type="email"
+          className="ds-input"
+          value={meta.entityEmail ?? ""}
+          onChange={(e) =>
+            dispatch({ type: "SET_METADATA", field: "entityEmail", value: e.target.value })
+          }
+        />
       </div>
 
       <div className="form-field">
@@ -162,7 +218,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         <ContactMethodPicker
           methods={socialMethods}
           onChange={setSocialMethods}
-          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "email", "website"]}
+          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "website"]}
         />
       </div>
     </div>

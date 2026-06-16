@@ -348,7 +348,7 @@ export function WizardClient() {
 
       <WizardProgress state={state} onJump={(id) => goTo(id)} />
 
-      <WizardPanel title={stepTitle} stepIndex={stepIndex} stepTotal={stepTotal}>
+      <WizardPanel title={stepTitle} stepIndex={stepIndex} stepTotal={stepTotal} stepId={state.currentStep}>
         {isReview ? (
           <ReviewStep
             form={state.form}

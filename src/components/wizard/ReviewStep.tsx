@@ -5,8 +5,10 @@
  *
  * Renders seven semantic groups (Category, Location, Entity, Details, Experience,
  * Supporting Media, You), each with an Edit link to the first step of that group.
+ * Includes a lightweight math CAPTCHA at the bottom to reduce automated spam.
  */
 
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import {
@@ -21,6 +23,12 @@ import {
 import { displayValue } from "./review-helpers";
 
 export { displayValue } from "./review-helpers";
+
+function makeCaptcha() {
+  const a = Math.floor(Math.random() * 9) + 1; // 1-9
+  const b = Math.floor(Math.random() * 9) + 1; // 1-9
+  return { a, b, answer: a + b };
+}
 
 export const REVIEW_GROUP_IDS = [
   "report-category",
@@ -125,6 +133,10 @@ export function ReviewStep({
   const t = useTranslations("submit");
   const locale = useLocale();
   const meta = form.reportMetadata ?? {};
+  const [captcha, setCaptcha] = useState(() => makeCaptcha());
+  const [captchaInput, setCaptchaInput] = useState("");
+  const [captchaError, setCaptchaError] = useState(false);
+
   const relevantDetailFields = getRelevantDetailFieldIds(
     form.reportCategory,
     meta.orgType,
@@ -138,6 +150,18 @@ export function ReviewStep({
   const subTypeLabel = meta.orgType
     ? getSubTypeLabel(t, form.reportCategory, meta.orgType)
     : displayValue(meta.orgType);
+
+  function handleSubmit() {
+    const value = parseInt(captchaInput.trim(), 10);
+    if (Number.isNaN(value) || value !== captcha.answer) {
+      setCaptchaError(true);
+      setCaptcha(makeCaptcha());
+      setCaptchaInput("");
+      return;
+    }
+    setCaptchaError(false);
+    onSubmit();
+  }
 
   return (
     <div className="flex-col">
@@ -175,6 +199,12 @@ export function ReviewStep({
           <span className="k">{t("locCountry")}</span>
           <span className="v">{meta.country ? getCountryLabel(t, meta.country) : displayValue(meta.country)}</span>
         </div>
+        {meta.country === "سوريا" && (
+          <div className="review-row">
+            <span className="k">{t("locGovernorate")}</span>
+            <span className="v">{displayValue(meta.governorate)}</span>
+          </div>
+        )}
         <div className="review-row">
           <span className="k">{t("locAddress")}</span>
           <span className="v">{displayValue(meta.address)}</span>
@@ -355,13 +385,39 @@ export function ReviewStep({
       </div>
 
       <div className="review-affirm">
+        <div className="form-field" style={{ maxWidth: 280 }}>
+          <label htmlFor="review-captcha">
+            {t("captchaLabel", { a: captcha.a, b: captcha.b })}
+          </label>
+          <input
+            id="review-captcha"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            className="ds-input"
+            value={captchaInput}
+            onChange={(e) => {
+              setCaptchaInput(e.target.value);
+              if (captchaError) setCaptchaError(false);
+            }}
+            placeholder={t("captchaPlaceholder")}
+            aria-invalid={captchaError || undefined}
+            aria-describedby={captchaError ? "review-captcha-error" : undefined}
+          />
+          {captchaError && (
+            <p id="review-captcha-error" className="legal-error" role="alert">
+              {t("captchaError")}
+            </p>
+          )}
+        </div>
+
         <div className="wizard-nav flex-between mt-16">
           <button
             type="button"
             className="btn primary"
             disabled={submitting}
             aria-disabled={submitting}
-            onClick={onSubmit}
+            onClick={handleSubmit}
           >
             {submitting ? t("submitting") : t("submitButton")}
           </button>

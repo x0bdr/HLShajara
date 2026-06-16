@@ -6,7 +6,7 @@
  * Renders the eight report categories as a card grid with icons and
  * descriptions. The selected category maps to `form.entityType` (individual for
  * "أفراد", organization for the rest) and is written to `form.reportCategory`.
- * Notifies the parent via `onConfirm` so choice steps can auto-advance.
+ * A Next button is shown so the user confirms the selection before advancing.
  */
 
 import { useTranslations } from "next-intl";
@@ -35,24 +35,41 @@ export function ReportCategoryStep({ form, dispatch, onConfirm }: ReportCategory
     };
   });
 
+  function handleSelect(value: string) {
+    const config = REPORT_CATEGORIES.find((c) => c.id === value);
+    dispatch({
+      type: "SET_FIELD",
+      field: "entityType",
+      value: config?.entityType ?? "organization",
+    });
+    dispatch({ type: "SET_FIELD", field: "reportCategory", value });
+  }
+
+  const canAdvance = Boolean(form.reportCategory);
+
   return (
-    <CardSelect
-      ariaLabel={t("q_reportCategory")}
-      mode="single"
-      selected={form.reportCategory}
-      options={options}
-      onChange={(value, selected) => {
-        if (!selected) return;
-        const config = REPORT_CATEGORIES.find((c) => c.id === value);
-        dispatch({
-          type: "SET_FIELD",
-          field: "entityType",
-          value: config?.entityType ?? "organization",
-        });
-        dispatch({ type: "SET_FIELD", field: "reportCategory", value });
-        onConfirm?.(value);
-      }}
-    />
+    <div className="flex-col">
+      <CardSelect
+        ariaLabel={t("q_reportCategory")}
+        mode="single"
+        selected={form.reportCategory}
+        options={options}
+        onChange={(value) => handleSelect(value)}
+      />
+
+      <div className="wizard-nav flex-between mt-16">
+        <div />
+        <button
+          type="button"
+          className="btn primary next"
+          disabled={!canAdvance}
+          aria-disabled={!canAdvance}
+          onClick={() => canAdvance && onConfirm?.(form.reportCategory)}
+        >
+          {t("next")}
+        </button>
+      </div>
+    </div>
   );
 }
 

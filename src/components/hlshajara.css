@@ -1642,6 +1642,19 @@ input[type="checkbox"]:focus-visible {
 [dir=rtl] .wizard-panel.entering-fwd { transform:translateX(-12px); }
 [dir=rtl] .wizard-panel.entering-back { transform:translateX(12px); }
 
+/* About-you step: let the card shrink/expand with its content instead of
+   holding a fixed minimum height when the anonymous toggle hides fields. */
+.wizard-panel[data-step="about-you"] { min-block-size:auto; }
+
+/* Smoothly expand/collapse the about-you contact fields when anonymity is toggled. */
+.about-you-fields {
+  display:grid;
+  grid-template-rows:0fr;
+  transition:grid-template-rows var(--dur) var(--ease);
+}
+.about-you-fields.open { grid-template-rows:1fr; }
+.about-you-fields > * { overflow:hidden; }
+
 /* Wizard eyebrow label — Latin small-caps, reset for Arabic. */
 .wizard-eyebrow {
   font-family:var(--font-sans);

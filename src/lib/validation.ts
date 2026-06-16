@@ -61,6 +61,7 @@ export const reportMetadataSchema = z.object({
   city: z.string().max(100).optional(),
   nearestLocation: z.string().max(200).optional(),
   address: z.string().max(300).optional(),
+  governorate: z.string().max(100).optional(),
   contactPhone: z
     .string()
     .max(100)

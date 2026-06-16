@@ -34,11 +34,13 @@ interface WizardPanelProps {
   stepIndex: number;
   /** Total visible steps (M). */
   stepTotal: number;
+  /** Optional step id for step-specific styling. */
+  stepId?: string;
   /** The step body (fields, choice grid, etc.). */
   children: ReactNode;
 }
 
-export function WizardPanel({ title, stepIndex, stepTotal, children }: WizardPanelProps) {
+export function WizardPanel({ title, stepIndex, stepTotal, stepId, children }: WizardPanelProps) {
   const locale = useLocale();
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -59,7 +61,7 @@ export function WizardPanel({ title, stepIndex, stepTotal, children }: WizardPan
   const announcement = `${fmt.format(stepIndex)} / ${fmt.format(stepTotal)} — ${title}`;
 
   return (
-    <section className="wizard-panel">
+    <section className="wizard-panel" data-step={stepId}>
       <h2 ref={headingRef} tabIndex={-1}>
         {title}
       </h2>

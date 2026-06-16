@@ -76,8 +76,8 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
         </button>
       </div>
 
-      {!form.isAnonymous && (
-        <>
+      <div className={`about-you-fields${form.isAnonymous ? "" : " open"}`}>
+        <div>
           <div className="form-row">
             <div className="form-field">
               <label htmlFor="about-name">{t("fullName")}</label>
@@ -102,8 +102,8 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
           </div>
 
           <p className="ds-caption">{t("anonHelp")}</p>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }

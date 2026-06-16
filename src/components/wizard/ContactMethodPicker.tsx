@@ -21,7 +21,6 @@ const ALL_METHODS: ContactMethodType[] = [
   "whatsapp",
   "tiktok",
   "phone",
-  "email",
   "website",
 ];
 
@@ -145,30 +144,32 @@ export function ContactMethodPicker({
       ) : null}
 
       {methods.map((method, index) => (
-        <div key={`${method.type}-${index}`} className="form-row" style={{ alignItems: "flex-end", gap: 8 }}>
+        <div key={`${method.type}-${index}`} className="form-row" style={{ alignItems: "stretch", gap: 6 }}>
           <div
             className="ds-input"
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "10px 12px",
-              width: 44,
+              padding: 8,
+              width: 38,
+              height: 38,
               opacity: disabled ? 0.5 : 1,
             }}
             aria-hidden="true"
             title={t(labelKeyFor(method.type))}
           >
-            <ContactMethodIcon type={method.type} size={18} />
+            <ContactMethodIcon type={method.type} size={16} />
           </div>
 
-          <div className="form-field" style={{ flex: 1, minWidth: 180, marginBottom: 0 }}>
+          <div className="form-field" style={{ flex: 1, minWidth: 120, marginBottom: 0 }}>
             <input
               id={`contact-value-${method.type}-${index}`}
-              type={method.type === "email" ? "email" : "text"}
+              type="text"
               className="ds-input"
               disabled={disabled}
               value={method.value}
+              style={{ height: 38, padding: "8px 10px" }}
               aria-label={`${t("contactMethodValue")} (${t(labelKeyFor(method.type))})`}
               placeholder={placeholderFor(method.type, t)}
               onChange={(e) => updateMethod(index, e.target.value)}
@@ -181,7 +182,7 @@ export function ContactMethodPicker({
             disabled={disabled}
             onClick={() => removeMethod(index)}
             aria-label={t("removeContactMethod")}
-            style={{ padding: "8px 12px", whiteSpace: "nowrap" }}
+            style={{ padding: "0 10px", height: 38, whiteSpace: "nowrap" }}
           >
             ✕
           </button>
