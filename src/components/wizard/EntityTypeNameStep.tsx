@@ -32,6 +32,9 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
   function clearDetailMetadata() {
     dispatch({ type: "SET_METADATA", field: "detailFlags", value: [] });
     dispatch({ type: "SET_METADATA", field: "ownerName", value: "" });
+    dispatch({ type: "SET_METADATA", field: "ownerNames", value: [] });
+    dispatch({ type: "SET_METADATA", field: "investorNames", value: [] });
+    dispatch({ type: "SET_METADATA", field: "labourEntries", value: [] });
     dispatch({ type: "SET_METADATA", field: "reportedPersonName", value: "" });
     dispatch({ type: "SET_METADATA", field: "reportedPersonPhone", value: "" });
     dispatch({ type: "SET_METADATA", field: "reportedPersonPosition", value: "" });

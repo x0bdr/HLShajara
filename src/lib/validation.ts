@@ -37,6 +37,7 @@ export const contactMethodTypes = [
   "phone",
   "email",
   "website",
+  "tiktok",
 ] as const;
 
 export type ContactMethodType = (typeof contactMethodTypes)[number];
@@ -60,9 +61,15 @@ export const reportMetadataSchema = z.object({
   city: z.string().max(100).optional(),
   nearestLocation: z.string().max(200).optional(),
   address: z.string().max(300).optional(),
-  contactPhone: z.string().max(100).optional(),
+  contactPhone: z
+    .string()
+    .max(100)
+    .refine((v) => !v || /^[\d\s\+\-\(\)]+$/.test(v), {
+      message: "Contact phone must contain only numbers",
+    })
+    .optional(),
   websiteName: z.string().max(255).optional(),
-  entityEmail: z.string().max(255).optional(),
+  entityEmail: z.union([z.string().email().max(255), z.literal("")]).optional(),
   googleMapsLink: z.string().max(2048).optional(),
   socialMediaAccounts: z.string().max(500).optional(),
   socialContactMethods: z.array(contactMethodSchema).optional(),

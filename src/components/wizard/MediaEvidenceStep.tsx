@@ -25,6 +25,7 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
   const t = useTranslations("submit");
 
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const meta = form.reportMetadata ?? {};
   const [linkError, setLinkError] = useState(false);
@@ -33,27 +34,31 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
   async function uploadFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setUploading(true);
+    setUploadError(null);
 
     for (const file of Array.from(files)) {
       const data = new FormData();
       data.append("file", file);
       try {
         const res = await fetch("/api/upload", { method: "POST", body: data });
-        const json = await res.json();
+        const json = (await res.json()) as { ok: boolean; message?: string; code?: string } & Record<string, unknown>;
         if (json.ok) {
           dispatch({
             type: "ADD_FILE",
             file: {
-              hash: json.hash,
-              filename: json.filename,
-              originalName: json.originalName,
-              url: json.url,
-              size: json.size,
+              hash: String(json.hash),
+              filename: String(json.filename),
+              originalName: String(json.originalName),
+              url: String(json.url),
+              size: Number(json.size),
             },
           });
+        } else {
+          setUploadError(json.message ?? t("uploadFailed"));
         }
       } catch (err) {
         console.error("Upload error:", err);
+        setUploadError(t("uploadFailed"));
       }
     }
 
@@ -141,6 +146,12 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
           <div className="dropzone-title">{uploading ? t("uploading") : t("dropzoneTitle")}</div>
           <div className="dropzone-hint">{t("dropzoneHint")}</div>
         </div>
+
+        {uploadError && (
+          <p className="legal-error" role="alert" style={{ marginTop: 8 }}>
+            {uploadError}
+          </p>
+        )}
 
         {form.sourceFiles.length > 0 && (
           <div className="flex-col mt-16">

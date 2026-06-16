@@ -3,7 +3,7 @@
 /**
  * LocationInfoStep — Step 2 of the v1.5 category-based wizard (معلومات الجهة).
  *
- * Captures country, address, contact/website/email, social-media accounts, and
+ * Captures country, address, contact/website, social-media accounts, and
  * an optional Google Maps link. City/state fields were removed per Phase 34.
  */
 
@@ -21,12 +21,14 @@ interface LocationInfoStepProps {
 }
 
 const DEFAULT_COUNTRY = "سوريا";
+const PHONE_RE = /^[\d\s\+\-\(\)]*$/;
 
 export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const t = useTranslations("submit");
 
   const meta = form.reportMetadata ?? {};
   const [country, setCountry] = useState(meta.country || DEFAULT_COUNTRY);
+  const [contactError, setContactError] = useState(false);
 
   useEffect(() => {
     if (!form.allegationLocation) {
@@ -59,6 +61,11 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
   const socialMethods = meta.socialContactMethods ?? [];
   function setSocialMethods(next: { type: ContactMethodType; value: string }[]) {
     dispatch({ type: "SET_METADATA", field: "socialContactMethods", value: next });
+  }
+
+  function onContactPhoneChange(value: string) {
+    setContactError(value.length > 0 && !PHONE_RE.test(value));
+    dispatch({ type: "SET_METADATA", field: "contactPhone", value });
   }
 
   return (
@@ -101,12 +108,18 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         <input
           id="loc-contact"
           type="text"
+          inputMode="tel"
           className="ds-input"
+          aria-invalid={contactError || undefined}
+          aria-describedby={contactError ? "loc-contact-error" : undefined}
           value={meta.contactPhone ?? ""}
-          onChange={(e) =>
-            dispatch({ type: "SET_METADATA", field: "contactPhone", value: e.target.value })
-          }
+          onChange={(e) => onContactPhoneChange(e.target.value)}
         />
+        {contactError && (
+          <p id="loc-contact-error" className="legal-error" role="alert">
+            {t("locContactError")}
+          </p>
+        )}
       </div>
 
       <div className="form-field">
@@ -118,19 +131,6 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           value={meta.websiteName ?? ""}
           onChange={(e) =>
             dispatch({ type: "SET_METADATA", field: "websiteName", value: e.target.value })
-          }
-        />
-      </div>
-
-      <div className="form-field">
-        <label htmlFor="loc-email">{t("locEmail")}</label>
-        <input
-          id="loc-email"
-          type="email"
-          className="ds-input"
-          value={meta.entityEmail ?? ""}
-          onChange={(e) =>
-            dispatch({ type: "SET_METADATA", field: "entityEmail", value: e.target.value })
           }
         />
       </div>
@@ -162,7 +162,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         <ContactMethodPicker
           methods={socialMethods}
           onChange={setSocialMethods}
-          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "website"]}
+          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "email", "website"]}
         />
       </div>
     </div>

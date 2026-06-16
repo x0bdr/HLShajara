@@ -76,30 +76,34 @@ export function AboutYouStep({ form, dispatch }: AboutYouStepProps) {
         </button>
       </div>
 
-      <div className="form-row">
-        <div className="form-field">
-          <label htmlFor="about-name">{t("fullName")}</label>
-          <input
-            id="about-name"
-            type="text"
-            className="ds-input"
-            disabled={disabled}
-            value={form.submitterName ?? ""}
-            onChange={(e) =>
-              dispatch({ type: "SET_FIELD", field: "submitterName", value: e.target.value })
-            }
-          />
-        </div>
-      </div>
+      {!form.isAnonymous && (
+        <>
+          <div className="form-row">
+            <div className="form-field">
+              <label htmlFor="about-name">{t("fullName")}</label>
+              <input
+                id="about-name"
+                type="text"
+                className="ds-input"
+                disabled={disabled}
+                value={form.submitterName ?? ""}
+                onChange={(e) =>
+                  dispatch({ type: "SET_FIELD", field: "submitterName", value: e.target.value })
+                }
+              />
+            </div>
+          </div>
 
-      <div className="form-field" style={{ marginTop: 8 }}>
-        <div className="flex-between" style={{ marginBottom: 8 }}>
-          <label style={{ margin: 0 }}>{t("contactMethodsTitle")}</label>
-        </div>
-        <ContactMethodPicker methods={methods} disabled={disabled} onChange={setMethods} />
-      </div>
+          <div className="form-field" style={{ marginTop: 8 }}>
+            <div className="flex-between" style={{ marginBottom: 8 }}>
+              <label style={{ margin: 0 }}>{t("contactMethodsTitle")}</label>
+            </div>
+            <ContactMethodPicker methods={methods} disabled={disabled} onChange={setMethods} />
+          </div>
 
-      <p className="ds-caption">{t("anonHelp")}</p>
+          <p className="ds-caption">{t("anonHelp")}</p>
+        </>
+      )}
     </div>
   );
 }

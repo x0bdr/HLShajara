@@ -3,7 +3,6 @@ import { writeFile, mkdir } from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
 import sharp from "sharp";
-import { getSession, unauthorizedResponse } from "@/lib/session";
 import { scanBuffer } from "@/lib/clamav";
 import { isFfmpegAvailable, stripVideoMetadata } from "@/lib/media-metadata";
 import { rateLimitResponse } from "@/lib/rate-limit";
@@ -33,11 +32,6 @@ export async function POST(request: Request) {
   if (!rl.ok) return rl.response;
 
   try {
-    const session = await getSession();
-    if (!session) {
-      return unauthorizedResponse("Authentication required to upload files.");
-    }
-
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

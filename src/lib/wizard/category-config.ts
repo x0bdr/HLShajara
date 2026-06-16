@@ -47,6 +47,8 @@ export interface LocalizedOption {
 export interface SubTypeConfig extends LocalizedOption {
   /** Which free-text detail fields to show for this subtype. */
   detailFields: DetailFieldId[];
+  /** Detail-flag values that should NOT be offered for this subtype. */
+  excludedDetailFlags?: string[];
 }
 
 export interface CategoryConfig {
@@ -347,6 +349,13 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
       {
+        value: "properties",
+        labelKey: "subTourismProperties",
+        descriptionKey: "subTourismPropertiesDesc",
+        iconName: "Home",
+        detailFields: ["ownerNames", "propertyType"],
+      },
+      {
         value: "hotel",
         labelKey: "subTourismHotel",
         descriptionKey: "subTourismHotelDesc",
@@ -380,6 +389,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subTourismPrivateCarDesc",
         iconName: "Car",
         detailFields: ["carType", "carPlate", "driverPhone", "driverName", "taxiNumber", "appName"],
+        excludedDetailFlags: ["owner", "investor", "labour", "support_data"],
       },
     ],
     detailFlags: [

@@ -26,7 +26,8 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const categoryConfig = getCategoryConfig(form.reportCategory);
   const subTypeConfig = getSubTypeConfig(form.reportCategory, meta.orgType);
   const visibleFields = new Set<DetailFieldId>(subTypeConfig?.detailFields ?? []);
-  const selectedFlags = new Set(meta.detailFlags ?? []);
+  const excludedFlags = new Set(subTypeConfig?.excludedDetailFlags ?? []);
+  const selectedFlags = new Set((meta.detailFlags ?? []).filter((f) => !excludedFlags.has(f)));
 
   function setDetail(field: keyof ReportMetadata, value: unknown) {
     dispatch({ type: "SET_METADATA", field, value: value as ReportMetadata[keyof ReportMetadata] });
@@ -55,14 +56,16 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
     }
   }
 
-  const flagOptions = (categoryConfig?.detailFlags ?? []).map((flag) => {
-    const Icon = getIconByName(flag.iconName);
-    return {
-      value: flag.value,
-      title: getFlagLabel(t, flag.value),
-      icon: Icon ? <Icon size={20} /> : null,
-    };
-  });
+  const flagOptions = (categoryConfig?.detailFlags ?? [])
+    .filter((flag) => !excludedFlags.has(flag.value))
+    .map((flag) => {
+      const Icon = getIconByName(flag.iconName);
+      return {
+        value: flag.value,
+        title: getFlagLabel(t, flag.value),
+        icon: Icon ? <Icon size={20} /> : null,
+      };
+    });
 
   const adaptiveFields = Array.from(selectedFlags)
     .map((flag) => ({ flag, mapping: DETAIL_FLAG_FIELDS[flag] }))

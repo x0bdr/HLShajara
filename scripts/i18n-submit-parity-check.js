@@ -27,7 +27,7 @@ const V15_EXPECTED = [
   "q_experience", "q_mediaEvidence", "q_aboutYou",
   // location info fields
   "locCountry", "locAtLeastOne", "locAddress",
-  "locContact", "locWebsite", "locEmail", "locMaps", "locMapsError", "locSocial",
+  "locContact", "locContactError", "locWebsite", "locMaps", "locMapsError", "locSocial",
   // entity type/name fields
   "etnType", "etnName", "etnOtherSpecify",
   // report details fields
