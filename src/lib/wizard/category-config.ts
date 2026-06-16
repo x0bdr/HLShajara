@@ -186,7 +186,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
       },
     ],
-    detailFlags: [],
+    detailFlags: [COMMON_FLAGS.supportData],
   },
   {
     id: "educational",
@@ -238,7 +238,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.instructor],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.instructor, COMMON_FLAGS.supportData],
   },
   {
     id: "service",
@@ -442,7 +442,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.doctor, COMMON_FLAGS.nurse, COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour],
+    detailFlags: [COMMON_FLAGS.doctor, COMMON_FLAGS.nurse, COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
   },
   {
     id: "organizations",
