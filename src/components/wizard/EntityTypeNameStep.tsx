@@ -55,6 +55,17 @@ export function EntityTypeNameStep({ form, dispatch }: EntityTypeNameStepProps) 
   }
 
   function setOrgType(value: string) {
+    // Properties under tourism are redirected to the real-estate category.
+    if (form.reportCategory === "tourism" && value === "properties") {
+      dispatch({ type: "SET_FIELD", field: "reportCategory", value: "real_estate" });
+      dispatch({ type: "SET_FIELD", field: "entityType", value: "organization" });
+      dispatch({ type: "SET_METADATA", field: "orgType", value: "" });
+      dispatch({ type: "SET_METADATA", field: "orgSubTypeOther", value: "" });
+      dispatch({ type: "SET_FIELD", field: "entityRole", value: "" });
+      clearDetailMetadata();
+      return;
+    }
+
     dispatch({ type: "SET_METADATA", field: "orgType", value });
     if (value !== "other") {
       dispatch({ type: "SET_METADATA", field: "orgSubTypeOther", value: "" });
