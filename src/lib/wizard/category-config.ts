@@ -447,7 +447,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         labelKey: "subMedicalPersonalClinic",
         descriptionKey: "subMedicalPersonalClinicDesc",
         iconName: "Stethoscope",
-        detailFields: ["ownerNames", "reportedPersonName", "reportedPersonPosition"],
+        detailFields: ["ownerNames"],
       },
       {
         value: "private_hospital",
