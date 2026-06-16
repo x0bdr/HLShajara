@@ -78,7 +78,7 @@ const COMMON_FLAGS: Record<string, LocalizedOption> = {
   doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
   nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
   instructor: { value: "instructor", labelKey: "flagInstructor", iconName: "UserCheck" },
-  investor: { value: "investor", labelKey: "flagInvestor", descriptionKey: "flagInvestorDesc", iconName: "TrendingUp" },
+  investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
   student: { value: "student", labelKey: "flagStudent", iconName: "GraduationCap" },
   clubName: { value: "club_name", labelKey: "flagClubName", iconName: "Flag" },
 };
@@ -106,7 +106,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
   },
   {
     id: "individuals",
@@ -238,7 +238,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.instructor],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.instructor],
   },
   {
     id: "service",
@@ -339,7 +339,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour, COMMON_FLAGS.supportData],
   },
   {
     id: "tourism",
@@ -442,7 +442,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.doctor, COMMON_FLAGS.nurse, COMMON_FLAGS.owner, COMMON_FLAGS.labour],
+    detailFlags: [COMMON_FLAGS.doctor, COMMON_FLAGS.nurse, COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.labour],
   },
   {
     id: "organizations",
@@ -560,7 +560,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["ownerNames", "propertyType"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.investor, COMMON_FLAGS.supportData],
   },
 ];
 
