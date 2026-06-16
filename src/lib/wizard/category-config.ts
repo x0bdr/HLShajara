@@ -440,6 +440,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subMedicalPharmacyDesc",
         iconName: "Pill",
         detailFields: ["ownerNames"],
+        excludedDetailFlags: ["doctor", "nurse"],
       },
       {
         value: "personal_clinic",
