@@ -44,9 +44,8 @@ export interface StepDef {
 export const STEPS = [
   {
     id: "report-category",
-    archetype: "choice",
+    archetype: "input",
     titleKey: "q_reportCategory",
-    completionGate: true,
     requires: (form) => form.reportCategory.trim().length > 0,
   },
   {

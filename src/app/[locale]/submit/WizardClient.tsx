@@ -49,15 +49,6 @@ import { MediaEvidenceStep } from "@/components/wizard/MediaEvidenceStep";
 import { AboutYouStep } from "@/components/wizard/AboutYouStep";
 import ReviewStep from "@/components/wizard/ReviewStep";
 
-const ADVANCE_DELAY_MS = 200;
-
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
 function isKnownStep(id: string): id is StepId {
   return STEPS.some((s) => s.id === id);
 }
@@ -119,7 +110,6 @@ export function WizardClient() {
     return !!(draft && draft.form);
   });
   const submittedRef = useRef(false);
-  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef(state);
 
   const stepDef: StepDef | undefined = STEPS.find((s) => s.id === state.currentStep);
@@ -178,12 +168,6 @@ export function WizardClient() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [state.dirty, t]);
 
-  useEffect(() => {
-    return () => {
-      if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    };
-  }, []);
-
   const advance = useCallback(() => {
     const next = nextStep(stateRef.current);
     if (next) goTo(next);
@@ -193,30 +177,6 @@ export function WizardClient() {
     const prev = prevStep(state);
     if (prev) goTo(prev);
   }, [state, goTo]);
-
-  const completeAndAdvance = useCallback(
-    (nextOverride?: StepId) => {
-      dispatch({ type: "COMPLETE_STEP", step: state.currentStep });
-      if (advanceTimer.current) clearTimeout(advanceTimer.current);
-      const run = nextOverride ? () => goTo(nextOverride) : advance;
-      if (prefersReducedMotion()) {
-        run();
-      } else {
-        advanceTimer.current = setTimeout(run, ADVANCE_DELAY_MS);
-      }
-    },
-    [advance, goTo, state.currentStep],
-  );
-
-  const onChoiceConfirm = useCallback(
-    (value: string) => {
-      if (state.currentStep === "report-category") {
-        dispatch({ type: "SET_FIELD", field: "reportCategory", value });
-      }
-      completeAndAdvance();
-    },
-    [state.currentStep, completeAndAdvance],
-  );
 
   function resumeDraft() {
     const draft = loadDraft<WizardState>();
@@ -357,11 +317,7 @@ export function WizardClient() {
             onSubmit={handleSubmit}
           />
         ) : state.currentStep === "report-category" ? (
-          <ReportCategoryStep
-            form={state.form}
-            dispatch={dispatch}
-            onConfirm={onChoiceConfirm}
-          />
+          <ReportCategoryStep form={state.form} dispatch={dispatch} />
         ) : state.currentStep === "location-info" ? (
           <LocationInfoStep form={state.form} dispatch={dispatch} />
         ) : state.currentStep === "entity-type-name" ? (

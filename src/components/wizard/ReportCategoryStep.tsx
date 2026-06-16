@@ -3,10 +3,10 @@
 /**
  * ReportCategoryStep — Step 1 of the v1.5 category-based wizard.
  *
- * Renders the eight report categories as a card grid with icons and
- * descriptions. The selected category maps to `form.entityType` (individual for
- * "أفراد", organization for the rest) and is written to `form.reportCategory`.
- * A Next button is shown so the user confirms the selection before advancing.
+ * Renders the report categories as a card grid with icons and descriptions.
+ * The selected category maps to `form.entityType` (individual for "أفراد",
+ * organization for the rest) and is written to `form.reportCategory`.
+ * Navigation (Next/Back) is handled by the persistent WizardNav outside the card.
  */
 
 import { useTranslations } from "next-intl";
@@ -19,10 +19,9 @@ import { CardSelect } from "./CardSelect";
 interface ReportCategoryStepProps {
   form: SubmitInput;
   dispatch: React.Dispatch<WizardAction>;
-  onConfirm?: (value: string) => void;
 }
 
-export function ReportCategoryStep({ form, dispatch, onConfirm }: ReportCategoryStepProps) {
+export function ReportCategoryStep({ form, dispatch }: ReportCategoryStepProps) {
   const t = useTranslations("submit");
 
   const options = REPORT_CATEGORIES.map((cat) => {
@@ -45,8 +44,6 @@ export function ReportCategoryStep({ form, dispatch, onConfirm }: ReportCategory
     dispatch({ type: "SET_FIELD", field: "reportCategory", value });
   }
 
-  const canAdvance = Boolean(form.reportCategory);
-
   return (
     <div className="flex-col">
       <CardSelect
@@ -56,19 +53,6 @@ export function ReportCategoryStep({ form, dispatch, onConfirm }: ReportCategory
         options={options}
         onChange={(value) => handleSelect(value)}
       />
-
-      <div className="wizard-nav flex-between mt-16">
-        <div />
-        <button
-          type="button"
-          className="btn primary next"
-          disabled={!canAdvance}
-          aria-disabled={!canAdvance}
-          onClick={() => canAdvance && onConfirm?.(form.reportCategory)}
-        >
-          {t("next")}
-        </button>
-      </div>
     </div>
   );
 }
