@@ -71,7 +71,9 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
     .map((flag) => ({ flag, mapping: DETAIL_FLAG_FIELDS[flag] }))
     .filter(
       (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
-        !!item.mapping && !visibleFields.has(item.mapping.field as DetailFieldId),
+        !!item.mapping &&
+        !visibleFields.has(item.mapping.field as DetailFieldId) &&
+        !["ownerNames", "investorNames", "labourEntries"].includes(item.mapping.field),
     );
 
   // ---- array helpers ----
@@ -124,7 +126,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
         />
       ))}
 
-      {show("ownerNames") && (
+      {selectedFlags.has("owner") && (
         <StringArrayField
           label={t("detailsOwnerName")}
           values={ownerNames}
@@ -133,7 +135,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
         />
       )}
 
-      {show("investorNames") && (
+      {selectedFlags.has("investor") && (
         <StringArrayField
           label={t("detailsInvestorName")}
           values={investorNames}
@@ -142,7 +144,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
         />
       )}
 
-      {show("labourEntries") && (
+      {selectedFlags.has("labour") && (
         <LabourArrayField
           label={t("detailsLabourInfo")}
           entries={labourEntries}
