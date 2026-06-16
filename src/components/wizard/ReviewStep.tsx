@@ -199,7 +199,7 @@ export function ReviewStep({
           <span className="k">{t("locCountry")}</span>
           <span className="v">{meta.country ? getCountryLabel(t, meta.country) : displayValue(meta.country)}</span>
         </div>
-        {meta.country === "سوريا" && (
+        {meta.governorate && (
           <div className="review-row">
             <span className="k">{t("locGovernorate")}</span>
             <span className="v">{displayValue(meta.governorate)}</span>

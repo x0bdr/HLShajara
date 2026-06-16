@@ -254,7 +254,7 @@
     "locContactError": "Contact number must contain only digits",
     "locEmail": "Entity email",
     "locWebsite": "Entity website link",
-    "locSocial": "Social media accounts (optional)",
+    "locSocial": "Social media accounts and email (optional)",
     "etnType": "Entity / person type",
     "etnName": "Name / brand name",
     "etnNameBrand": "Brand / product name",

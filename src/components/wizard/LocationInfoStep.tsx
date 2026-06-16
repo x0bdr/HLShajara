@@ -112,7 +112,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         </select>
       </div>
 
-      {isSyria && (
+      {isSyria ? (
         <div className="form-field">
           <label htmlFor="loc-governorate">{t("locGovernorate")}</label>
           <select
@@ -128,6 +128,17 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
               </option>
             ))}
           </select>
+        </div>
+      ) : (
+        <div className="form-field">
+          <label htmlFor="loc-governorate">{t("locGovernorate")}</label>
+          <input
+            id="loc-governorate"
+            type="text"
+            className="ds-input"
+            value={governorate}
+            onChange={(e) => onGovernorateChange(e.target.value)}
+          />
         </div>
       )}
 
@@ -218,7 +229,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         <ContactMethodPicker
           methods={socialMethods}
           onChange={setSocialMethods}
-          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "website"]}
+          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "email", "website"]}
         />
       </div>
     </div>
