@@ -229,7 +229,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
         <ContactMethodPicker
           methods={socialMethods}
           onChange={setSocialMethods}
-          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "email", "website"]}
+          allowTypes={["x", "facebook", "instagram", "telegram", "whatsapp", "tiktok", "website"]}
         />
       </div>
     </div>
