@@ -63,6 +63,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
       return {
         value: flag.value,
         title: getFlagLabel(t, flag.value),
+        description: flag.descriptionKey ? t(flag.descriptionKey) : undefined,
         icon: Icon ? <Icon size={20} /> : null,
       };
     });
@@ -136,12 +137,15 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
       )}
 
       {selectedFlags.has("investor") && (
-        <StringArrayField
-          label={t("detailsInvestorName")}
-          values={investorNames}
-          addLabel={t("addInvestor")}
-          onChange={setInvestorNames}
-        />
+        <>
+          <StringArrayField
+            label={t("detailsInvestorName")}
+            values={investorNames}
+            addLabel={t("addInvestor")}
+            onChange={setInvestorNames}
+          />
+          <p className="ds-caption">{t("investorHint")}</p>
+        </>
       )}
 
       {selectedFlags.has("labour") && (

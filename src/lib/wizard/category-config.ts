@@ -78,7 +78,7 @@ const COMMON_FLAGS: Record<string, LocalizedOption> = {
   doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
   nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
   instructor: { value: "instructor", labelKey: "flagInstructor", iconName: "UserCheck" },
-  investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
+  investor: { value: "investor", labelKey: "flagInvestor", descriptionKey: "flagInvestorDesc", iconName: "TrendingUp" },
   student: { value: "student", labelKey: "flagStudent", iconName: "GraduationCap" },
   clubName: { value: "club_name", labelKey: "flagClubName", iconName: "Flag" },
 };
