@@ -152,6 +152,13 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
       },
       {
+        value: "volunteer",
+        labelKey: "subIndividualsVolunteer",
+        descriptionKey: "subIndividualsVolunteerDesc",
+        iconName: "UserCheck",
+        detailFields: ["reportedPersonName", "reportedPersonPosition"],
+      },
+      {
         value: "influencer",
         labelKey: "subIndividualsInfluencer",
         descriptionKey: "subIndividualsInfluencerDesc",
