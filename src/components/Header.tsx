@@ -7,7 +7,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "better-auth/react";
-import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
 import { assetPath } from "@/lib/asset-path";
 
 export function Header() {
@@ -23,13 +22,6 @@ export function Header() {
   const isAdmin = role === "admin";
   const isStaff = ["reviewer", "senior_reviewer", "admin"].includes(role ?? "");
   const isSignedIn = Boolean(session?.user);
-
-  const switchLocale = () => {
-    const newLocale = locale === "ar" ? "en" : "ar";
-    const newPath = pathname.replace(new RegExp(`^/${locale}`), `/${newLocale}`);
-    pushDataLayer(GTM_EVENTS.PAGE_VIEW, { locale: newLocale, action: "locale_switch" });
-    router.push(newPath);
-  };
 
   const isActive = (path: string) => pathname === `/${locale}${path}`;
 
@@ -118,13 +110,6 @@ export function Header() {
                 <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
             )}
-          </button>
-          <button
-            onClick={switchLocale}
-            className="site-lang-btn"
-            aria-label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
-          >
-            {locale === "ar" ? "EN" : "عربي"}
           </button>
           {isSignedIn && (
             <button

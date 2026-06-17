@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { fontVars } from "../fonts";
 import { GtmScript, GtmNoScript } from "@/components/GtmScript";
+import { GaScript } from "@/components/GaScript";
 import "@/styles/tokens.css";
 import "@/styles/globals.css";
 import "@/components/hlshajara.css";
@@ -33,6 +34,7 @@ export default async function LocaleLayout({
     <html lang={locale} dir={dir} className={fontVars}>
       <head>
         <GtmScript />
+        <GaScript />
       </head>
       <body
         style={{

@@ -70,6 +70,7 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 - [x] **Phase 31: Review, Submit & Confirmation** — Summary with edit-back, affirmation gate, `/api/submit` wiring, rejection-code → bilingual mapping (completed 2026-06-14)
 - [x] **Phase 32: i18n, RTL & Accessibility** — Full EN/AR `submit` key parity, RTL correctness, keyboard/screen-reader, reduced motion (completed 2026-06-14)
 - [x] **Phase 33: Backend Support** — `conductType` enum + triage, `leadNote`, per-source `sourceType`, anon default flip, video metadata stripping, `roleInConduct` (completed 2026-06-14)
+- [ ] **Phase 33.5: Frontend Polish Fixes** — Header CTA copy, larger CTA button, footer founded-date weight, correct TikTok handle, fix broken homepage slider images
 
 ### 📋 v2.0 Scale (Future)
 
@@ -181,6 +182,24 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 - [ ] 33-01-PLAN.md — Shared anti-drift conduct/role constants + pgEnums/nullable columns + isAnonymous default flip + additive migration (BE-01, BE-04, BE-06)
 - [ ] 33-02-PLAN.md — Extend intake Zod schema + persist conductType/roleInConduct/leadNote on /api/submit + auto-populate triageCategory + leadNote-never-public guard (BE-01, BE-02, BE-03, BE-06)
 - [ ] 33-03-PLAN.md — ffmpeg exec helper + gated video-metadata-strip branch in /api/upload, fail-closed when ffmpeg absent (BE-05)
+**UI hint**: yes
+
+### Phase 33.5: Frontend Polish Fixes
+**Goal**: The public site's chrome and homepage slider match the operator's latest copy, styling, social identity; the Arabic slider shows images as reliably as the English one.
+**Depends on**: Phase 33 complete (post-v1.4 polish on top of shipped wizard)
+**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05
+**Scope notes**: Update `nav.submit` to "تقديم معلومات" / "Submit Information" (AR/EN). Enlarge the header CTA button and change its shape from pill to rounded rectangle using existing design tokens. Add `font-weight: 800` to the footer founded day while preserving its font family. Update only the TikTok social handle to `HLShajaraa`, leaving other platforms on `HLShajara`. For the slider: keep only the 6 `.jpg` campaign photos added yesterday in `public/pics/new/` and remove all older `.jpeg` photos; fix the Arabic-specific blank slider caused by RTL flex/track transform behavior.
+**Success Criteria** (what must be TRUE):
+  1. The header CTA button reads "تقديم معلومات" / "Submit Information" in both locales.
+  2. The header CTA button is visibly larger and uses a rounded-rectangle shape (`--radius-lg`).
+  3. The footer founded date renders at font-weight 800.
+  4. The TikTok icon links to `https://tiktok.com/@HLShajaraa`.
+  5. Only the 6 yesterday-added `.jpg` photos remain in `public/pics/new/`.
+  6. The homepage slider displays images correctly in both English and Arabic.
+**Plans**: 2 plans
+- [ ] 33.5-01-PLAN.md — Header CTA copy + button styling + footer date weight + TikTok handle (POLISH-01, POLISH-02, POLISH-03, POLISH-04)
+- [ ] 33.5-02-PLAN.md — Keep only 6 yesterday-added photos + fix Arabic RTL slider (POLISH-05)
+**UI hint**: yes
 
 ## Progress
 
@@ -217,3 +236,4 @@ Design contract: `.planning/UI-SPEC.md`. Every phase preserves guardrails **S1�
 | 31. Review, Submit & Confirmation | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |
 | 32. i18n, RTL & Accessibility | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |
 | 33. Backend Support | v1.4 | 3/3 | ✅ Complete | 2026-06-14 |
+| 33.5. Frontend Polish Fixes | v1.4 | 0/2 | 🚧 In Progress | — |
