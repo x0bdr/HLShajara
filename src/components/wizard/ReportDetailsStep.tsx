@@ -53,7 +53,8 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           mapping.field === "labourEntries" ||
           mapping.field === "academicStaff" ||
           mapping.field === "doctors" ||
-          mapping.field === "nurses";
+          mapping.field === "nurses" ||
+          mapping.field === "members";
         dispatch({ type: "SET_METADATA", field: mapping.field, value: isArray ? [] : "" });
       }
     }
@@ -77,7 +78,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
       (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
         !!item.mapping &&
         !visibleFields.has(item.mapping.field as DetailFieldId) &&
-        !["ownerNames", "investorNames", "labourEntries", "academicStaff", "doctors", "nurses"].includes(item.mapping.field),
+        !["ownerNames", "investorNames", "labourEntries", "academicStaff", "doctors", "nurses", "members"].includes(item.mapping.field),
     );
 
   // ---- array helpers ----
@@ -109,6 +110,11 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const nurses = meta.nurses ?? [];
   function setNurses(next: string[]) {
     setDetail("nurses", next);
+  }
+
+  const members = meta.members ?? [];
+  function setMembers(next: string[]) {
+    setDetail("members", next);
   }
 
   return (
@@ -205,6 +211,15 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           values={nurses}
           addLabel={t("addNurse")}
           onChange={setNurses}
+        />
+      )}
+
+      {selectedFlags.has("member") && (
+        <StringArrayField
+          label={t("detailsMembers")}
+          values={members}
+          addLabel={t("addMember")}
+          onChange={setMembers}
         />
       )}
 

@@ -42,7 +42,8 @@ export type DetailFieldId =
   | "clubName"
   | "academicStaff"
   | "doctors"
-  | "nurses";
+  | "nurses"
+  | "members";
 
 export interface LocalizedOption {
   value: string;
@@ -84,6 +85,7 @@ const COMMON_FLAGS: Record<string, LocalizedOption> = {
   labour: { value: "labour", labelKey: "flagLabour", iconName: "Users" },
   supportData: { value: "support_data", labelKey: "flagSupportData", iconName: "FileText" },
   academicStaff: { value: "academic_staff", labelKey: "flagAcademicStaff", iconName: "GraduationCap" },
+  member: { value: "member", labelKey: "flagMember", iconName: "Users" },
   doctor: { value: "doctor", labelKey: "flagDoctor", iconName: "Stethoscope" },
   nurse: { value: "nurse", labelKey: "flagNurse", iconName: "HeartPulse" },
   investor: { value: "investor", labelKey: "flagInvestor", iconName: "TrendingUp" },
@@ -156,6 +158,13 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         labelKey: "subIndividualsVolunteer",
         descriptionKey: "subIndividualsVolunteerDesc",
         iconName: "UserCheck",
+        detailFields: ["reportedPersonName", "reportedPersonPosition"],
+      },
+      {
+        value: "university_student",
+        labelKey: "subIndividualsUniversityStudent",
+        descriptionKey: "subIndividualsUniversityStudentDesc",
+        iconName: "GraduationCap",
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
       },
       {
@@ -486,7 +495,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsCivilSocietyDesc",
         iconName: "Users",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student"],
+        excludedDetailFlags: ["club_name", "student", "member"],
       },
       {
         value: "social_media_company",
@@ -494,7 +503,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsSocialMediaCompanyDesc",
         iconName: "Globe",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student"],
+        excludedDetailFlags: ["club_name", "student", "member"],
       },
       {
         value: "media_institution",
@@ -502,15 +511,15 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsMediaInstitutionDesc",
         iconName: "Radio",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student"],
+        excludedDetailFlags: ["club_name", "student", "member"],
       },
       {
         value: "quasi_governmental",
         labelKey: "subOrganizationsQuasiGovernmental",
         descriptionKey: "subOrganizationsQuasiGovernmentalDesc",
         iconName: "Building2",
-        detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student"],
+        detailFields: [],
+        excludedDetailFlags: ["owner", "investor", "club_name", "student"],
       },
       {
         value: "association",
@@ -518,7 +527,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsAssociationDesc",
         iconName: "Handshake",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student"],
+        excludedDetailFlags: ["club_name", "student", "member"],
       },
       {
         value: "student_club",
@@ -526,10 +535,10 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsStudentClubDesc",
         iconName: "UsersRound",
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
-        excludedDetailFlags: ["owner", "investor"],
+        excludedDetailFlags: ["owner", "investor", "member"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.clubName, COMMON_FLAGS.investor, COMMON_FLAGS.student, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.clubName, COMMON_FLAGS.investor, COMMON_FLAGS.student, COMMON_FLAGS.member, COMMON_FLAGS.supportData],
   },
   {
     id: "real_estate",
@@ -760,6 +769,7 @@ export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; l
   support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
   club_name: { field: "clubName", labelKey: "detailsClubName" },
   academic_staff: { field: "academicStaff", labelKey: "detailsAcademicStaff" },
+  member: { field: "members", labelKey: "detailsMembers" },
   instructor: { field: "reportedPersonName", labelKey: "detailsReportedName" },
   professor: { field: "professorName", labelKey: "detailsProfessorName" },
   university_doctor: { field: "universityDoctorName", labelKey: "detailsUniversityDoctorName" },
@@ -775,6 +785,7 @@ const DETAIL_FIELD_ORDER: DetailFieldId[] = [
   "academicStaff",
   "doctors",
   "nurses",
+  "members",
   "reportedPersonName",
   "professorName",
   "universityDoctorName",
