@@ -486,6 +486,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsCivilSocietyDesc",
         iconName: "Users",
         detailFields: ["ownerNames"],
+        excludedDetailFlags: ["club_name", "student"],
       },
       {
         value: "social_media_company",
@@ -493,6 +494,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsSocialMediaCompanyDesc",
         iconName: "Globe",
         detailFields: ["ownerNames"],
+        excludedDetailFlags: ["club_name", "student"],
       },
       {
         value: "media_institution",
@@ -500,6 +502,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsMediaInstitutionDesc",
         iconName: "Radio",
         detailFields: ["ownerNames"],
+        excludedDetailFlags: ["club_name", "student"],
       },
       {
         value: "quasi_governmental",
@@ -507,6 +510,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsQuasiGovernmentalDesc",
         iconName: "Building2",
         detailFields: ["ownerNames"],
+        excludedDetailFlags: ["club_name", "student"],
       },
       {
         value: "association",
@@ -514,13 +518,15 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsAssociationDesc",
         iconName: "Handshake",
         detailFields: ["ownerNames"],
+        excludedDetailFlags: ["club_name", "student"],
       },
       {
         value: "student_club",
         labelKey: "subOrganizationsStudentClub",
         descriptionKey: "subOrganizationsStudentClubDesc",
         iconName: "UsersRound",
-        detailFields: ["ownerNames", "reportedPersonName", "reportedPersonPosition"],
+        detailFields: ["reportedPersonName", "reportedPersonPosition"],
+        excludedDetailFlags: ["owner", "investor"],
       },
     ],
     detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.clubName, COMMON_FLAGS.investor, COMMON_FLAGS.student, COMMON_FLAGS.supportData],
