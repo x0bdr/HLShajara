@@ -400,13 +400,14 @@
 
 /* Highlighted "New Report" CTA on the left side of the header. */
 .site-nav-cta {
-  font-family:var(--font-sans); font-size:13.5px; font-weight:600;
+  font-family:var(--font-display); font-size:15.5px; font-weight:700;
   color:var(--on-green); background:var(--brand);
   text-decoration:none; white-space:nowrap;
-  padding:8px 14px; border-radius:var(--radius);
+  padding:10px 20px; border-radius:var(--radius-pill);
   transition:background var(--dur) var(--ease), transform var(--dur) var(--ease);
   display:inline-flex; align-items:center; justify-content:center;
 }
+.site-nav-cta:hover { transform:translateY(-1px); }
 .site-nav-cta:hover { background:var(--brand-hover); }
 .site-nav-cta:active { background:var(--brand-press); transform:translateY(1px); }
 .site-nav-cta.active { background:var(--green-900); }
@@ -1978,9 +1979,9 @@ input[type="checkbox"]:focus-visible {
   line-height: 1;
 }
 .site-footer-founded-label {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--on-green);
   margin-top: 2px;
 }

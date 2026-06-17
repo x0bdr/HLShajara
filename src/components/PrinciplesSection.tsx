@@ -9,7 +9,7 @@ const PLEDGES_AR = [
   { text: "لا اعتداء", negative: true },
   { text: "نعم للعدالة", negative: false },
   { text: "نعم للمقاطعة الطوعية الشعبية", negative: false },
-  { text: "نعم للوعي السليم", negative: false },
+  { text: "نعم للوعي السلمي", negative: false },
   { text: "نعم للمقاطعة الاقتصادية الاجتماعية", negative: false },
 ];
 
@@ -20,7 +20,7 @@ const PLEDGES_EN = [
   { text: "No Aggression", negative: true },
   { text: "Yes to Justice", negative: false },
   { text: "Yes to Popular Voluntary Boycott", negative: false },
-  { text: "Yes to Sound Awareness", negative: false },
+  { text: "Yes to Peaceful Awareness", negative: false },
   { text: "Yes to Social & Economic Boycott", negative: false },
 ];
 
