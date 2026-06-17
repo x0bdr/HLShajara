@@ -2185,12 +2185,6 @@ input[type="checkbox"]:focus-visible {
 .image-slider-btn.next {
   inset-inline-end: 12px;
 }
-[dir="rtl"] .image-slider-btn.prev {
-  transform: translateY(-50%) scaleX(-1);
-}
-[dir="rtl"] .image-slider-btn.next {
-  transform: translateY(-50%) scaleX(-1);
-}
 .image-slider-pause {
   position: absolute;
   top: 12px;
