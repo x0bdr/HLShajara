@@ -67,6 +67,7 @@ const DETAIL_FIELD_LABEL_KEYS: Record<DetailFieldId, string> = {
   receptionInfo: "detailsReceptionInfo",
   labourInfo: "detailsLabourInfo",
   labourEntries: "detailsLabourInfo",
+  labourMembers: "detailsLabourMembers",
   supportDataInfo: "detailsSupportDataInfo",
   clubName: "detailsClubName",
 };
@@ -98,6 +99,7 @@ const DETAIL_FIELD_META_KEYS: Record<DetailFieldId, keyof ReportMetadata | undef
   receptionInfo: "receptionInfo",
   labourInfo: "labourInfo",
   labourEntries: "labourEntries",
+  labourMembers: "labourMembers",
   supportDataInfo: "supportDataInfo",
   clubName: "clubName",
 };
@@ -129,6 +131,15 @@ function getDetailFieldDisplay(
   }
   if (fieldId === "labourEntries") {
     const arr = meta.labourEntries ?? [];
+    return arr.length
+      ? arr
+          .filter((e) => e.name || e.role)
+          .map((e) => (e.name && e.role ? `${e.name} (${e.role})` : e.name || e.role))
+          .join(locale === "ar" ? "، " : ", ")
+      : undefined;
+  }
+  if (fieldId === "labourMembers") {
+    const arr = meta.labourMembers ?? [];
     return arr.length
       ? arr
           .filter((e) => e.name || e.role)

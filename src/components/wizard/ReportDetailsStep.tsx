@@ -51,6 +51,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           mapping.field === "ownerNames" ||
           mapping.field === "investorNames" ||
           mapping.field === "labourEntries" ||
+          mapping.field === "labourMembers" ||
           mapping.field === "academicStaff" ||
           mapping.field === "doctors" ||
           mapping.field === "nurses" ||
@@ -78,7 +79,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
       (item): item is { flag: string; mapping: { field: keyof ReportMetadata; labelKey: string } } =>
         !!item.mapping &&
         !visibleFields.has(item.mapping.field as DetailFieldId) &&
-        !["ownerNames", "investorNames", "labourEntries", "academicStaff", "doctors", "nurses", "members"].includes(item.mapping.field),
+        !["ownerNames", "investorNames", "labourEntries", "labourMembers", "academicStaff", "doctors", "nurses", "members"].includes(item.mapping.field),
     );
 
   // ---- array helpers ----
@@ -95,6 +96,11 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
   const labourEntries = meta.labourEntries ?? [];
   function setLabourEntries(next: { name: string; role: string }[]) {
     setDetail("labourEntries", next);
+  }
+
+  const labourMembers = meta.labourMembers ?? [];
+  function setLabourMembers(next: { name: string; role: string }[]) {
+    setDetail("labourMembers", next);
   }
 
   const academicStaff = meta.academicStaff ?? [];
@@ -178,6 +184,18 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
           entries={labourEntries}
           addLabel={t("addLabour")}
           onChange={setLabourEntries}
+          t={t}
+          namePlaceholder={t("labourName")}
+          rolePlaceholder={t("labourRole")}
+        />
+      )}
+
+      {selectedFlags.has("labour_members") && (
+        <LabourArrayField
+          label={t("detailsLabourMembers")}
+          entries={labourMembers}
+          addLabel={t("addLabour")}
+          onChange={setLabourMembers}
           t={t}
           namePlaceholder={t("labourName")}
           rolePlaceholder={t("labourRole")}

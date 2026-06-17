@@ -43,7 +43,8 @@ export type DetailFieldId =
   | "academicStaff"
   | "doctors"
   | "nurses"
-  | "members";
+  | "members"
+  | "labourMembers";
 
 export interface LocalizedOption {
   value: string;
@@ -83,6 +84,7 @@ function arLabel(key: string): string {
 const COMMON_FLAGS: Record<string, LocalizedOption> = {
   owner: { value: "owner", labelKey: "flagOwner", iconName: "UserCog" },
   labour: { value: "labour", labelKey: "flagLabour", iconName: "Users" },
+  labourMembers: { value: "labour_members", labelKey: "flagLabourMembers", iconName: "Users" },
   supportData: { value: "support_data", labelKey: "flagSupportData", iconName: "FileText" },
   academicStaff: { value: "academic_staff", labelKey: "flagAcademicStaff", iconName: "GraduationCap" },
   member: { value: "member", labelKey: "flagMember", iconName: "Users" },
@@ -495,7 +497,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsCivilSocietyDesc",
         iconName: "Users",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student", "member"],
+        excludedDetailFlags: ["club_name", "student", "member", "labour_members"],
       },
       {
         value: "social_media_company",
@@ -503,7 +505,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsSocialMediaCompanyDesc",
         iconName: "Globe",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student", "member"],
+        excludedDetailFlags: ["club_name", "student", "member", "labour_members"],
       },
       {
         value: "media_institution",
@@ -511,7 +513,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsMediaInstitutionDesc",
         iconName: "Radio",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student", "member"],
+        excludedDetailFlags: ["club_name", "student", "member", "labour_members"],
       },
       {
         value: "quasi_governmental",
@@ -519,7 +521,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsQuasiGovernmentalDesc",
         iconName: "Building2",
         detailFields: [],
-        excludedDetailFlags: ["owner", "investor", "club_name", "student"],
+        excludedDetailFlags: ["owner", "investor", "club_name", "student", "member", "labour"],
       },
       {
         value: "association",
@@ -527,7 +529,7 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsAssociationDesc",
         iconName: "Handshake",
         detailFields: ["ownerNames"],
-        excludedDetailFlags: ["club_name", "student", "member"],
+        excludedDetailFlags: ["club_name", "student", "member", "labour"],
       },
       {
         value: "student_club",
@@ -535,10 +537,10 @@ export const REPORT_CATEGORIES: ReadonlyArray<CategoryConfig> = [
         descriptionKey: "subOrganizationsStudentClubDesc",
         iconName: "UsersRound",
         detailFields: ["reportedPersonName", "reportedPersonPosition"],
-        excludedDetailFlags: ["owner", "investor", "member"],
+        excludedDetailFlags: ["owner", "investor", "club_name", "student", "member", "labour"],
       },
     ],
-    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.clubName, COMMON_FLAGS.investor, COMMON_FLAGS.student, COMMON_FLAGS.member, COMMON_FLAGS.supportData],
+    detailFlags: [COMMON_FLAGS.owner, COMMON_FLAGS.labour, COMMON_FLAGS.labourMembers, COMMON_FLAGS.investor, COMMON_FLAGS.supportData],
   },
   {
     id: "real_estate",
@@ -766,6 +768,7 @@ export const DETAIL_FLAG_FIELDS: Record<string, { field: keyof ReportMetadata; l
   owner: { field: "ownerNames", labelKey: "detailsOwnerName" },
   investor: { field: "investorNames", labelKey: "detailsInvestorName" },
   labour: { field: "labourEntries", labelKey: "detailsLabourInfo" },
+  labour_members: { field: "labourMembers", labelKey: "detailsLabourMembers" },
   support_data: { field: "supportDataInfo", labelKey: "detailsSupportDataInfo" },
   club_name: { field: "clubName", labelKey: "detailsClubName" },
   academic_staff: { field: "academicStaff", labelKey: "detailsAcademicStaff" },
@@ -801,6 +804,7 @@ const DETAIL_FIELD_ORDER: DetailFieldId[] = [
   "appName",
   "propertyType",
   "labourEntries",
+  "labourMembers",
   "supportDataInfo",
   "clubName",
 ];
