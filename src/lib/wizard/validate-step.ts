@@ -3,28 +3,16 @@
  *
  * Validates format/content at the step level so users get immediate feedback
  * instead of a generic error at the final review step.
+ *
+ * Uses the project's Zod-based validation library via the isValid() helper,
+ * not hand-rolled regex.
  */
 
 import type { SubmitInput } from "@/lib/validation";
+import { isValidEmail, isValidPhone, isValidUrl } from "@/lib/validation/is-valid";
 import type { StepId } from "./registry";
 
 export type StepFieldErrors = Record<string, string>;
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const URL_RE = /^https?:\/\/.+/;
-const PHONE_RE = /^[\d\s\+\-\(\)]+$/;
-
-function isEmail(v: string): boolean {
-  return EMAIL_RE.test(v.trim());
-}
-
-function isUrl(v: string): boolean {
-  return URL_RE.test(v.trim());
-}
-
-function isPhone(v: string): boolean {
-  return PHONE_RE.test(v.trim());
-}
 
 function addError(errors: StepFieldErrors, field: string, message: string) {
   if (!errors[field]) errors[field] = message;
@@ -35,35 +23,35 @@ function validateLocationInfo(form: SubmitInput): StepFieldErrors {
   const meta = form.reportMetadata ?? {};
 
   const email = (meta.entityEmail ?? "").trim();
-  if (email && !isEmail(email)) {
+  if (email && !isValidEmail(email)) {
     addError(errors, "entityEmail", "invalidEmail");
   }
 
   const website = (meta.websiteName ?? "").trim();
-  if (website && !isUrl(website)) {
+  if (website && !isValidUrl(website)) {
     addError(errors, "websiteName", "invalidUrl");
   }
 
   const mapsLink = (meta.googleMapsLink ?? "").trim();
-  if (mapsLink && !isUrl(mapsLink)) {
+  if (mapsLink && !isValidUrl(mapsLink)) {
     addError(errors, "googleMapsLink", "invalidUrl");
   }
 
   const phone = (meta.contactPhone ?? "").trim();
-  if (phone && !isPhone(phone)) {
+  if (phone && !isValidPhone(phone)) {
     addError(errors, "contactPhone", "invalidPhone");
   }
 
   for (const method of meta.socialContactMethods ?? []) {
     const value = (method.value ?? "").trim();
     if (!value) continue;
-    if (method.type === "email" && !isEmail(value)) {
+    if (method.type === "email" && !isValidEmail(value)) {
       addError(errors, `socialContactMethods.${method.type}`, "invalidEmail");
     }
-    if (method.type === "website" && !isUrl(value)) {
+    if (method.type === "website" && !isValidUrl(value)) {
       addError(errors, `socialContactMethods.${method.type}`, "invalidUrl");
     }
-    if ((method.type === "phone" || method.type === "whatsapp") && !isPhone(value)) {
+    if ((method.type === "phone" || method.type === "whatsapp") && !isValidPhone(value)) {
       addError(errors, `socialContactMethods.${method.type}`, "invalidPhone");
     }
   }
@@ -78,13 +66,13 @@ function validateAboutYou(form: SubmitInput): StepFieldErrors {
   for (const method of methods) {
     const value = (method.value ?? "").trim();
     if (!value) continue;
-    if (method.type === "email" && !isEmail(value)) {
+    if (method.type === "email" && !isValidEmail(value)) {
       addError(errors, `contactMethods.${method.type}`, "invalidEmail");
     }
-    if (method.type === "website" && !isUrl(value)) {
+    if (method.type === "website" && !isValidUrl(value)) {
       addError(errors, `contactMethods.${method.type}`, "invalidUrl");
     }
-    if ((method.type === "phone" || method.type === "whatsapp") && !isPhone(value)) {
+    if ((method.type === "phone" || method.type === "whatsapp") && !isValidPhone(value)) {
       addError(errors, `contactMethods.${method.type}`, "invalidPhone");
     }
   }
@@ -95,7 +83,7 @@ function validateAboutYou(form: SubmitInput): StepFieldErrors {
 function validateMediaEvidence(form: SubmitInput): StepFieldErrors {
   const errors: StepFieldErrors = {};
   const mediaLink = (form.reportMetadata?.mediaLink ?? "").trim();
-  if (mediaLink && !isUrl(mediaLink)) {
+  if (mediaLink && !isValidUrl(mediaLink)) {
     addError(errors, "mediaLink", "invalidUrl");
   }
   return errors;

@@ -12,6 +12,7 @@ import {
   users,
 } from "@/db/schema";
 import { conductTypes, roleInConductTypes } from "@/lib/constants/conduct";
+import { isValidPhone } from "@/lib/validation/is-valid";
 
 /* ---------- REPORT CATEGORY (v1.5 category-based wizard) ---------- */
 
@@ -71,7 +72,7 @@ export const reportMetadataSchema = z.object({
   contactPhone: z
     .string()
     .max(100)
-    .refine((v) => !v || /^[\d\s\+\-\(\)]+$/.test(v), {
+    .refine((v) => !v || isValidPhone(v), {
       message: "Contact phone must contain only numbers",
     })
     .optional(),
