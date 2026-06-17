@@ -5,12 +5,12 @@
    ============================================================ */
 
 /* ---- Button ---- */
-.btn { font-family:var(--font-sans); font-size:14px; font-weight:600; padding:9px 18px;
-       border-radius:var(--radius); border:1px solid transparent; cursor:pointer;
-       transition:all var(--dur) var(--ease); display:inline-flex; align-items:center; gap:6px; }
+.btn { font-family:var(--font-display); font-size:16px; font-weight:700; padding:12px 28px;
+       border-radius:var(--radius-pill); border:1px solid transparent; cursor:pointer;
+       transition:all var(--dur) var(--ease); display:inline-flex; align-items:center; gap:8px; }
 .btn-sm { font-size:13px; padding:6px 14px; }
-.btn.primary { background:var(--brand); color:var(--on-green); }
-.btn.primary:hover { background:var(--brand-hover); }
+.btn.primary { background:var(--brand); color:var(--on-green); box-shadow:var(--shadow-sm); }
+.btn.primary:hover { background:var(--brand-hover); transform:translateY(-2px); box-shadow:var(--shadow-md); }
 .btn.primary:active { background:var(--brand-press); transform:translateY(1px); }
 .btn.secondary { background:var(--surface); color:var(--fg1); border-color:var(--border-strong); }
 .btn.secondary:hover { background:var(--stone-100); }
@@ -493,10 +493,11 @@
 .hero-subtitle {
   font-family:var(--font-display); font-weight:500;
   font-size:clamp(1.2rem, 2.4vw, 1.8rem);
-  line-height:1.3;
+  line-height:1.4;
   color:var(--green-700);
   margin:0 0 20px;
 }
+.hero-subtitle span { display:block; }
 .hero-lead {
   font-family:var(--font-sans); font-weight:400;
   font-size:var(--text-lg); line-height:var(--leading-normal);
@@ -1032,6 +1033,7 @@ input[type="checkbox"]:focus-visible {
   font-size: clamp(1.4rem, 3vw, 2rem);
   margin-bottom: 20px;
 }
+.hero-dramatic .hero-subtitle span { display: block; }
 .hero-dramatic .hero-lead {
   color: var(--green-200);
   max-width: 640px;
@@ -1082,14 +1084,14 @@ input[type="checkbox"]:focus-visible {
 }
 .principles-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 .principle-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px 22px;
+  padding: 24px 18px;
   text-align: center;
   transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
@@ -1097,23 +1099,27 @@ input[type="checkbox"]:focus-visible {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
-.principle-icon {
+.principle-card.negative {
+  border-color: var(--brick-200);
+  background: var(--brick-50);
+}
+.principle-symbol {
+  font-family: var(--font-display);
   font-size: 32px;
+  font-weight: 900;
   line-height: 1;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  color: var(--green-600);
+}
+.principle-card.negative .principle-symbol {
+  color: var(--brick-500);
 }
 .principle-label {
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--fg1);
-  margin: 0 0 8px;
-}
-.principle-desc {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  color: var(--fg2);
-  line-height: 1.55;
+  line-height: 1.35;
 }
 
 @media (max-width: 860px) {
@@ -1958,27 +1964,31 @@ input[type="checkbox"]:focus-visible {
   gap: 24px;
 }
 .site-footer-founded {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 36px;
 }
 .site-footer-founded-year {
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 900;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--green-100);
   line-height: 1;
 }
 .site-footer-founded-label {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
   color: var(--on-green);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .site-footer-founded-day {
   font-family: var(--font-mono);
-  font-size: var(--text-md);
+  font-size: 11px;
   color: var(--green-200);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .site-footer-social {
   display: flex;

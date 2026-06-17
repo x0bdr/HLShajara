@@ -25,7 +25,9 @@
   },
   "home": {
     "title": "HLShajara",
-    "subtitle": "A peaceful, civic, popular documentation and accountability platform targeting criminals of the Assad regimes first, then their enablers and all their social and economic arms",
+    "subtitleLine1": "A peaceful, civic, popular documentation and accountability platform",
+    "subtitleLine2": "targeting criminals of the Assad regimes first",
+    "subtitleLine3": "then their enablers and all their social and economic arms",
     "lead": "The site is currently collecting data on affiliates or supporters of the Assad regime and its enablers, verifying and confirming it, and will soon publish detailed, indexed information publicly.",
     "stats": {
       "entries": "Documented Entries",

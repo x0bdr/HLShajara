@@ -27,7 +27,9 @@ export function HeroSection() {
           {t("title")}
         </h1>
         <p className="hero-subtitle">
-          {t("subtitle")}
+          <span>{t("subtitleLine1")}</span>
+          <span>{t("subtitleLine2")}</span>
+          <span>{t("subtitleLine3")}</span>
         </p>
         <p className="hero-lead">
           {t("lead")}

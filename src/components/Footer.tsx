@@ -66,7 +66,7 @@ export function Footer() {
   const locale = useLocale();
   const brandName = locale === "ar" ? "حملة لستَ شجرة" : "HLShajara";
   const footerNote = locale === "ar"
-    ? "شعبية سليمة | اجتماعية اقتصادية"
+    ? "شعبية سلمية | اجتماعية اقتصادية"
     : "Peaceful Popular | Social & Economic";
   const foundedLabel = locale === "ar" ? "التأسيس" : "Founded";
   const foundedDay = locale === "ar" ? "30 مايو" : "30 May";
