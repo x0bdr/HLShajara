@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Image from "next/image";
 
 interface Slide {
@@ -8,8 +8,36 @@ interface Slide {
   alt: string;
 }
 
-export function ImageSlider({ slides }: { slides: Slide[] }) {
+interface ImageSliderLabels {
+  prev: string;
+  next: string;
+  dotLabels: string[];
+  pause: string;
+  play: string;
+}
+
+function useReducedMotion(): boolean {
+  return useSyncExternalStore(
+    (callback) => {
+      const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mql.addEventListener("change", callback);
+      return () => mql.removeEventListener("change", callback);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false
+  );
+}
+
+export function ImageSlider({
+  slides,
+  labels,
+}: {
+  slides: Slide[];
+  labels: ImageSliderLabels;
+}) {
   const [index, setIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const reducedMotion = useReducedMotion();
 
   const next = useCallback(() => {
     setIndex((i) => (i + 1) % slides.length);
@@ -19,11 +47,31 @@ export function ImageSlider({ slides }: { slides: Slide[] }) {
     setIndex((i) => (i - 1 + slides.length) % slides.length);
   }, [slides.length]);
 
+  const goTo = useCallback((i: number) => {
+    setIndex(i);
+  }, []);
+
   useEffect(() => {
     if (slides.length <= 1) return;
+    if (!isPlaying || reducedMotion) return;
     const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
-  }, [next, slides.length]);
+  }, [next, slides.length, isPlaying, reducedMotion]);
+
+  const handlePrev = () => {
+    prev();
+    setIsPlaying(false);
+  };
+
+  const handleNext = () => {
+    next();
+    setIsPlaying(false);
+  };
+
+  const handleDot = (i: number) => {
+    goTo(i);
+    setIsPlaying(false);
+  };
 
   if (!slides.length) return null;
 
@@ -53,18 +101,28 @@ export function ImageSlider({ slides }: { slides: Slide[] }) {
           <button
             type="button"
             className="image-slider-btn prev"
-            onClick={prev}
-            aria-label="الصورة السابقة"
+            onClick={handlePrev}
+            aria-label={labels.prev}
           >
             ‹
           </button>
           <button
             type="button"
             className="image-slider-btn next"
-            onClick={next}
-            aria-label="الصورة التالية"
+            onClick={handleNext}
+            aria-label={labels.next}
           >
             ›
+          </button>
+
+          <button
+            type="button"
+            className="image-slider-pause"
+            onClick={() => setIsPlaying((p) => !p)}
+            aria-label={isPlaying ? labels.pause : labels.play}
+            aria-pressed={!isPlaying}
+          >
+            {isPlaying ? "⏸" : "▶"}
           </button>
 
           <div className="image-slider-dots">
@@ -73,8 +131,8 @@ export function ImageSlider({ slides }: { slides: Slide[] }) {
                 key={i}
                 type="button"
                 className={i === index ? "active" : ""}
-                onClick={() => setIndex(i)}
-                aria-label={`الصورة ${i + 1}`}
+                onClick={() => handleDot(i)}
+                aria-label={labels.dotLabels[i]}
               />
             ))}
           </div>

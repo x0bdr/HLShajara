@@ -6,6 +6,7 @@ import sharp from "sharp";
 import { scanBuffer } from "@/lib/clamav";
 import { isFfmpegAvailable, stripVideoMetadata } from "@/lib/media-metadata";
 import { rateLimitResponse } from "@/lib/rate-limit";
+import { assetPath } from "@/lib/asset-path";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -27,6 +28,19 @@ const VIDEO_TYPES = new Set([
   "video/quicktime",
 ]);
 
+// Canonical extension for each accepted MIME type so the stored file extension
+// matches the verified content instead of trusting the original filename.
+const EXT_BY_TYPE: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/tiff": ".tiff",
+  "image/avif": ".avif",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
+};
+
 export async function POST(request: Request) {
   const rl = await rateLimitResponse(request, { windowMs: 60_000, maxRequests: 10 });
   if (!rl.ok) return rl.response;
@@ -45,6 +59,14 @@ export async function POST(request: Request) {
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
         { ok: false, message: "File too large (max 10 MB)" },
+        { status: 400 }
+      );
+    }
+
+    const allowedExt = EXT_BY_TYPE[file.type];
+    if (!allowedExt) {
+      return NextResponse.json(
+        { ok: false, code: "INVALID_FILE_TYPE", message: "File type not allowed." },
         { status: 400 }
       );
     }
@@ -77,7 +99,7 @@ export async function POST(request: Request) {
         );
       }
       try {
-        buffer = Buffer.from(await stripVideoMetadata(buffer, path.extname(file.name)));
+        buffer = Buffer.from(await stripVideoMetadata(buffer, allowedExt));
       } catch (err) {
         console.error("Video metadata strip error:", err);
         return NextResponse.json(
@@ -102,8 +124,7 @@ export async function POST(request: Request) {
     }
 
     const hash = createHash("sha256").update(buffer).digest("hex");
-    const ext = path.extname(file.name) || "";
-    const safeName = `${hash}${ext}`;
+    const safeName = `${hash}${allowedExt}`;
     const filePath = path.join(UPLOAD_DIR, safeName);
 
     await mkdir(UPLOAD_DIR, { recursive: true });
@@ -115,7 +136,7 @@ export async function POST(request: Request) {
       filename: safeName,
       originalName: file.name,
       size: buffer.length,
-      url: `/uploads/${safeName}`,
+      url: assetPath(`/uploads/${safeName}`),
     });
   } catch (err) {
     console.error("Upload API error:", err);

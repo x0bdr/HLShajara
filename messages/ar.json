@@ -45,7 +45,12 @@
     "socialFeedTitle": "أفكار للمقاطعة الاجتماعية",
     "viewMore": "مشاهدة المزيد",
     "noPhotos": "لا توجد صور حالياً.",
-    "slideAlt": "صورة {n} من حملة لستَ شجرة"
+    "slideAlt": "صورة {n} من حملة لستَ شجرة",
+    "sliderPrev": "الصورة السابقة",
+    "sliderNext": "الصورة التالية",
+    "sliderDot": "الصورة {n}",
+    "sliderPause": "إيقاف عرض الصور",
+    "sliderPlay": "تشغيل عرض الصور"
   },
   "mission": {
     "title": "المهمّة والمبادئ",

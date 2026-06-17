@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "better-auth/react";
 import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
+import { assetPath } from "@/lib/asset-path";
 
 export function Header() {
   const locale = useLocale();
@@ -25,7 +26,7 @@ export function Header() {
 
   const switchLocale = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
-    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    const newPath = pathname.replace(new RegExp(`^/${locale}`), `/${newLocale}`);
     pushDataLayer(GTM_EVENTS.PAGE_VIEW, { locale: newLocale, action: "locale_switch" });
     router.push(newPath);
   };
@@ -57,7 +58,7 @@ export function Header() {
         <Link href={`/${locale}`} className="site-brand">
           <div className="site-logo-wrap">
             <Image
-              src="/logo.jpeg"
+              src={assetPath("/logo.jpeg")}
               alt="حملة لستَ شجرة"
               width={42}
               height={42}

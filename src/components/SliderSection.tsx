@@ -1,10 +1,11 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { getTranslations } from "next-intl/server";
+import { assetPath } from "@/lib/asset-path";
 import { ImageSlider } from "./ImageSlider";
 
 const PHOTO_DIR = join(process.cwd(), "public", "pics", "new");
-const PUBLIC_PREFIX = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pics/new/`;
+const PUBLIC_PREFIX = assetPath("/pics/new/");
 
 async function getPhotoFiles(): Promise<string[]> {
   try {
@@ -25,6 +26,14 @@ export async function SliderSection({ locale }: { locale: string }) {
     alt: t("slideAlt", { n: i + 1 }),
   }));
 
+  const labels = {
+    prev: t("sliderPrev"),
+    next: t("sliderNext"),
+    dotLabels: files.map((_, i) => t("sliderDot", { n: i + 1 })),
+    pause: t("sliderPause"),
+    play: t("sliderPlay"),
+  };
+
   return (
     <section className="social-feed-section">
       <div className="social-feed-inner">
@@ -32,7 +41,7 @@ export async function SliderSection({ locale }: { locale: string }) {
 
         {slides.length > 0 ? (
           <>
-            <ImageSlider slides={slides} />
+            <ImageSlider slides={slides} labels={labels} />
             <div className="slider-more">
               <a
                 href="https://x.com/HLShajara"

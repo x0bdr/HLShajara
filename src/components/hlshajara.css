@@ -2172,8 +2172,40 @@ input[type="checkbox"]:focus-visible {
 .image-slider-btn:hover {
   background: rgba(0, 0, 0, 0.7);
 }
-.image-slider-btn.prev { left: 12px; }
-.image-slider-btn.next { right: 12px; }
+.image-slider-btn.prev {
+  inset-inline-start: 12px;
+}
+.image-slider-btn.next {
+  inset-inline-end: 12px;
+}
+[dir="rtl"] .image-slider-btn.prev {
+  transform: translateY(-50%) scaleX(-1);
+}
+[dir="rtl"] .image-slider-btn.next {
+  transform: translateY(-50%) scaleX(-1);
+}
+.image-slider-pause {
+  position: absolute;
+  top: 12px;
+  inset-inline-end: 12px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+  z-index: 2;
+}
+.image-slider-pause:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
 .image-slider-dots {
   position: absolute;
   bottom: 14px;

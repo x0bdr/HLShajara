@@ -45,7 +45,12 @@
     "socialFeedTitle": "Ideas for Social Boycott",
     "viewMore": "View more",
     "noPhotos": "No photos available yet.",
-    "slideAlt": "Slide {n} from the Lestaka Shajara campaign"
+    "slideAlt": "Slide {n} from the Lestaka Shajara campaign",
+    "sliderPrev": "Previous slide",
+    "sliderNext": "Next slide",
+    "sliderDot": "Slide {n}",
+    "sliderPause": "Pause slideshow",
+    "sliderPlay": "Play slideshow"
   },
   "mission": {
     "title": "Mission & Principles",

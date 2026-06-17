@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Button } from "./Button";
+import { assetPath } from "@/lib/asset-path";
 
 export function HeroSection() {
   const locale = useLocale();
@@ -15,7 +15,7 @@ export function HeroSection() {
       <div className="hero-inner">
         <div className="hero-seal">
           <Image
-            src="/logo.jpeg"
+            src={assetPath("/logo.jpeg")}
             alt="حملة لستَ شجرة"
             width={160}
             height={160}
@@ -35,8 +35,8 @@ export function HeroSection() {
           {t("lead")}
         </p>
         <div className="hero-actions">
-          <Link href={`/${locale}/submit`}>
-            <Button variant="primary">{nav("submit")}</Button>
+          <Link href={`/${locale}/submit`} className="btn primary">
+            {nav("submit")}
           </Link>
         </div>
       </div>

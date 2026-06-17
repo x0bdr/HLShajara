@@ -14,7 +14,7 @@
     "check:screens:arabic": "node scripts/screens-arabic-check.js"
   },
   "dependencies": {
-    "better-auth": "^1.4.7",
+    "better-auth": "^1.6.19",
     "country-codes-list": "^2.0.0",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",

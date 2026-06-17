@@ -78,6 +78,16 @@ export async function checkRateLimit(
   };
 }
 
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
+  return "unknown";
+}
+
 /**
  * Convenience wrapper for IP-based rate limiting on API routes.
  */
@@ -85,7 +95,7 @@ export async function rateLimitResponse(
   request: Request,
   config?: RateLimitConfig
 ): Promise<{ ok: false; response: Response } | { ok: true }> {
-  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
+  const ip = getClientIp(request);
   const key = `ip:${ip}`;
   const result = await checkRateLimit(key, config);
 

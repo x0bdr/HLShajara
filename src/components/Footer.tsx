@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useLocale } from "next-intl";
+import { assetPath } from "@/lib/asset-path";
 
 const HANDLE = "HLShajara";
 
@@ -77,7 +78,7 @@ export function Footer() {
       <div className="site-footer-inner">
         <div className="site-footer-brand">
           <Image
-            src="/logo.jpeg"
+            src={assetPath("/logo.jpeg")}
             alt=""
             width={36}
             height={36}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { db } from "@/db";
 import { submissions, entities, allegations, sources, allegationSources, users } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -224,7 +225,7 @@ export async function POST(request: Request) {
       }
 
       // Create entity from submission
-      const publicId = `ent-${Date.now().toString(36)}`;
+      const publicId = `ent-${randomUUID()}`;
       const [entity] = await withAudit(
         { actorId, actorRole, reason: body.notes ?? undefined },
         () =>
