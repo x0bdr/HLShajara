@@ -15,6 +15,7 @@ import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components";
 import { pushDataLayer, GTM_EVENTS } from "@/lib/gtm";
+import { useRecaptchaV3 } from "@/components/wizard/useRecaptchaV3";
 import {
   wizardReducer,
   initialWizardState,
@@ -108,6 +109,8 @@ export function WizardClient() {
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [recaptchaError, setRecaptchaError] = useState(false);
+  const { execute } = useRecaptchaV3("submit");
   const [showRestore, setShowRestore] = useState(() => {
     if (typeof window === "undefined") return false;
     const draft = loadDraft<WizardState>();
@@ -205,6 +208,16 @@ export function WizardClient() {
     dispatch({ type: "RESET" });
     setShowRestore(false);
     goTo(STEPS[0].id, true);
+  }
+
+  async function submitWithRecaptcha() {
+    setRecaptchaError(false);
+    const token = await execute();
+    if (!token) {
+      setRecaptchaError(true);
+      return;
+    }
+    await handleSubmit(token);
   }
 
   async function handleSubmit(recaptchaToken: string) {
@@ -316,9 +329,7 @@ export function WizardClient() {
         {isReview ? (
           <ReviewStep
             form={state.form}
-            submitting={submitting}
             onEdit={(id) => goTo(id as StepId)}
-            onSubmit={handleSubmit}
           />
         ) : state.currentStep === "report-category" ? (
           <ReportCategoryStep form={state.form} dispatch={dispatch} />
@@ -343,12 +354,20 @@ export function WizardClient() {
         ) : null}
       </WizardPanel>
 
+      {isReview && recaptchaError && (
+        <div className="legal legal-error mt-16 mb-16" role="alert">
+          <div className="t">{t("error")}</div>
+          <p>{t("recaptchaError")}</p>
+        </div>
+      )}
+
       <WizardNav
         isFirst={isFirst}
-        archetype={isReview ? "choice" : archetype}
-        stepValid={stepValid}
+        archetype={archetype}
+        stepValid={isReview ? !submitting : stepValid}
+        nextLabel={isReview ? (submitting ? t("submitting") : t("submitButton")) : undefined}
         onBack={goBack}
-        onNext={nextStep(state) ? advance : () => {}}
+        onNext={isReview ? submitWithRecaptcha : advance}
       />
     </div>
   );

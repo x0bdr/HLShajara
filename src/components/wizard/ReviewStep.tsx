@@ -8,7 +8,6 @@
  * Includes a lightweight math CAPTCHA at the bottom to reduce automated spam.
  */
 
-import { useState, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import {
@@ -21,7 +20,6 @@ import {
   type DetailFieldId,
 } from "@/lib/wizard/category-config";
 import { displayValue } from "./review-helpers";
-import { useRecaptchaV3 } from "./useRecaptchaV3";
 
 export { displayValue } from "./review-helpers";
 
@@ -157,23 +155,17 @@ function getDetailFieldDisplay(
 }
 
 interface ReviewStepProps {
-  form: SubmitInput & { leadNote?: string };
-  submitting: boolean;
+  form: SubmitInput;
   onEdit: (stepId: string) => void;
-  onSubmit: (recaptchaToken: string) => void | Promise<void>;
 }
 
 export function ReviewStep({
   form,
-  submitting,
   onEdit,
-  onSubmit,
 }: ReviewStepProps) {
   const t = useTranslations("submit");
   const locale = useLocale();
   const meta = form.reportMetadata ?? {};
-  const { execute } = useRecaptchaV3("submit");
-  const [recaptchaError, setRecaptchaError] = useState(false);
 
   const relevantDetailFields = getRelevantDetailFieldIds(
     form.reportCategory,
@@ -188,16 +180,6 @@ export function ReviewStep({
   const subTypeLabel = meta.orgType
     ? getSubTypeLabel(t, form.reportCategory, meta.orgType)
     : displayValue(meta.orgType);
-
-  async function handleSubmit() {
-    setRecaptchaError(false);
-    const token = await execute();
-    if (!token) {
-      setRecaptchaError(true);
-      return;
-    }
-    onSubmit(token);
-  }
 
   return (
     <div className="flex-col">
@@ -431,25 +413,6 @@ export function ReviewStep({
         ) : null}
       </div>
 
-      <div className="review-affirm">
-        {recaptchaError && (
-          <p className="legal-error mb-16" role="alert">
-            {t("recaptchaError")}
-          </p>
-        )}
-
-        <div className="wizard-nav flex-between mt-16">
-          <button
-            type="button"
-            className="btn primary"
-            disabled={submitting}
-            aria-disabled={submitting}
-            onClick={handleSubmit}
-          >
-            {submitting ? t("submitting") : t("submitButton")}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

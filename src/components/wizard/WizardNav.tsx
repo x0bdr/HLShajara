@@ -31,11 +31,13 @@ interface WizardNavProps {
   archetype: StepArchetype;
   /** Whether the current input step satisfies its completion gate. */
   stepValid: boolean;
+  /** Optional label for the Next button (e.g. "Send" on the review step). */
+  nextLabel?: string;
   onBack: () => void;
   onNext: () => void;
 }
 
-export function WizardNav({ isFirst, archetype, stepValid, onBack, onNext }: WizardNavProps) {
+export function WizardNav({ isFirst, archetype, stepValid, nextLabel, onBack, onNext }: WizardNavProps) {
   const t = useTranslations("submit");
 
   return (
@@ -54,7 +56,7 @@ export function WizardNav({ isFirst, archetype, stepValid, onBack, onNext }: Wiz
           aria-disabled={!stepValid}
           onClick={onNext}
         >
-          {t("next")}
+          {nextLabel ?? t("next")}
         </Button>
       )}
     </div>
