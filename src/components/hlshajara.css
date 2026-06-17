@@ -1997,26 +1997,31 @@ input[type="checkbox"]:focus-visible {
   color: var(--on-green);
   text-decoration: underline;
 }
-.site-footer-social-buttons {
+.site-footer-social-icons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
-.site-footer-social-btn {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--green-900);
+.site-footer-social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--green-100);
+  background: var(--dark-glass);
+  border: 1px solid var(--dark-glass-border);
+  border-radius: 50%;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.site-footer-social-icon svg {
+  width: 17px;
+  height: 17px;
+}
+.site-footer-social-icon:hover {
   background: var(--green-100);
-  border: 1px solid var(--green-200);
-  border-radius: var(--radius-pill);
-  padding: 6px 14px;
-  text-decoration: none;
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-.site-footer-social-btn:hover {
-  background: var(--on-green);
   color: var(--green-900);
+  transform: translateY(-2px);
 }
 
 /* Social feed section */
