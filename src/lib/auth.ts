@@ -5,6 +5,8 @@ import { invitePlugin } from "./auth-invite-plugin";
 import { db } from "@/db";
 import { authUser, authSession, authAccount, authVerification, authTwoFactor } from "@/db/schema";
 
+console.log("[AUTH CONFIG ENV] BETTER_AUTH_URL=", process.env.BETTER_AUTH_URL);
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
