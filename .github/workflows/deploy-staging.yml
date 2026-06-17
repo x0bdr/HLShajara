@@ -23,12 +23,12 @@ jobs:
         run: |
           git fetch origin master
           git reset --hard origin/master
-          git clean -fd
+          git clean -fd -e .env* -e backups -e logs
           echo "--- public/pics/new contents ---"
           ls -la public/pics/new | head -35
           npm install --legacy-peer-deps
           npm run build
-          pm2 reload ecosystem.config.js
+          pm2 startOrRestart ecosystem.config.js --update-env
           pm2 save
           echo "--- smoke test slider image ---"
           curl -sLI "https://staging.hlshajara.com/pics/new/photo_5877261144118988365_y.jpg" | head -1
