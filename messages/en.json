@@ -589,6 +589,31 @@
     "show": "Show",
     "hide": "Hide"
   },
+  "invite": {
+    "title": "Complete Registration",
+    "subtitle": "You have an invite to join as {role}",
+    "name": "Full name (optional)",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "submit": "Create account",
+    "verifying": "Checking your invite link...",
+    "redirecting": "Redirecting...",
+    "invalidToken": "This invite link is invalid or has expired.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least {min} characters.",
+    "passwordTooLong": "Password is too long.",
+    "userExists": "An account with this email already exists.",
+    "genericError": "Something went wrong. Please try again.",
+    "show": "Show",
+    "hide": "Hide",
+    "role": {
+      "admin": "Admin",
+      "reviewer": "Reviewer",
+      "senior_reviewer": "Senior reviewer",
+      "submitter": "Submitter"
+    }
+  },
   "dashboard": {
     "title": "Transparency Dashboard",
     "lead": "Real-time statistics on the documentation and review process.",

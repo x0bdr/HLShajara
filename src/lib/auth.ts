@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { twoFactor } from "better-auth/plugins";
-import { magicLink } from "better-auth/plugins";
+import { invitePlugin } from "./auth-invite-plugin";
 import { db } from "@/db";
 import { authUser, authSession, authAccount, authVerification, authTwoFactor } from "@/db/schema";
 
@@ -22,6 +22,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    disableSignUp: true,
   },
   socialProviders: {
     twitter: {
@@ -33,11 +34,7 @@ export const auth = betterAuth({
     twoFactor({
       issuer: "HLShajara",
     }),
-    magicLink({
-      async sendMagicLink({ email, url }) {
-        console.log(`[magic-link] ${email}: ${url}`);
-      },
-    }),
+    invitePlugin(),
   ],
   user: {
     additionalFields: {
