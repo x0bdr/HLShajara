@@ -90,6 +90,7 @@ export function ImageSlider({
               className="image-slider-img"
               unoptimized
               sizes="(max-width: 720px) 100vw, 680px"
+              loading="eager"
               priority={i === 0}
             />
           </div>
