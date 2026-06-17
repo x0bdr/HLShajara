@@ -2,7 +2,7 @@ export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
 }
 
-import { PageShell, HeroSection, PrinciplesSection, SocialFeedSection } from "@/components";
+import { PageShell, HeroSection, PrinciplesSection, SliderSection } from "@/components";
 
 export default async function HomePage({
   params,
@@ -15,7 +15,7 @@ export default async function HomePage({
     <PageShell noPad>
       <HeroSection />
       <PrinciplesSection />
-      <SocialFeedSection locale={locale} />
+      <SliderSection locale={locale} />
     </PageShell>
   );
 }
