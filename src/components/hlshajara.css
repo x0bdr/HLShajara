@@ -1981,17 +1981,12 @@ input[type="checkbox"]:focus-visible {
   color: var(--green-100);
   line-height: 1;
 }
-.site-footer-founded-label {
+.site-footer-founded-label,
+.site-footer-founded-day {
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;
   color: var(--on-green);
-  margin-top: 2px;
-}
-.site-footer-founded-day {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--green-200);
   margin-top: 2px;
 }
 .site-footer-social {
