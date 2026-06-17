@@ -75,7 +75,7 @@ export interface CategoryConfig {
 /** Translation function shape for the `submit` namespace. */
 type SubmitT = (key: string) => string;
 
-const arSubmit = arMessages.submit as Record<string, string>;
+const arSubmit = (arMessages.submit as unknown) as Record<string, string>;
 
 function arLabel(key: string): string {
   return arSubmit[key] ?? key;

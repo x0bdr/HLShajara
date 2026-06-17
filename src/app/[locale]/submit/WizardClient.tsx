@@ -37,6 +37,12 @@ import {
 import { saveDraft, loadDraft, clearDraft } from "@/lib/wizard/persistence";
 import { resolveRejection } from "@/lib/wizard/rejection-map";
 import { stepHintKey } from "@/lib/wizard/hints";
+import {
+  validateStep,
+  formatStepErrors,
+  formatApiValidationErrors,
+  type StepFieldErrors,
+} from "@/lib/wizard/validate-step";
 
 import { WizardProgress } from "@/components/wizard/WizardProgress";
 import { WizardNav } from "@/components/wizard/WizardNav";
@@ -99,6 +105,7 @@ interface SubmitResult {
   message: string;
   code?: string;
   submissionId?: number;
+  errors?: Record<string, string[]>;
 }
 
 export function WizardClient() {
@@ -110,6 +117,7 @@ export function WizardClient() {
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [recaptchaError, setRecaptchaError] = useState(false);
+  const [stepErrors, setStepErrors] = useState<StepFieldErrors>({});
   const { execute } = useRecaptchaV3("submit");
   const [showRestore, setShowRestore] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -176,7 +184,15 @@ export function WizardClient() {
   }, [state.dirty, t]);
 
   const advance = useCallback(() => {
-    const next = nextStep(stateRef.current);
+    const current = stateRef.current;
+    setResult(null);
+    const errors = validateStep(current.currentStep, current.form);
+    if (Object.keys(errors).length > 0) {
+      setStepErrors(errors);
+      return;
+    }
+    setStepErrors({});
+    const next = nextStep(current);
     if (next) goTo(next);
   }, [goTo]);
 
@@ -255,9 +271,20 @@ export function WizardClient() {
     if (route) {
       setResult({ ok: false, message: t(route.messageKey as never), code: data.code });
       goTo(route.stepId as StepId);
-    } else {
-      setResult({ ok: false, message: data.message || t("error"), code: data.code });
+      return;
     }
+
+    if (data.code === "VALIDATION_ERROR" && data.errors) {
+      const messages = formatApiValidationErrors(
+        data.errors as Record<string, string[]>,
+        t,
+      );
+      const detail = messages.length > 0 ? messages.join("\n") : t("error");
+      setResult({ ok: false, message: detail, code: data.code });
+      return;
+    }
+
+    setResult({ ok: false, message: data.message || t("error"), code: data.code });
   }
 
   function submitAnother() {
@@ -319,7 +346,18 @@ export function WizardClient() {
       {result && !result.ok && (
         <div className="legal legal-error mt-16 mb-16" role="alert">
           <div className="t">{t("error")}</div>
-          <p>{result.message}</p>
+          <p style={{ whiteSpace: "pre-line" }}>{result.message}</p>
+        </div>
+      )}
+
+      {Object.keys(stepErrors).length > 0 && !result && (
+        <div className="legal legal-error mt-16 mb-16" role="alert">
+          <div className="t">{t("error")}</div>
+          <ul className="mb-0">
+            {formatStepErrors(stepErrors, t).map((msg, i) => (
+              <li key={i}>{msg}</li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -334,7 +372,7 @@ export function WizardClient() {
         ) : state.currentStep === "report-category" ? (
           <ReportCategoryStep form={state.form} dispatch={dispatch} />
         ) : state.currentStep === "location-info" ? (
-          <LocationInfoStep form={state.form} dispatch={dispatch} />
+          <LocationInfoStep form={state.form} dispatch={dispatch} errors={stepErrors} />
         ) : state.currentStep === "entity-type-name" ? (
           <EntityTypeNameStep form={state.form} dispatch={dispatch} />
         ) : state.currentStep === "report-details" ? (

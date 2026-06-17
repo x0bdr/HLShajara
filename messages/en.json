@@ -132,6 +132,12 @@
     "introGate": "By continuing you confirm this report concerns documented conduct by a named actor — never a group, sect, or identity.",
     "success": "Submitted",
     "error": "Error",
+    "validation": {
+      "invalidEmail": "Invalid email address.",
+      "invalidUrl": "Link must start with http:// or https://",
+      "invalidPhone": "Contact number must contain only numbers.",
+      "tooShort": "Description is too short (minimum 20 characters)."
+    },
     "aboutEntity": "About the Entity",
     "fullName": "Full Name",
     "type": "Type",

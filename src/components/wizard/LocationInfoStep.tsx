@@ -18,6 +18,7 @@ import { ContactMethodPicker } from "./ContactMethodPicker";
 interface LocationInfoStepProps {
   form: SubmitInput;
   dispatch: React.Dispatch<WizardAction>;
+  errors?: Record<string, string>;
 }
 
 const DEFAULT_COUNTRY = "سوريا";
@@ -40,9 +41,16 @@ const SYRIAN_GOVERNORATES = [
   "دير الزور",
 ];
 
-export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
+export function LocationInfoStep({ form, dispatch, errors = {} }: LocationInfoStepProps) {
   const t = useTranslations("submit");
   const locale = useLocale();
+
+  function errorText(field: string): string | null {
+    const key = errors[field];
+    if (!key) return null;
+    const translated = t(`validation.${key}` as never);
+    return translated === `validation.${key}` ? null : translated;
+  }
 
   const meta = form.reportMetadata ?? {};
   const [country, setCountry] = useState(meta.country || DEFAULT_COUNTRY);
@@ -200,16 +208,16 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
               className="ds-input"
               style={{ height: 38 }}
               pattern="[\d\s\+\-\(\)]+"
-              aria-invalid={contactError || undefined}
-              aria-describedby={contactError ? "loc-contact-error" : undefined}
+              aria-invalid={contactError || !!errorText("contactPhone") || undefined}
+              aria-describedby={contactError || errorText("contactPhone") ? "loc-contact-error" : undefined}
               value={meta.contactPhone ?? ""}
               onChange={(e) => onContactPhoneChange(e.target.value)}
             />
           </div>
         </div>
-        {contactError && (
+        {(contactError || errorText("contactPhone")) && (
           <p id="loc-contact-error" className="legal-error" role="alert">
-            {t("locContactError")}
+            {contactError ? t("locContactError") : errorText("contactPhone")}
           </p>
         )}
       </div>
@@ -221,10 +229,14 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           type="email"
           className="ds-input"
           value={meta.entityEmail ?? ""}
+          aria-invalid={!!errorText("entityEmail") || undefined}
           onChange={(e) =>
             dispatch({ type: "SET_METADATA", field: "entityEmail", value: e.target.value })
           }
         />
+        {errorText("entityEmail") && (
+          <p className="legal-error" role="alert">{errorText("entityEmail")}</p>
+        )}
       </div>
 
       <div className="form-field">
@@ -234,10 +246,14 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           type="url"
           className="ds-input"
           value={meta.websiteName ?? ""}
+          aria-invalid={!!errorText("websiteName") || undefined}
           onChange={(e) =>
             dispatch({ type: "SET_METADATA", field: "websiteName", value: e.target.value })
           }
         />
+        {errorText("websiteName") && (
+          <p className="legal-error" role="alert">{errorText("websiteName")}</p>
+        )}
       </div>
 
       <div className="form-field">
@@ -247,17 +263,17 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           type="url"
           className="ds-input"
           value={mapsLink}
-          aria-invalid={mapsLinkError || undefined}
-          aria-describedby={mapsLinkError ? "loc-maps-error" : undefined}
+          aria-invalid={mapsLinkError || !!errorText("googleMapsLink") || undefined}
+          aria-describedby={mapsLinkError || errorText("googleMapsLink") ? "loc-maps-error" : undefined}
           onChange={(e) => {
             onMapsLinkChange(e.target.value);
             dispatch({ type: "SET_METADATA", field: "googleMapsLink", value: e.target.value });
           }}
           onBlur={(e) => onMapsLinkChange(e.target.value)}
         />
-        {mapsLinkError && (
+        {(mapsLinkError || errorText("googleMapsLink")) && (
           <p id="loc-maps-error" className="legal-error" role="alert">
-            {t("locMapsError")}
+            {mapsLinkError ? t("locMapsError") : errorText("googleMapsLink")}
           </p>
         )}
       </div>
