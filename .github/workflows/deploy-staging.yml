@@ -21,8 +21,14 @@ jobs:
       - name: Deploy on test-sanad
         working-directory: /var/www/hlshajarah
         run: |
-          git pull origin master
+          git fetch origin master
+          git reset --hard origin/master
+          git clean -fd
+          echo "--- public/pics/new contents ---"
+          ls -la public/pics/new | head -35
           npm install --legacy-peer-deps
           npm run build
           pm2 reload ecosystem.config.js
           pm2 save
+          echo "--- smoke test slider image ---"
+          curl -sLI "https://staging.hlshajara.com/pics/new/photo_5877261144118988365_y.jpg" | head -1
