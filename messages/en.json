@@ -525,6 +525,7 @@
     "title": "Reviewer Console",
     "loading": "Loading...",
     "empty": "No pending review requests.",
+    "loadError": "Could not load review requests. Check your account permissions.",
     "sources": "Sources",
     "approve": "Approve",
     "reject": "Reject",

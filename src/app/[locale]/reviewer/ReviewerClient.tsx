@@ -381,6 +381,7 @@ function SubmissionMetadata({ sub, locale, t }: { sub: Submission; locale: strin
 export default function ReviewerPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [selected, setSelected] = useState<Submission | null>(null);
   const t = useTranslations("reviewer");
   const tSubmit = useTranslations("submit");
@@ -390,10 +391,15 @@ export default function ReviewerPage() {
     fetch("/api/review")
       .then((r) => r.json())
       .then((data) => {
-        if (data.ok) setSubmissions(data.submissions);
+        if (data.ok) {
+          setSubmissions(data.submissions);
+        } else {
+          setError(data.message || t("loadError"));
+        }
       })
+      .catch(() => setError(t("loadError")))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   interface ActExtra {
     triageConfirmedActor?: boolean | null;
@@ -459,7 +465,13 @@ export default function ReviewerPage() {
     <>
       <div className="ds-h1 mb-24">{t("title")}</div>
 
-      {submissions.length === 0 ? (
+      {error && (
+        <div className="card empty-state" style={{ color: "var(--danger)" }}>
+          <p className="ds-body">{error}</p>
+        </div>
+      )}
+
+      {!error && submissions.length === 0 ? (
         <div className="card empty-state">
           <p className="ds-body text-fg2">{t("empty")}</p>
         </div>
