@@ -15,5 +15,9 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|fonts|logo|favicon).*)"],
+  // Skip Next.js internals, API routes, and public static assets
+  // (fonts, logos, favicons, slider images in /pics, uploads).
+  matcher: [
+    "/((?!api|_next|fonts|pics|uploads|logo|favicon|robots\\.txt|sitemap\\.xml|.*\\.(?:ico|png|jpg|jpeg|svg|css|js|woff|woff2|ttf|otf)).*)",
+  ],
 };
