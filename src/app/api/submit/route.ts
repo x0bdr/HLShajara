@@ -7,6 +7,8 @@ import { submitSchema } from "@/lib/validation";
 import { triageFromConduct } from "@/lib/constants/conduct";
 import { getSession, getInternalUserId } from "@/lib/session";
 import { rateLimitResponse } from "@/lib/rate-limit";
+import { generateSubmissionPdf } from "@/lib/report-pdf";
+import { sendPdfToTelegram } from "@/lib/telegram";
 
 async function verifyRecaptcha(token: string): Promise<boolean> {
   const secret = process.env.RECAPTCHA_SECRET_KEY;
@@ -120,6 +122,21 @@ export async function POST(request: Request) {
           .returning(),
       { action: "create", targetTable: "submissions" }
     );
+
+    // Notify Telegram with a PDF of the new report. Fire-and-forget: never block
+    // the submit response or fail the submission if Telegram/PDF generation errors.
+    (async () => {
+      try {
+        const pdfBuffer = await generateSubmissionPdf(submission);
+        await sendPdfToTelegram(
+          pdfBuffer,
+          `report-${submission.id}.pdf`,
+          `بلاغ جديد #${submission.id}: ${submission.entityName}`
+        );
+      } catch (notifyErr) {
+        console.error("Telegram notification failed:", notifyErr);
+      }
+    })();
 
     return NextResponse.json({
       ok: true,

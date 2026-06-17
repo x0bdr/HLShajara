@@ -13,6 +13,8 @@ module.exports = {
         NEXT_TELEMETRY_DISABLED: "1",
         BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || "https://hlshajara.com",
         NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "https://hlshajara.com",
+        TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
+        TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || "",
       },
       max_memory_restart: "1G",
       restart_delay: 3000,
