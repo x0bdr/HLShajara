@@ -9,7 +9,6 @@ module.exports = {
       exec_mode: "fork",
       env: {
         NODE_ENV: "production",
-        PORT: 3000,
         NEXT_TELEMETRY_DISABLED: "1",
       },
       max_memory_restart: "1G",
