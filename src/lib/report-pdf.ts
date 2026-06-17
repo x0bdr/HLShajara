@@ -123,7 +123,7 @@ function escapeHtml(text: string): string {
 function formatValue(key: string, raw: unknown): string {
   if (key === "googleMapsLink" || key === "websiteName" || key === "mediaLink") {
     const url = String(raw);
-    return `<a href="${escapeHtml(url)}" dir="ltr">${escapeHtml(url)}</a>`;
+    return `<a href="${escapeHtml(url)}" dir="auto">${escapeHtml(url)}</a>`;
   }
   if (key === "ownerNames" || key === "investorNames") {
     const arr = Array.isArray(raw) ? raw : [];
@@ -165,7 +165,7 @@ function formatSourceLinks(links: SourceLink[] | null | undefined): string {
   return `<ul class="source-list">${links
     .map(
       (l) =>
-        `<li><a href="${escapeHtml(l.url)}" dir="ltr">${escapeHtml(l.title || l.url)}</a></li>`
+        `<li><a href="${escapeHtml(l.url)}" dir="auto">${escapeHtml(l.title || l.url)}</a></li>`
     )
     .join("")}</ul>`;
 }
@@ -175,7 +175,7 @@ function formatSourceFiles(files: SourceFile[] | null | undefined): string {
   return `<ul class="source-list">${files
     .map(
       (f) =>
-        `<li>${f.label ? `${escapeHtml(f.label)} — ` : ""}${escapeHtml(f.originalName)} — <a href="${escapeHtml(f.url)}" dir="ltr">رابط</a></li>`
+        `<li>${f.label ? `${escapeHtml(f.label)} — ` : ""}${escapeHtml(f.originalName)} — <a href="${escapeHtml(f.url)}" dir="auto">رابط</a></li>`
     )
     .join("")}</ul>`;
 }
@@ -338,6 +338,14 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
       text-align: right;
     }
 
+    .description[dir="ltr"], h1[dir="ltr"], p[dir="ltr"], span[dir="ltr"] {
+      text-align: left;
+    }
+
+    .description[dir="rtl"], h1[dir="rtl"], p[dir="rtl"], span[dir="rtl"] {
+      text-align: right;
+    }
+
     .meta-table {
       width: 100%;
       border-collapse: collapse;
@@ -409,21 +417,21 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
       </div>
     </header>
 
-    <h1>${escapeHtml(submission.entityName)}</h1>
+    <h1 dir="auto">${escapeHtml(submission.entityName)}</h1>
     <div class="meta-bar">
-      <span>نوع الجهة: ${escapeHtml(submission.entityType)}</span>
-      <span>التصنيف: ${escapeHtml(submission.reportCategory ?? "—")}</span>
-      <span>الحالة: ${escapeHtml(submission.status)}</span>
+      <span>نوع الجهة: <span dir="auto">${escapeHtml(submission.entityType)}</span></span>
+      <span>التصنيف: <span dir="auto">${escapeHtml(submission.reportCategory ?? "—")}</span></span>
+      <span>الحالة: <span dir="auto">${escapeHtml(submission.status)}</span></span>
     </div>
 
     <div class="card">
       <h2>الدور / المنصب المُبلَّغ عنه</h2>
-      <p>${escapeHtml(submission.entityRole)}</p>
+      <p dir="auto">${escapeHtml(submission.entityRole)}</p>
     </div>
 
     <div class="card">
       <h2>وصف البلاغ</h2>
-      <div class="description">${escapeHtml(submission.allegationDescription)}</div>
+      <div class="description" dir="auto">${escapeHtml(submission.allegationDescription)}</div>
     </div>
 
     <div class="card">
