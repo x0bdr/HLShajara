@@ -3,16 +3,14 @@
 import Image from "next/image";
 import { useLocale } from "next-intl";
 
-const CREED_AR = ["الدليل لا الادّعاء", "سلوك لا هوية", "لا مصدر، لا نشر", "حق الرد", "خصوصية الأبرياء", "لا تصفٍّ ذاتي"];
-const CREED_EN = ["Evidence over allegation", "Conduct, not identity", "No source, no publication", "Right of reply", "Privacy of the innocent", "No vigilantism"];
-
 export function Footer() {
   const locale = useLocale();
-  const creed = locale === "ar" ? CREED_AR : CREED_EN;
   const brandName = locale === "ar" ? "حملة لستَ شجرة" : "HLShajara";
   const footerNote = locale === "ar"
-    ? "توثيق ومساءلة قانونية — لا انتقام ولا عقاب جماعي."
-    : "Documentation, lawful accountability — not revenge, not collective punishment.";
+    ? "شعبية سليمة | اجتماعية اقتصادية"
+    : "Peaceful Popular | Social & Economic";
+  const foundedLabel = locale === "ar" ? "التأسيس" : "Founded";
+  const foundedDay = locale === "ar" ? "30 مايو" : "30 May";
 
   return (
     <footer className="site-footer">
@@ -30,10 +28,28 @@ export function Footer() {
             <div className="site-footer-note">{footerNote}</div>
           </div>
         </div>
-        <div className="site-footer-creed">
-          {creed.map((c) => (
-            <span key={c}>{c}</span>
-          ))}
+
+        <div className="site-footer-founded">
+          <div className="site-footer-founded-year">2026</div>
+          <div className="site-footer-founded-label">{foundedLabel}</div>
+          <div className="site-footer-founded-day">{foundedDay}</div>
+        </div>
+
+        <div className="site-footer-social">
+          <a
+            href="https://x.com/HLShajara"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="site-footer-social-link"
+          >
+            X / Twitter: @HLShajara
+          </a>
+          <a
+            href="mailto:info@hlshajara.com"
+            className="site-footer-social-link"
+          >
+            {locale === "ar" ? "البريد الإلكتروني" : "Email"}: info@hlshajara.com
+          </a>
         </div>
       </div>
     </footer>

@@ -23,9 +23,6 @@ export function HeroSection() {
             priority
           />
         </div>
-        <div className="hero-badge">
-          {locale === "ar" ? "تأسست 30 مايو 2026" : "Founded May 30, 2026"}
-        </div>
         <h1 className="hero-title">
           {t("title")}
         </h1>

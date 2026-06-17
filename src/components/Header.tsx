@@ -68,7 +68,7 @@ export function Header() {
           <div className="site-brand-text">
             <span className="site-brand-name">{locale === "ar" ? "حملة لستَ شجرة" : "HLShajara"}</span>
             <span className="site-brand-tag">
-              {locale === "ar" ? "منصّة توثيق ومساءلة" : "Civic Documentation"}
+              {locale === "ar" ? "شعبية سليمة | اجتماعية اقتصادية" : "Peaceful Popular | Social & Economic"}
             </span>
           </div>
         </Link>

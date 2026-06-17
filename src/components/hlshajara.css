@@ -1940,3 +1940,71 @@ input[type="checkbox"]:focus-visible {
 .profile-link-wrap {
   margin-block-start: var(--space-4);
 }
+
+/* Homepage principles pledges */
+.principles-pledges {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Footer social / founded additions */
+.site-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.site-footer-founded {
+  text-align: center;
+}
+.site-footer-founded-year {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 900;
+  color: var(--green-100);
+  line-height: 1;
+}
+.site-footer-founded-label {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--on-green);
+  margin-top: 4px;
+}
+.site-footer-founded-day {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--green-200);
+  margin-top: 4px;
+}
+.site-footer-social {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: start;
+}
+.site-footer-social-link {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--green-100);
+  text-decoration: none;
+  transition: color var(--dur) var(--ease);
+}
+.site-footer-social-link:hover {
+  color: var(--on-green);
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .site-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .site-footer-founded {
+    text-align: start;
+  }
+}
