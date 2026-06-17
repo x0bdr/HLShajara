@@ -12,7 +12,5 @@ export * from "./SourceCitation";
 export * from "./PageShell";
 export * from "./Skeleton";
 export * from "./PrinciplesSection";
-export * from "./SliderSection";
-export * from "./ImageSlider";
 export * from "./DocumentationDomains";
 export * from "./FoundingBanner";

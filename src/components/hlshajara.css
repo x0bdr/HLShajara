@@ -2123,74 +2123,42 @@ input[type="checkbox"]:focus-visible {
   }
 }
 
-/* Image slider */
-.image-slider {
+/* Photo grid */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.photo-grid-item {
   position: relative;
-  width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
-  aspect-ratio: 16 / 9;
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
-.image-slider-track {
-  display: flex;
-  height: 100%;
-  transition: transform 0.5s var(--ease);
+.photo-grid-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
-.image-slider-slide {
-  position: relative;
-  flex: 0 0 100%;
-  height: 100%;
+.photo-grid-img {
+  object-fit: cover;
 }
-.image-slider-img {
-  object-fit: contain;
-  background: var(--bg);
-}
-.image-slider-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: var(--dark-glass);
-  color: var(--on-green);
-  font-size: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background var(--dur) var(--ease);
-}
-.image-slider-btn:hover {
-  background: var(--green-700);
-}
-.image-slider-btn.prev { left: 12px; }
-.image-slider-btn.next { right: 12px; }
-[dir=rtl] .image-slider-btn.prev { left: auto; right: 12px; }
-[dir=rtl] .image-slider-btn.next { right: auto; left: 12px; }
-.image-slider-dots {
-  position: absolute;
-  bottom: 12px;
-  left: 0;
-  right: 0;
+.photo-grid-more {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  margin-top: 28px;
 }
-.image-slider-dots button {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: none;
-  background: var(--green-200);
-  opacity: 0.6;
-  cursor: pointer;
-  transition: opacity var(--dur) var(--ease), background var(--dur) var(--ease);
+.photo-grid-empty {
+  text-align: center;
+  color: var(--fg2);
+  font-family: var(--font-sans);
 }
-.image-slider-dots button.active {
-  opacity: 1;
-  background: var(--brand);
+
+@media (max-width: 860px) {
+  .photo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .photo-grid { grid-template-columns: 1fr; }
 }

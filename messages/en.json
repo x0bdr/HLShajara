@@ -42,7 +42,9 @@
     "ctaTitle": "Do you have documented information?",
     "ctaText": "You can submit a documented report with sources. Every submission passes an automated filter and dual human review.",
     "ctaButton": "Submit Report",
-    "socialFeedTitle": "Ideas for Social Boycott"
+    "socialFeedTitle": "Ideas for Social Boycott",
+    "viewMore": "View more",
+    "noPhotos": "No photos available yet."
   },
   "mission": {
     "title": "Mission & Principles",
