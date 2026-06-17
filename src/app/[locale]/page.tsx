@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
+import { PageShell, HeroSection, PrinciplesSection } from "@/components";
+import { SliderSection } from "@/components/SliderSection";
+import { getPageMetadata } from "@/lib/seo";
+
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
 }
 
-import { PageShell, HeroSection, PrinciplesSection } from "@/components";
-import { SliderSection } from "@/components/SliderSection";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return getPageMetadata({ locale, namespace: "home", path: "" });
+}
 
 export default async function HomePage({
   params,

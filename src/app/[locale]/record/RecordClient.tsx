@@ -57,7 +57,7 @@ export default function RecordPage() {
   return (
     <>
       <div className="page-header-center">
-        <div className="ds-h1">{t("title")}</div>
+        <h1 className="ds-h1">{t("title")}</h1>
         <p className="ds-lead">{t("lead")}</p>
       </div>
 

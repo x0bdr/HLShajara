@@ -11,7 +11,7 @@
 1. report-category      ← اختر التصنيف
 2. entity-type-name     ← النوع والاسم
 3. location-info        ← معلومات الجهة
-4. report-details       ← تفاصيل البلاغ
+4. report-details       ← تفاصيل الجهة
 5. experience           ← تجربتك
 6. media-evidence       ← صور وفيديو وملاحظات
 7. about-you            ← عنك
@@ -155,27 +155,27 @@ Read-only summary of everything above, grouped by:
    ├─ if subtype == "other"
    │  └─ orgSubTypeOther  ← free text "حدد النوع (غير ذلك)"
    │
-   └─ entityName  ← "اسم العلامة التجارية / المنتج" (for brand)
-                    or "اسم المنشأة / الجهة" (for factory)
+   └─ entityName  ← "اسم العلامة التجارية / المنتج" (for brand) (one of these is required - item 1)
+                    or "اسم المنشأة / الجهة" (for factory) (one of these is required - item 2)
 
 3. location-info
-   ├─ country        ← dropdown, e.g. "سوريا"
-   ├─ governorate    ← dropdown (if Syria), e.g. "دمشق"
-   ├─ address        ← text "العنوان (المنطقة، الحي، الشارع...)"
-   ├─ contactPhoneCountryCode + contactPhone
-   ├─ entityEmail    ← "البريد الإلكتروني للجهة"
-   ├─ websiteName    ← "رابط الموقع الإلكتروني للجهة"
-   ├─ googleMapsLink ← "رابط Google Maps (اختياري)"
-   └─ socialContactMethods
-      └─ repeated rows of {type, value}
+   ├─ country        ← dropdown, e.g. "سوريا" requreid
+   ├─ governorate    ← dropdown (if Syria), e.g. "دمشق" required
+   ├─ address        ← text "العنوان (المنطقة، الحي، الشارع...)" opitional
+   ├─ contactPhoneCountryCode + contactPhone (one of these is required at least - item 1)
+   ├─ entityEmail    ← "البريد الإلكتروني للجهة" (one of these is required at least - item 2)
+   ├─ websiteName    ← "رابط الموقع الإلكتروني للجهة" (one of these is required at least - item 3)
+   ├─ googleMapsLink ← "رابط Google Maps (اختياري)" (one of these is required at least - item 4)
+   └─ socialContactMethods (one of these is required at least - item 5)
+      └─ repeated rows of {type, value} 
          types: x / facebook / instagram / telegram / whatsapp / tiktok / website
 
 4. report-details
    ├─ detailFlags (multi-select cards)
-   │  ├─ owner        → surfaces ownerNames array
-   │  ├─ investor     → surfaces investorNames array
-   │  ├─ labour       → surfaces labourEntries array [{name, role}]
-   │  └─ support_data → surfaces supportDataInfo text (max 256)
+   │  ├─ owner        → surfaces ownerNames array (one of these is required at least - item 1)
+   │  ├─ investor     → surfaces investorNames array (one of these is required at least - item 2)
+   │  ├─ labour       → surfaces labourEntries array [{name, role}] (one of these is required at least - item 3)
+   │  └─ support_data → surfaces supportDataInfo text (max 256) (one of these is required at least - item 4)
    │
    ├─ subtype-driven fields
    │  └─ ownerNames (array)  ← because commercial subtypes brand/factory always show ownerNames
@@ -187,8 +187,8 @@ Read-only summary of everything above, grouped by:
       └─ supportDataInfo   ← text, label "غير ذلك"
 
 5. experience
-   ├─ allegationDescription  ← textarea "صف تجربتك / ما حصل" (min 20 chars)
-   └─ supportingDocuments    ← multi-select cards
+   ├─ allegationDescription  ← textarea "صف تجربتك / ما حصل" (min 20 chars) required
+   └─ supportingDocuments    ← multi-select cards optional
       ├─ photos
       ├─ videos
       ├─ audio
@@ -197,13 +197,13 @@ Read-only summary of everything above, grouped by:
       └─ other
 
 6. media-evidence
-   ├─ mediaLink      ← URL "رابط لأي فيديوهات أو مستندات..."
-   ├─ sourceFiles    ← drag-and-drop / file picker
-   │  └─ each file: originalName, size, url, label ("اسم الوسيط")
-   └─ mediaNotes     ← textarea "ملاحظات إضافية"
+   ├─ mediaLink      ← URL "رابط لأي فيديوهات أو مستندات..." optional
+   ├─ sourceFiles    ← drag-and-drop / file picker optional
+   │  └─ each file: originalName, size, url, label ("اسم الوسيط") optional
+   └─ mediaNotes     ← textarea "ملاحظات إضافية" optional
 
 7. about-you
-   ├─ isAnonymous    ← toggle "التقديم بشكل مجهول" (default ON)
+   ├─ isAnonymous    ← toggle "التقديم بشكل مجهول" (default ON) 
    └─ if isAnonymous == false
       ├─ submitterName      ← "الاسم الكامل"
       └─ contactMethods     ← repeated rows {type, value}

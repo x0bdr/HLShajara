@@ -6,30 +6,27 @@ import { eq, and, desc, isNotNull } from "drizzle-orm";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { getPageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations("publications");
-  return {
-    title: t("title"),
-    description: t("lead"),
-    alternates: {
-      languages: {
-        ar: "/ar/publications",
-        en: "/en/publications",
-      },
-    },
-  };
+  return getPageMetadata({
+    locale,
+    namespace: "publications",
+    path: "/publications",
+  });
 }
 
-export const dynamic = "force-dynamic";
-
 async function getPublishedPosts(locale: string) {
+  if (!db.select) return [];
   return db
     .select()
     .from(posts)
@@ -49,6 +46,7 @@ export default async function PublicationsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations("publications");
   const nav = await getTranslations("nav");
   const publishedPosts = await getPublishedPosts(locale);

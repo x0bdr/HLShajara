@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ReportDetailsStep — Step 4 of the v1.5 category-based wizard (تفاصيل البلاغ).
+ * ReportDetailsStep — Step 4 of the v1.5 category-based wizard (تفاصيل الجهة).
  *
  * Shows category-specific detail flags (multi-select cards) and adaptive free-text
  * fields. Owner, investor and labour fields are editable arrays; support_data is a
@@ -261,7 +261,8 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
             <label htmlFor="details-reported-phone">{t("detailsReportedPhone")}</label>
             <input
               id="details-reported-phone"
-              type="text"
+              type="tel"
+              inputMode="tel"
               className="ds-input"
               value={meta.reportedPersonPhone ?? ""}
               onChange={(e) => setDetail("reportedPersonPhone", e.target.value)}
@@ -331,7 +332,8 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
             <label htmlFor="details-driver-phone">{t("detailsDriverPhone")}</label>
             <input
               id="details-driver-phone"
-              type="text"
+              type="tel"
+              inputMode="tel"
               className="ds-input"
               value={meta.driverPhone ?? ""}
               onChange={(e) => setDetail("driverPhone", e.target.value)}

@@ -195,10 +195,11 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           <div className="form-field" style={{ flex: 1, minWidth: 120, marginBottom: 0 }}>
             <input
               id="loc-contact"
-              type="text"
+              type="tel"
               inputMode="tel"
               className="ds-input"
               style={{ height: 38 }}
+              pattern="[\d\s\+\-\(\)]+"
               aria-invalid={contactError || undefined}
               aria-describedby={contactError ? "loc-contact-error" : undefined}
               value={meta.contactPhone ?? ""}

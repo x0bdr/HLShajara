@@ -9,6 +9,7 @@ export function HeroSection() {
   const locale = useLocale();
   const t = useTranslations("home");
   const nav = useTranslations("nav");
+  const brandAlt = locale === "ar" ? "حملة لستَ شجرة" : "HLShajara";
 
   return (
     <section className="hero hero-dramatic">
@@ -16,7 +17,7 @@ export function HeroSection() {
         <div className="hero-seal">
           <Image
             src={assetPath("/logo.jpeg")}
-            alt="حملة لستَ شجرة"
+            alt={brandAlt}
             width={160}
             height={160}
             className="hero-seal-img"

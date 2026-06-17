@@ -65,7 +65,7 @@ export function ContactMethodIcon({
     case "telegram":
       return (
         <svg {...svgProps}>
-          <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.36 8.627-.168.9-.5 1.201-.82 1.23-.696.065-1.225-.461-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
         </svg>
       );
     case "whatsapp":
@@ -112,6 +112,20 @@ function placeholderFor(type: ContactMethodType, t: (k: string) => string): stri
   if (type === "phone" || type === "whatsapp") return t("contactMethodValue");
   if (type === "website") return "https://example.com";
   return "@username";
+}
+
+function inputTypeFor(type: ContactMethodType): React.HTMLInputTypeAttribute {
+  if (type === "email") return "email";
+  if (type === "website") return "url";
+  if (type === "phone" || type === "whatsapp") return "tel";
+  return "text";
+}
+
+function inputModeFor(type: ContactMethodType): React.HTMLAttributes<HTMLInputElement>["inputMode"] {
+  if (type === "email") return "email";
+  if (type === "website") return "url";
+  if (type === "phone" || type === "whatsapp") return "tel";
+  return "text";
 }
 
 export function ContactMethodPicker({
@@ -204,7 +218,8 @@ export function ContactMethodPicker({
           <div className="form-field" style={{ flex: 1, minWidth: 120, marginBottom: 0 }}>
             <input
               id={`contact-value-${method.type}-${index}`}
-              type="text"
+              type={inputTypeFor(method.type)}
+              inputMode={inputModeFor(method.type)}
               className="ds-input"
               disabled={disabled}
               value={method.value}

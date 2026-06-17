@@ -8,12 +8,17 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PublicationTracker } from "@/components/PublicationTracker";
+import { SITE_URL, brandName } from "@/lib/seo";
 
 export function generateStaticParams() {
-  return [{ locale: "ar" }, { locale: "en" }];
+  return [];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
@@ -35,6 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     return { title: "Not Found" };
   }
 
+  const pageUrl = `${SITE_URL}/${locale}/publications/${slug}`;
+
   return {
     title: post.title,
     description: post.excerpt || undefined,
@@ -45,10 +52,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         en: `/en/publications/${slug}`,
       },
     },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt || undefined,
+      url: pageUrl,
+      siteName: brandName(locale),
+      images: [{ url: "/logo.jpeg", width: 640, height: 640, alt: post.title }],
+      locale,
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt || undefined,
+      images: ["/logo.jpeg"],
+    },
   };
 }
 
-export const dynamic = "force-dynamic";
+function JsonLd({ data }: { data: Record<string, unknown> }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
 
 async function getPost(locale: string, slug: string) {
   const rows = await db
@@ -77,9 +106,39 @@ export default async function PublicationPage({
 
   if (!post) notFound();
 
+  const pageUrl = `${SITE_URL}/${locale}/publications/${slug}`;
+  const orgName = brandName(locale);
+
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt || undefined,
+    image: post.coverImageUrl ? [post.coverImageUrl] : [`${SITE_URL}/logo.jpeg`],
+    datePublished: post.publishedAt?.toISOString(),
+    dateModified: post.updatedAt?.toISOString(),
+    author: {
+      "@type": "Organization",
+      name: orgName,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: orgName,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/logo.jpeg`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": pageUrl,
+    },
+  };
+
   return (
     <PageShell>
       <PublicationTracker slug={slug} locale={locale} />
+      <JsonLd data={articleSchema} />
       <article className="pub-article">
         <Link href={`/${locale}/publications`} className="pub-back">
           ← {t("back")}

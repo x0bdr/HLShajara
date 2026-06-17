@@ -9,16 +9,7 @@ const basePath = isStaticExport ? "/HLShajara" : "";
 // Expose basePath to server components so image/asset URLs can be prefixed correctly.
 process.env.NEXT_PUBLIC_BASE_PATH = basePath;
 
-const HIDDEN_PATHS = [
-  "record",
-  "mission",
-  "faq",
-  "reply",
-  "policy",
-  "dashboard",
-  "publications",
-  "entity",
-];
+const HIDDEN_PATHS = ["dashboard"];
 
 const nextConfig: NextConfig = {
   output: isStaticExport ? "export" : undefined,

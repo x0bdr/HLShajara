@@ -1,8 +1,28 @@
-import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageShell, LegalNote } from "@/components";
+import { getPageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return getPageMetadata({ locale, namespace: "faq", path: "/faq" });
+}
+
+function JsonLd({ data }: { data: Record<string, unknown> }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
 }
 
 export default async function FAQPage({
@@ -11,6 +31,7 @@ export default async function FAQPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "faq" });
   const legal = await getTranslations({ locale, namespace: "legal" });
 
@@ -21,12 +42,26 @@ export default async function FAQPage({
     { q: t("q4"), a: t("a4") },
     { q: t("q5"), a: t("a5") },
     { q: t("q6"), a: t("a6") },
-  ];
+  ].filter((faq) => faq.a && faq.a.trim().length > 0);
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.a,
+      },
+    })),
+  };
 
   return (
     <PageShell narrow>
+      <JsonLd data={faqSchema} />
       <div className="page-header-center">
-        <div className="ds-h1">{t("title")}</div>
+        <h1 className="ds-h1">{t("title")}</h1>
       </div>
 
       <div className="flex-col gap-16">

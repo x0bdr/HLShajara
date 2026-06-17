@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { PageShell } from "@/components";
+import { getPageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return getPageMetadata({ locale, namespace: "policy", path: "/policy" });
 }
 
 export default async function PolicyPage({
@@ -18,7 +29,7 @@ export default async function PolicyPage({
   return (
     <PageShell narrow>
       <div className="page-header-center">
-        <div className="ds-h1">{t("title")}</div>
+        <h1 className="ds-h1">{t("title")}</h1>
         <p className="ds-lead">{t("lead")}</p>
       </div>
 

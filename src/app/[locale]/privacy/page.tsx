@@ -1,8 +1,19 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { PageShell, LegalNote } from "@/components";
+import { getPageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return getPageMetadata({ locale, namespace: "privacy", path: "/privacy" });
 }
 
 export default async function PrivacyPage({
@@ -17,7 +28,7 @@ export default async function PrivacyPage({
   return (
     <PageShell narrow>
       <div className="page-header-center">
-        <div className="ds-h1">{t("title")}</div>
+        <h1 className="ds-h1">{t("title")}</h1>
       </div>
 
       <div className="form-section">

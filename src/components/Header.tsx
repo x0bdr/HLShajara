@@ -12,6 +12,7 @@ import { assetPath } from "@/lib/asset-path";
 export function Header() {
   const locale = useLocale();
   const t = useTranslations("nav");
+  const brandAlt = locale === "ar" ? "حملة لستَ شجرة" : "HLShajara";
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -52,7 +53,7 @@ export function Header() {
           <div className="site-logo-wrap">
             <Image
               src={assetPath("/logo.jpeg")}
-              alt="حملة لستَ شجرة"
+              alt={brandAlt}
               width={42}
               height={42}
               className="site-logo"

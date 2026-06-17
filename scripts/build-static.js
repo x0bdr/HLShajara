@@ -15,8 +15,8 @@ const dynamicClientRoutes = [
   "auth/error",
   "login",
   "profile",
-  "publications",
   "reviewer",
+  "publications/[slug]",
 ];
 
 const moved = [];
