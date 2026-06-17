@@ -3,7 +3,7 @@ export function generateStaticParams() {
 }
 
 import { PageShell, HeroSection, PrinciplesSection } from "@/components";
-import { PhotoGridSection } from "@/components/PhotoGridSection";
+import { SliderSection } from "@/components/SliderSection";
 
 export default async function HomePage({
   params,
@@ -16,7 +16,7 @@ export default async function HomePage({
     <PageShell noPad>
       <HeroSection />
       <PrinciplesSection />
-      <PhotoGridSection locale={locale} />
+      <SliderSection locale={locale} />
     </PageShell>
   );
 }

@@ -44,7 +44,8 @@
     "ctaButton": "Submit Report",
     "socialFeedTitle": "Ideas for Social Boycott",
     "viewMore": "View more",
-    "noPhotos": "No photos available yet."
+    "noPhotos": "No photos available yet.",
+    "slideAlt": "Slide {n} from the Lestaka Shajara campaign"
   },
   "mission": {
     "title": "Mission & Principles",
