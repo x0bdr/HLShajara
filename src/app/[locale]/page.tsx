@@ -4,12 +4,18 @@ export function generateStaticParams() {
 
 import { PageShell, HeroSection, PrinciplesSection, SocialFeedSection } from "@/components";
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
   return (
     <PageShell noPad>
       <HeroSection />
       <PrinciplesSection />
-      <SocialFeedSection />
+      <SocialFeedSection locale={locale} />
     </PageShell>
   );
 }
