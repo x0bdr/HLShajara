@@ -1,4 +1,4 @@
-import { createAuthEndpoint, APIError } from "better-auth/api";
+import { createAuthEndpoint, APIError, formCsrfMiddleware } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import * as z from "zod";
@@ -87,6 +87,8 @@ export function invitePlugin(options?: InvitePluginOptions) {
         "/invite/claim",
         {
           method: "POST",
+          use: [formCsrfMiddleware],
+          cloneRequest: true,
           body: z.object({
             token: z.string().min(1),
             email: z.string().email(),
