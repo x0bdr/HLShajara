@@ -2046,6 +2046,52 @@ input[type="checkbox"]:focus-visible {
 .twitter-feed-wrap .twitter-timeline {
   width: 100% !important;
 }
+.tweets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.tweet-card {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  text-decoration: none;
+  color: var(--fg1);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.tweet-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.tweet-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.tweet-handle {
+  font-weight: 700;
+  color: var(--brand);
+}
+.tweet-date {
+  color: var(--fg2);
+  font-family: var(--font-mono);
+}
+.tweet-text {
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.tweet-metrics {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--fg2);
+}
 
 @media (max-width: 720px) {
   .site-footer-inner {
