@@ -8,7 +8,7 @@
  * Includes a lightweight math CAPTCHA at the bottom to reduce automated spam.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import {
@@ -21,14 +21,9 @@ import {
   type DetailFieldId,
 } from "@/lib/wizard/category-config";
 import { displayValue } from "./review-helpers";
+import { useRecaptchaV3 } from "./useRecaptchaV3";
 
 export { displayValue } from "./review-helpers";
-
-function makeCaptcha() {
-  const a = Math.floor(Math.random() * 9) + 1; // 1-9
-  const b = Math.floor(Math.random() * 9) + 1; // 1-9
-  return { a, b, answer: a + b };
-}
 
 export const REVIEW_GROUP_IDS = [
   "report-category",
@@ -165,7 +160,7 @@ interface ReviewStepProps {
   form: SubmitInput & { leadNote?: string };
   submitting: boolean;
   onEdit: (stepId: string) => void;
-  onSubmit: () => void;
+  onSubmit: (recaptchaToken: string) => void | Promise<void>;
 }
 
 export function ReviewStep({
@@ -177,9 +172,8 @@ export function ReviewStep({
   const t = useTranslations("submit");
   const locale = useLocale();
   const meta = form.reportMetadata ?? {};
-  const [captcha, setCaptcha] = useState(() => makeCaptcha());
-  const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaError, setCaptchaError] = useState(false);
+  const { execute } = useRecaptchaV3("submit");
+  const [recaptchaError, setRecaptchaError] = useState(false);
 
   const relevantDetailFields = getRelevantDetailFieldIds(
     form.reportCategory,
@@ -195,16 +189,14 @@ export function ReviewStep({
     ? getSubTypeLabel(t, form.reportCategory, meta.orgType)
     : displayValue(meta.orgType);
 
-  function handleSubmit() {
-    const value = parseInt(captchaInput.trim(), 10);
-    if (Number.isNaN(value) || value !== captcha.answer) {
-      setCaptchaError(true);
-      setCaptcha(makeCaptcha());
-      setCaptchaInput("");
+  async function handleSubmit() {
+    setRecaptchaError(false);
+    const token = await execute();
+    if (!token) {
+      setRecaptchaError(true);
       return;
     }
-    setCaptchaError(false);
-    onSubmit();
+    onSubmit(token);
   }
 
   return (
@@ -440,31 +432,11 @@ export function ReviewStep({
       </div>
 
       <div className="review-affirm">
-        <div className="form-field" style={{ maxWidth: 280 }}>
-          <label htmlFor="review-captcha">
-            {t("captchaLabel", { a: captcha.a, b: captcha.b })}
-          </label>
-          <input
-            id="review-captcha"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            className="ds-input"
-            value={captchaInput}
-            onChange={(e) => {
-              setCaptchaInput(e.target.value);
-              if (captchaError) setCaptchaError(false);
-            }}
-            placeholder={t("captchaPlaceholder")}
-            aria-invalid={captchaError || undefined}
-            aria-describedby={captchaError ? "review-captcha-error" : undefined}
-          />
-          {captchaError && (
-            <p id="review-captcha-error" className="legal-error" role="alert">
-              {t("captchaError")}
-            </p>
-          )}
-        </div>
+        {recaptchaError && (
+          <p className="legal-error mb-16" role="alert">
+            {t("recaptchaError")}
+          </p>
+        )}
 
         <div className="wizard-nav flex-between mt-16">
           <button

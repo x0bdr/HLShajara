@@ -8,6 +8,26 @@ import { triageFromConduct } from "@/lib/constants/conduct";
 import { getSession, getInternalUserId } from "@/lib/session";
 import { rateLimitResponse } from "@/lib/rate-limit";
 
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secret) {
+    console.error("RECAPTCHA_SECRET_KEY is not set");
+    return false;
+  }
+  try {
+    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const json = (await res.json()) as { success?: boolean; score?: number; action?: string };
+    return Boolean(json.success && (json.score === undefined || json.score >= 0.5));
+  } catch (err) {
+    console.error("reCAPTCHA verification error:", err);
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
 
@@ -16,7 +36,24 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const parsed = submitSchema.safeParse(body);
+    const { recaptchaToken, ...payload } = body;
+
+    if (!recaptchaToken || typeof recaptchaToken !== "string") {
+      return NextResponse.json(
+        { ok: false, code: "RECAPTCHA_MISSING", message: "reCAPTCHA token is required." },
+        { status: 400 }
+      );
+    }
+
+    const recaptchaOk = await verifyRecaptcha(recaptchaToken);
+    if (!recaptchaOk) {
+      return NextResponse.json(
+        { ok: false, code: "RECAPTCHA_FAILED", message: "reCAPTCHA verification failed." },
+        { status: 400 }
+      );
+    }
+
+    const parsed = submitSchema.safeParse(payload);
     if (!parsed.success) {
       return NextResponse.json(
         { ok: false, code: "VALIDATION_ERROR", errors: parsed.error.flatten().fieldErrors },

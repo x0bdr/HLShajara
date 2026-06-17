@@ -207,7 +207,7 @@ export function WizardClient() {
     goTo(STEPS[0].id, true);
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(recaptchaToken: string) {
     setSubmitting(true);
     setResult(null);
 
@@ -216,7 +216,7 @@ export function WizardClient() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildSubmitPayload(state.form)),
+        body: JSON.stringify({ ...buildSubmitPayload(state.form), recaptchaToken }),
       });
       data = await res.json();
     } catch {
@@ -348,7 +348,7 @@ export function WizardClient() {
         archetype={isReview ? "choice" : archetype}
         stepValid={stepValid}
         onBack={goBack}
-        onNext={nextStep(state) ? advance : handleSubmit}
+        onNext={nextStep(state) ? advance : () => {}}
       />
     </div>
   );
