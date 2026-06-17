@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import path from "path";
+import fs from "fs";
 import type { submissions as submissionsTable } from "@/db/schema";
 
 type Submission = typeof submissionsTable.$inferSelect;
@@ -16,6 +17,39 @@ interface SourceFile {
 }
 
 const FONT_DIR = path.join(process.cwd(), "public", "fonts");
+const LOGO_PATH = path.join(process.cwd(), "public", "logo.jpeg");
+
+function toBase64(filePath: string): string {
+  return fs.readFileSync(filePath).toString("base64");
+}
+
+const FONTS = {
+  display: {
+    normal: toBase64(path.join(FONT_DIR, "thmanyahserifdisplay-Regular.otf")),
+    bold: toBase64(path.join(FONT_DIR, "thmanyahserifdisplay-Bold.otf")),
+  },
+  reading: {
+    normal: toBase64(path.join(FONT_DIR, "thmanyahseriftext-Regular.otf")),
+    bold: toBase64(path.join(FONT_DIR, "thmanyahseriftext-Bold.otf")),
+  },
+  sans: {
+    normal: toBase64(path.join(FONT_DIR, "thmanyahsans-Regular.otf")),
+    bold: toBase64(path.join(FONT_DIR, "thmanyahsans-Bold.otf")),
+  },
+};
+
+const LOGO_BASE64 = fs.existsSync(LOGO_PATH) ? toBase64(LOGO_PATH) : "";
+
+const COLORS = {
+  paper: "#F7F3EA",
+  paperRaised: "#FCFAF3",
+  ink: "#1B1A16",
+  secondary: "#6B6457",
+  muted: "#8A8273",
+  border: "#E1DBCC",
+  brand: "#264D2E",
+  brandDark: "#16301E",
+};
 
 const METADATA_LABELS_AR: Record<string, string> = {
   country: "الدولة",
@@ -77,16 +111,48 @@ function displayValue(value: unknown): string {
   return String(value);
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatValue(key: string, raw: unknown): string {
+  if (key === "googleMapsLink" || key === "websiteName" || key === "mediaLink") {
+    const url = String(raw);
+    return `<a href="${escapeHtml(url)}" dir="ltr">${escapeHtml(url)}</a>`;
+  }
+  if (key === "ownerNames" || key === "investorNames") {
+    const arr = Array.isArray(raw) ? raw : [];
+    return arr.map((v) => escapeHtml(String(v))).join(" · ");
+  }
+  if (key === "labourEntries") {
+    const arr = Array.isArray(raw) ? (raw as { name?: string; role?: string }[]) : [];
+    return arr
+      .filter((e) => e.name || e.role)
+      .map((e) => (e.name && e.role ? `${escapeHtml(e.name)} (${escapeHtml(e.role)})` : escapeHtml(e.name || e.role || "")))
+      .join(" · ");
+  }
+  if (key === "socialContactMethods" || key === "contactMethods") {
+    const arr = Array.isArray(raw) ? (raw as { type: string; value: string }[]) : [];
+    return arr.map((m) => `${escapeHtml(m.type)}: ${escapeHtml(m.value)}`).join(" · ");
+  }
+  if (key === "supportingDocuments" || key === "detailFlags") {
+    const arr = Array.isArray(raw) ? raw : [];
+    return arr.map((v) => escapeHtml(String(v))).join(" · ");
+  }
+  return escapeHtml(displayValue(raw));
+}
+
 function formatMetadata(meta: Record<string, unknown>): string {
   const rows = Object.entries(METADATA_LABELS_AR)
     .map(([key, label]) => {
       const raw = meta[key];
       if (raw === undefined || raw === null || (Array.isArray(raw) && raw.length === 0)) return "";
-      let value = displayValue(raw);
-      if (key === "googleMapsLink" || key === "websiteName" || key === "mediaLink") {
-        value = `<a href="${raw}">${value}</a>`;
-      }
-      return `<tr><td class="label">${label}</td><td class="value">${value}</td></tr>`;
+      return `<tr><td class="meta-label">${label}</td><td class="meta-value">${formatValue(key, raw)}</td></tr>`;
     })
     .filter(Boolean)
     .join("");
@@ -95,21 +161,21 @@ function formatMetadata(meta: Record<string, unknown>): string {
 }
 
 function formatSourceLinks(links: SourceLink[] | null | undefined): string {
-  if (!links || links.length === 0) return "<p>لا توجد روابط مصادر.</p>";
-  return `<ul>${links
+  if (!links || links.length === 0) return "<p class=\"empty\">لا توجد روابط مصادر.</p>";
+  return `<ul class="source-list">${links
     .map(
       (l) =>
-        `<li><a href="${l.url}">${l.title || l.url}</a></li>`
+        `<li><a href="${escapeHtml(l.url)}" dir="ltr">${escapeHtml(l.title || l.url)}</a></li>`
     )
     .join("")}</ul>`;
 }
 
 function formatSourceFiles(files: SourceFile[] | null | undefined): string {
-  if (!files || files.length === 0) return "<p>لا توجد ملفات مرفقة.</p>";
-  return `<ul>${files
+  if (!files || files.length === 0) return "<p class=\"empty\">لا توجد ملفات مرفقة.</p>";
+  return `<ul class="source-list">${files
     .map(
       (f) =>
-        `<li>${f.label ? `${f.label} — ` : ""}${f.originalName} — <a href="${f.url}">رابط</a></li>`
+        `<li>${f.label ? `${escapeHtml(f.label)} — ` : ""}${escapeHtml(f.originalName)} — <a href="${escapeHtml(f.url)}" dir="ltr">رابط</a></li>`
     )
     .join("")}</ul>`;
 }
@@ -118,6 +184,11 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
   const meta = (submission.reportMetadata as Record<string, unknown>) ?? {};
   const sourceLinks = (submission.sourceLinks as SourceLink[] | null) ?? [];
   const sourceFiles = (submission.sourceFiles as SourceFile[] | null) ?? [];
+  const createdAt = new Date(submission.createdAt).toLocaleString("ar-SA");
+
+  const logoImg = LOGO_BASE64
+    ? `<img src="data:image/jpeg;base64,${LOGO_BASE64}" class="logo" alt="HLShajara" />`
+    : "";
 
   const html = `
 <!DOCTYPE html>
@@ -127,74 +198,252 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
   <title>بلاغ #${submission.id}</title>
   <style>
     @font-face {
-      font-family: 'thmanyah';
-      src: url('file://${FONT_DIR}/thmanyahsans-Regular.otf') format('opentype');
+      font-family: 'thmanyah-display';
+      src: url('data:font/opentype;base64,${FONTS.display.normal}') format('opentype');
       font-weight: normal;
     }
     @font-face {
-      font-family: 'thmanyah';
-      src: url('file://${FONT_DIR}/thmanyahsans-Bold.otf') format('opentype');
+      font-family: 'thmanyah-display';
+      src: url('data:font/opentype;base64,${FONTS.display.bold}') format('opentype');
       font-weight: bold;
     }
+    @font-face {
+      font-family: 'thmanyah-reading';
+      src: url('data:font/opentype;base64,${FONTS.reading.normal}') format('opentype');
+      font-weight: normal;
+    }
+    @font-face {
+      font-family: 'thmanyah-reading';
+      src: url('data:font/opentype;base64,${FONTS.reading.bold}') format('opentype');
+      font-weight: bold;
+    }
+    @font-face {
+      font-family: 'thmanyah-sans';
+      src: url('data:font/opentype;base64,${FONTS.sans.normal}') format('opentype');
+      font-weight: normal;
+    }
+    @font-face {
+      font-family: 'thmanyah-sans';
+      src: url('data:font/opentype;base64,${FONTS.sans.bold}') format('opentype');
+      font-weight: bold;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: 'thmanyah', sans-serif;
-      font-size: 12px;
+      font-family: 'thmanyah-sans', sans-serif;
+      font-size: 11px;
       line-height: 1.6;
-      color: #111;
-      padding: 24px;
+      color: ${COLORS.ink};
+      background: ${COLORS.paper};
+      padding: 0;
+      margin: 0;
       direction: rtl;
     }
-    h1 { font-size: 20px; margin-bottom: 4px; }
-    h2 { font-size: 14px; margin-top: 20px; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
-    .subtitle { color: #555; margin-bottom: 16px; }
-    .section { margin-bottom: 16px; }
-    .description {
-      background: #f8f8f8;
-      border: 1px solid #eee;
-      padding: 12px;
-      white-space: pre-wrap;
-      border-radius: 6px;
+
+    .page {
+      padding: 32px;
+      max-width: 780px;
+      margin: 0 auto;
     }
-    .meta-table { width: 100%; border-collapse: collapse; }
-    .meta-table td { padding: 6px 8px; border: 1px solid #ddd; vertical-align: top; }
-    .meta-table .label { width: 35%; background: #f5f5f5; font-weight: bold; }
-    ul { padding-right: 20px; }
-    a { color: #0066cc; word-break: break-all; }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid ${COLORS.brand};
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid ${COLORS.brand};
+    }
+
+    .brand {
+      flex: 1;
+    }
+
+    .brand-title {
+      font-family: 'thmanyah-display', serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: ${COLORS.brandDark};
+      margin: 0;
+    }
+
+    .brand-subtitle {
+      font-family: 'thmanyah-sans', sans-serif;
+      font-size: 11px;
+      color: ${COLORS.secondary};
+      margin: 4px 0 0;
+    }
+
+    .report-id {
+      text-align: left;
+      color: ${COLORS.muted};
+      font-size: 10px;
+      direction: ltr;
+    }
+
+    .report-id strong {
+      display: block;
+      font-size: 14px;
+      color: ${COLORS.ink};
+    }
+
+    h1 {
+      font-family: 'thmanyah-display', serif;
+      font-size: 22px;
+      font-weight: bold;
+      color: ${COLORS.brandDark};
+      margin: 0 0 6px;
+    }
+
+    .meta-bar {
+      display: flex;
+      gap: 16px;
+      color: ${COLORS.secondary};
+      font-size: 10px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: ${COLORS.paperRaised};
+      border: 1px solid ${COLORS.border};
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-family: 'thmanyah-display', serif;
+      font-size: 13px;
+      font-weight: bold;
+      color: ${COLORS.brand};
+      margin: 0 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid ${COLORS.border};
+    }
+
+    .description {
+      font-family: 'thmanyah-reading', serif;
+      font-size: 12px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      text-align: right;
+    }
+
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .meta-table td {
+      padding: 8px 10px;
+      border: 1px solid ${COLORS.border};
+      vertical-align: top;
+    }
+
+    .meta-table tr:nth-child(odd) {
+      background: rgba(38, 77, 46, 0.03);
+    }
+
+    .meta-label {
+      width: 32%;
+      background: rgba(38, 77, 46, 0.08);
+      font-weight: bold;
+      color: ${COLORS.brandDark};
+      font-size: 10px;
+    }
+
+    .meta-value {
+      text-align: right;
+    }
+
+    .source-list {
+      margin: 0;
+      padding-right: 18px;
+    }
+
+    .source-list li {
+      margin-bottom: 6px;
+    }
+
+    a {
+      color: ${COLORS.brand};
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .empty {
+      color: ${COLORS.muted};
+      margin: 0;
+    }
+
+    .footer {
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid ${COLORS.border};
+      text-align: center;
+      color: ${COLORS.muted};
+      font-size: 9px;
+    }
   </style>
 </head>
 <body>
-  <h1>${submission.entityName}</h1>
-  <div class="subtitle">${submission.entityType} · ${submission.reportCategory ?? "—"} · ${submission.status}</div>
+  <div class="page">
+    <header>
+      ${logoImg}
+      <div class="brand">
+        <div class="brand-title">حملة لستَ شجرة</div>
+        <div class="brand-subtitle">HLShajara · تقرير بلاغ جديد</div>
+      </div>
+      <div class="report-id">
+        <strong>#${submission.id}</strong>
+        ${createdAt}
+      </div>
+    </header>
 
-  <div class="section">
-    <h2>الدور / المنصب</h2>
-    <p>${submission.entityRole}</p>
-  </div>
+    <h1>${escapeHtml(submission.entityName)}</h1>
+    <div class="meta-bar">
+      <span>نوع الجهة: ${escapeHtml(submission.entityType)}</span>
+      <span>التصنيف: ${escapeHtml(submission.reportCategory ?? "—")}</span>
+      <span>الحالة: ${escapeHtml(submission.status)}</span>
+    </div>
 
-  <div class="section">
-    <h2>وصف البلاغ</h2>
-    <div class="description">${submission.allegationDescription}</div>
-  </div>
+    <div class="card">
+      <h2>الدور / المنصب المُبلَّغ عنه</h2>
+      <p>${escapeHtml(submission.entityRole)}</p>
+    </div>
 
-  <div class="section">
-    <h2>بيانات إضافية</h2>
-    ${formatMetadata(meta)}
-  </div>
+    <div class="card">
+      <h2>وصف البلاغ</h2>
+      <div class="description">${escapeHtml(submission.allegationDescription)}</div>
+    </div>
 
-  <div class="section">
-    <h2>روابط المصادر</h2>
-    ${formatSourceLinks(sourceLinks)}
-  </div>
+    <div class="card">
+      <h2>بيانات مصنّفة</h2>
+      ${formatMetadata(meta)}
+    </div>
 
-  <div class="section">
-    <h2>الملفات المرفقة</h2>
-    ${formatSourceFiles(sourceFiles)}
-  </div>
+    <div class="card">
+      <h2>روابط المصادر</h2>
+      ${formatSourceLinks(sourceLinks)}
+    </div>
 
-  <div class="section">
-    <h2>معلومات التقديم</h2>
-    <p>رقم البلاغ: ${submission.id}</p>
-    <p>تاريخ التقديم: ${new Date(submission.createdAt).toLocaleString("ar-SA")}</p>
+    <div class="card">
+      <h2>الملفات المرفقة</h2>
+      ${formatSourceFiles(sourceFiles)}
+    </div>
+
+    <div class="footer">
+      تم إنشاء هذا التقرير تلقائياً من النظام · hlshajara.com
+    </div>
   </div>
 </body>
 </html>
