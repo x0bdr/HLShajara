@@ -511,6 +511,7 @@
 @media (max-width:480px) {
   .hero-actions { flex-direction:column; align-items:center; }
   .hero-actions .btn { width:100%; max-width:280px; justify-content:center; }
+  .hero-dramatic .hero-actions .btn.primary { font-size: 22px; padding: 14px 28px; }
   .hero { padding:48px 20px 36px; }
   .hero-seal-img { width:88px; height:88px; }
 }
@@ -1045,6 +1046,8 @@ input[type="checkbox"]:focus-visible {
   background: var(--brass-500);
   color: var(--surface);
   border-color: var(--brass-500);
+  font-size: 32px;
+  padding: 16px 36px;
 }
 .hero-dramatic .hero-actions .btn.primary:hover {
   background: var(--brass-600);
