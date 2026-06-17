@@ -4,6 +4,10 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const isStaticExport = process.env.EXPORT_STATIC === "1";
+const basePath = isStaticExport ? "/HLShajara" : "";
+
+// Expose basePath to server components so image/asset URLs can be prefixed correctly.
+process.env.NEXT_PUBLIC_BASE_PATH = basePath;
 
 const HIDDEN_PATHS = [
   "record",
@@ -18,7 +22,7 @@ const HIDDEN_PATHS = [
 
 const nextConfig: NextConfig = {
   output: isStaticExport ? "export" : undefined,
-  basePath: isStaticExport ? "/HLShajara" : "",
+  basePath,
   images: {
     unoptimized: true,
   },

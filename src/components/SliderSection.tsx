@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { ImageSlider } from "./ImageSlider";
 
 const PHOTO_DIR = join(process.cwd(), "public", "pics", "new");
-const PUBLIC_PREFIX = "../pics/new/";
+const PUBLIC_PREFIX = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pics/new/`;
 
 async function getPhotoFiles(): Promise<string[]> {
   try {
