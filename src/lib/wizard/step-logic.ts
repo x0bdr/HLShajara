@@ -12,6 +12,7 @@ import {
   screenPrivateTargeting,
   type PersistResult,
 } from "../screens";
+import { getSubTypeConfig, DETAIL_FLAG_FIELDS } from "./category-config";
 
 /* ---------- COARSE LOCATION ---------- */
 
@@ -125,22 +126,66 @@ export function screenMediaLink(url: string): boolean {
 /* ---------- STEP `requires` PREDICATES ---------- */
 
 export function requiresLocationInfo(form: SubmitInput): boolean {
-  return (form.allegationLocation ?? "").trim().length > 0;
+  const meta = form.reportMetadata ?? {};
+  const hasCountry = (form.allegationLocation ?? "").trim().length > 0;
+  const hasGovernorate = (meta.governorate ?? "").trim().length > 0;
+  const hasContact =
+    (meta.contactPhone ?? "").trim().length > 0 ||
+    (meta.entityEmail ?? "").trim().length > 0 ||
+    (meta.websiteName ?? "").trim().length > 0 ||
+    (meta.googleMapsLink ?? "").trim().length > 0 ||
+    (meta.socialContactMethods ?? []).length > 0;
+  return hasCountry && hasGovernorate && hasContact;
 }
 
 export function requiresEntityTypeName(form: SubmitInput): boolean {
-  const nameRequired = form.reportCategory !== "individuals";
-  const nameOk = !nameRequired || form.entityName.trim().length > 0;
-  return (
-    nameOk &&
-    form.reportCategory.trim().length > 0 &&
-    (form.reportMetadata?.orgType ?? "").trim().length > 0
-  );
+  const meta = form.reportMetadata ?? {};
+  const orgType = (meta.orgType ?? "").trim();
+  if (!orgType) return false;
+  if (orgType === "other" && !(meta.orgSubTypeOther ?? "").trim()) return false;
+  if (form.reportCategory === "individuals") return true;
+  return form.entityName.trim().length > 0;
 }
 
-export function requiresReportDetails(): boolean {
-  // Details are optional hints; any answer (including none) is acceptable.
-  return true;
+function detailFlagFieldIsFilled(
+  form: SubmitInput,
+  flag: string,
+): boolean {
+  const meta = form.reportMetadata ?? {};
+  const mapping = DETAIL_FLAG_FIELDS[flag];
+  if (!mapping) return true;
+  const value = meta[mapping.field];
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+  return false;
+}
+
+export function requiresReportDetails(form: SubmitInput): boolean {
+  const meta = form.reportMetadata ?? {};
+  const category = form.reportCategory;
+  const orgType = meta.orgType ?? "";
+
+  // Individuals: the visible identity fields are the gate.
+  if (category === "individuals") {
+    return (meta.reportedPersonName ?? "").trim().length > 0;
+  }
+
+  // Tourism vehicles: car plate is the minimum public identifier.
+  if (category === "tourism" && orgType === "private_car") {
+    return (meta.carPlate ?? "").trim().length > 0;
+  }
+  if (category === "tourism" && orgType === "taxi") {
+    if ((meta.carPlate ?? "").trim().length === 0) return false;
+  }
+
+  // Organization categories: at least one detail flag, and the selected flag's field must be filled.
+  const flags = meta.detailFlags ?? [];
+  if (flags.length === 0) return false;
+  return flags.every((flag) => detailFlagFieldIsFilled(form, flag));
 }
 
 export function requiresExperience(form: SubmitInput): boolean {
@@ -152,6 +197,8 @@ export function requiresMediaEvidence(): boolean {
   return true;
 }
 
-export function requiresAboutYou(): boolean {
-  return true;
+export function requiresAboutYou(form: SubmitInput): boolean {
+  if (form.isAnonymous) return true;
+  const methods = form.reportMetadata?.contactMethods ?? [];
+  return methods.length > 0;
 }

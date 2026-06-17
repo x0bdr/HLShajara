@@ -248,6 +248,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
             id="details-reported-name"
             type="text"
             className="ds-input"
+            required={form.reportCategory === "individuals"}
             value={meta.reportedPersonName ?? ""}
             onChange={(e) => setDetail("reportedPersonName", e.target.value)}
           />
@@ -316,6 +317,7 @@ export function ReportDetailsStep({ form, dispatch }: ReportDetailsStepProps) {
               id="details-car-plate"
               type="text"
               className="ds-input"
+              required
               value={meta.carPlate ?? ""}
               onChange={(e) => setDetail("carPlate", e.target.value)}
             />

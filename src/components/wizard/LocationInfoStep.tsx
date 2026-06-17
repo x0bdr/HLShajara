@@ -127,6 +127,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
           <select
             id="loc-governorate"
             className="ds-select"
+            required
             value={governorate}
             onChange={(e) => onGovernorateChange(e.target.value)}
           >
@@ -145,6 +146,7 @@ export function LocationInfoStep({ form, dispatch }: LocationInfoStepProps) {
             id="loc-governorate"
             type="text"
             className="ds-input"
+            required
             value={governorate}
             onChange={(e) => onGovernorateChange(e.target.value)}
           />
