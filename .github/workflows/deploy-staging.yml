@@ -30,5 +30,11 @@ jobs:
           npm run build
           pm2 startOrRestart ecosystem.config.js --update-env
           pm2 save
+          echo "--- pm2 status ---"
+          pm2 status
+          echo "--- listening ports ---"
+          ss -tlnp || netstat -tlnp || true
+          echo "--- recent app logs ---"
+          pm2 logs hlshajarah-staging --lines 80 --nostream || true
           echo "--- smoke test slider image ---"
           curl -sLI "https://staging.hlshajara.com/pics/new/photo_5877261144118988365_y.jpg" | head -1
