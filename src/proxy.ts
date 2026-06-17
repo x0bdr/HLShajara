@@ -9,6 +9,15 @@ const intlMiddleware = createMiddleware({
 });
 
 export default function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Forward every /en/* request to /ar/* until English is launched.
+  if (pathname.startsWith("/en")) {
+    const target = new URL(pathname.replace(/^\/en/, "/ar"), request.url);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target);
+  }
+
   const response = intlMiddleware(request);
   response.headers.set("x-proxy", "active");
   return response;
