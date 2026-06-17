@@ -2,6 +2,11 @@ import puppeteer from "puppeteer";
 import path from "path";
 import fs from "fs";
 import type { submissions as submissionsTable } from "@/db/schema";
+import {
+  getCategoryConfig,
+  getSubTypeConfig,
+  type DetailFieldId,
+} from "@/lib/wizard/category-config";
 
 type Submission = typeof submissionsTable.$inferSelect;
 
@@ -74,6 +79,8 @@ const METADATA_LABELS_AR: Record<string, string> = {
   reportedPersonPhone: "رقم الهاتف",
   reportedPersonPosition: "المنصب / المهنة",
   reportedPersonSocialMedia: "حسابات التواصل",
+  professorName: "اسم الأستاذ الجامعي",
+  universityDoctorName: "اسم الطبيب الجامعي",
   carType: "نوع السيارة",
   carPlate: "رقم اللوحة",
   driverPhone: "هاتف السائق",
@@ -87,8 +94,13 @@ const METADATA_LABELS_AR: Record<string, string> = {
   receptionInfo: "استقبال / مكتب أمامي",
   labourInfo: "عمال / موظفون",
   labourEntries: "عمال / موظفون",
+  labourMembers: "الأعضاء / العمال",
   supportDataInfo: "غير ذلك",
   clubName: "اسم النادي / الجمعية",
+  academicStaff: "الكادر الأكاديمي",
+  doctors: "الأطباء",
+  nurses: "الممرضون",
+  members: "الأعضاء",
   supportingDocuments: "وثائق داعمة",
   detailFlags: "تفاصيل إضافية",
   mediaNotes: "ملاحظات الوسائط",
@@ -147,11 +159,19 @@ function formatValue(key: string, raw: unknown): string {
   return escapeHtml(displayValue(raw));
 }
 
-function formatMetadata(meta: Record<string, unknown>): string {
+function isEmptyValue(value: unknown): boolean {
+  if (value === undefined || value === null) return true;
+  if (typeof value === "string" && value.trim() === "") return true;
+  if (Array.isArray(value) && value.length === 0) return true;
+  return false;
+}
+
+function formatMetadata(meta: Record<string, unknown>, allowedKeys: Set<string>): string {
   const rows = Object.entries(METADATA_LABELS_AR)
     .map(([key, label]) => {
+      if (!allowedKeys.has(key)) return "";
       const raw = meta[key];
-      if (raw === undefined || raw === null || (Array.isArray(raw) && raw.length === 0)) return "";
+      if (isEmptyValue(raw)) return "";
       return `<tr><td class="meta-label">${label}</td><td class="meta-value">${formatValue(key, raw)}</td></tr>`;
     })
     .filter(Boolean)
@@ -180,11 +200,51 @@ function formatSourceFiles(files: SourceFile[] | null | undefined): string {
     .join("")}</ul>`;
 }
 
+const COMMON_META_KEYS = new Set<string>([
+  "country",
+  "state",
+  "city",
+  "nearestLocation",
+  "address",
+  "governorate",
+  "contactPhone",
+  "websiteName",
+  "entityEmail",
+  "googleMapsLink",
+  "socialMediaAccounts",
+  "socialContactMethods",
+  "contactMethods",
+  "orgType",
+  "orgSubType",
+  "orgSubTypeOther",
+  "supportingDocuments",
+  "detailFlags",
+  "mediaNotes",
+  "mediaLink",
+]);
+
+function getAllowedMetaKeys(category: string | null, orgType: string | undefined): Set<string> {
+  const allowed = new Set<string>(COMMON_META_KEYS);
+
+  const catConfig = getCategoryConfig(category ?? undefined);
+  if (catConfig) {
+    const subConfig = getSubTypeConfig(category ?? undefined, orgType);
+    if (subConfig?.detailFields) {
+      for (const field of subConfig.detailFields) {
+        allowed.add(field);
+      }
+    }
+  }
+
+  return allowed;
+}
+
 export async function generateSubmissionPdf(submission: Submission): Promise<Buffer> {
   const meta = (submission.reportMetadata as Record<string, unknown>) ?? {};
   const sourceLinks = (submission.sourceLinks as SourceLink[] | null) ?? [];
   const sourceFiles = (submission.sourceFiles as SourceFile[] | null) ?? [];
   const createdAt = new Date(submission.createdAt).toLocaleString("ar-SA");
+  const allowedKeys = getAllowedMetaKeys(submission.reportCategory, meta.orgType as string | undefined);
 
   const logoImg = LOGO_BASE64
     ? `<img src="data:image/jpeg;base64,${LOGO_BASE64}" class="logo" alt="HLShajara" />`
@@ -436,7 +496,7 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
 
     <div class="card">
       <h2>بيانات مصنّفة</h2>
-      ${formatMetadata(meta)}
+      ${formatMetadata(meta, allowedKeys)}
     </div>
 
     <div class="card">
