@@ -12,7 +12,44 @@ import {
   users,
 } from "@/db/schema";
 import { conductTypes, roleInConductTypes } from "@/lib/constants/conduct";
-import { isValidPhone } from "@/lib/validation/is-valid";
+import {
+  isValidEmail,
+  isValidPhone,
+  isValidUrl,
+  sanitizeEmail,
+  sanitizeInput,
+  sanitizeUrl,
+} from "@/lib/validation/is-valid";
+
+/* ---------- SANITIZED FIELD HELPERS ---------- */
+
+function sanitizedString(max: number) {
+  return z.string().max(max).transform(sanitizeInput);
+}
+
+function optionalSanitizedString(max: number) {
+  return sanitizedString(max).optional();
+}
+
+function optionalEmail(max = 255) {
+  return sanitizedString(max)
+    .transform(sanitizeEmail)
+    .refine((v) => !v || isValidEmail(v), { message: "Invalid email" })
+    .optional();
+}
+
+function optionalUrl(max = 2048) {
+  return sanitizedString(max)
+    .transform(sanitizeUrl)
+    .refine((v) => !v || isValidUrl(v), { message: "Invalid URL" })
+    .optional();
+}
+
+function optionalPhone(max = 100) {
+  return sanitizedString(max)
+    .refine((v) => !v || isValidPhone(v), { message: "Invalid phone number" })
+    .optional();
+}
 
 /* ---------- REPORT CATEGORY (v1.5 category-based wizard) ---------- */
 
@@ -43,81 +80,101 @@ export const contactMethodTypes = [
 
 export type ContactMethodType = (typeof contactMethodTypes)[number];
 
-export const contactMethodSchema = z.object({
-  type: z.enum(contactMethodTypes),
-  value: z.string().max(255),
-  countryCode: z.string().max(10).optional(),
-});
+export const contactMethodSchema = z
+  .object({
+    type: z.enum(contactMethodTypes),
+    value: sanitizedString(255),
+    countryCode: z.string().max(10).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const { type, value } = data;
+    if (!value) return;
+    if (type === "email" && !isValidEmail(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid email",
+        path: ["value"],
+      });
+    }
+    if (type === "website" && !isValidUrl(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid URL",
+        path: ["value"],
+      });
+    }
+    if ((type === "phone" || type === "whatsapp") && !isValidPhone(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid phone number",
+        path: ["value"],
+      });
+    }
+  });
 
 export type ContactMethod = z.infer<typeof contactMethodSchema>;
 
 const labourEntrySchema = z.object({
-  name: z.string().max(255),
-  role: z.string().max(255),
+  name: sanitizedString(255),
+  role: sanitizedString(255),
 });
 
 const academicStaffEntrySchema = z.object({
-  name: z.string().max(255),
-  role: z.string().max(255),
+  name: sanitizedString(255),
+  role: sanitizedString(255),
 });
 
 /** Category-specific metadata captured by the new wizard. */
 export const reportMetadataSchema = z.object({
-  country: z.string().max(100).optional(),
-  state: z.string().max(100).optional(),
-  city: z.string().max(100).optional(),
-  nearestLocation: z.string().max(200).optional(),
-  address: z.string().max(300).optional(),
-  governorate: z.string().max(100).optional(),
-  contactPhone: z
-    .string()
-    .max(100)
-    .refine((v) => !v || isValidPhone(v), {
-      message: "Contact phone must contain only numbers",
-    })
-    .optional(),
-  contactPhoneCountryCode: z.string().max(10).optional(),
-  websiteName: z.string().max(255).optional(),
-  entityEmail: z.union([z.string().email().max(255), z.literal("")]).optional(),
-  googleMapsLink: z.string().max(2048).optional(),
-  socialMediaAccounts: z.string().max(500).optional(),
+  country: optionalSanitizedString(100),
+  state: optionalSanitizedString(100),
+  city: optionalSanitizedString(100),
+  nearestLocation: optionalSanitizedString(200),
+  address: optionalSanitizedString(300),
+  governorate: optionalSanitizedString(100),
+  contactPhone: optionalPhone(100),
+  contactPhoneCountryCode: optionalSanitizedString(10),
+  websiteName: optionalUrl(255),
+  entityEmail: optionalEmail(255),
+  googleMapsLink: optionalUrl(2048),
+  socialMediaAccounts: optionalSanitizedString(500),
   socialContactMethods: z.array(contactMethodSchema).optional(),
-  orgType: z.string().max(100).optional(),
-  orgSubType: z.string().max(100).optional(),
-  orgSubTypeOther: z.string().max(255).optional(),
-  ownerName: z.string().max(255).optional(),
-  ownerNames: z.array(z.string().max(255)).optional(),
-  reportedPersonName: z.string().max(255).optional(),
-  professorName: z.string().max(255).optional(),
-  universityDoctorName: z.string().max(255).optional(),
-  reportedPersonNickname: z.string().max(255).optional(),
-  reportedPersonPhone: z.string().max(100).optional(),
-  reportedPersonPosition: z.string().max(255).optional(),
-  reportedPersonSocialMedia: z.string().max(500).optional(),
-  carType: z.string().max(100).optional(),
-  carPlate: z.string().max(100).optional(),
-  driverPhone: z.string().max(100).optional(),
-  driverName: z.string().max(255).optional(),
-  taxiNumber: z.string().max(100).optional(),
-  appName: z.string().max(100).optional(),
-  propertyType: z.string().max(100).optional(),
-  partnerName: z.string().max(255).optional(),
-  investorName: z.string().max(255).optional(),
-  investorNames: z.array(z.string().max(255)).optional(),
-  receptionInfo: z.string().max(255).optional(),
-  labourInfo: z.string().max(255).optional(),
+  orgType: optionalSanitizedString(100),
+  orgSubType: optionalSanitizedString(100),
+  orgSubTypeOther: optionalSanitizedString(255),
+  ownerName: optionalSanitizedString(255),
+  ownerNames: z.array(sanitizedString(255)).optional(),
+  reportedPersonName: optionalSanitizedString(255),
+  professorName: optionalSanitizedString(255),
+  universityDoctorName: optionalSanitizedString(255),
+  reportedPersonNickname: optionalSanitizedString(255),
+  reportedPersonPhone: optionalPhone(100),
+  reportedPersonPosition: optionalSanitizedString(255),
+  reportedPersonSocialMedia: optionalSanitizedString(500),
+  carType: optionalSanitizedString(100),
+  carPlate: optionalSanitizedString(100),
+  driverPhone: optionalPhone(100),
+  driverName: optionalSanitizedString(255),
+  taxiNumber: optionalSanitizedString(100),
+  appName: optionalSanitizedString(100),
+  propertyType: optionalSanitizedString(100),
+  partnerName: optionalSanitizedString(255),
+  investorName: optionalSanitizedString(255),
+  investorNames: z.array(sanitizedString(255)).optional(),
+  receptionInfo: optionalSanitizedString(255),
+  labourInfo: optionalSanitizedString(255),
   labourEntries: z.array(labourEntrySchema).optional(),
   labourMembers: z.array(labourEntrySchema).optional(),
   academicStaff: z.array(academicStaffEntrySchema).optional(),
-  doctors: z.array(z.string().max(255)).optional(),
-  nurses: z.array(z.string().max(255)).optional(),
-  members: z.array(z.string().max(255)).optional(),
-  supportDataInfo: z.string().max(256).optional(),
-  clubName: z.string().max(255).optional(),
-  supportingDocuments: z.array(z.string().max(100)).optional(),
-  detailFlags: z.array(z.string().max(100)).optional(),
-  mediaNotes: z.string().max(2000).optional(),
-  mediaLink: z.string().url().or(z.literal("")).optional(),
+  doctors: z.array(sanitizedString(255)).optional(),
+  nurses: z.array(sanitizedString(255)).optional(),
+  members: z.array(sanitizedString(255)).optional(),
+  supportDataInfo: optionalSanitizedString(256),
+  clubName: optionalSanitizedString(255),
+  supportingDocuments: z.array(sanitizedString(100)).optional(),
+  detailFlags: z.array(sanitizedString(100)).optional(),
+  mediaNotes: optionalSanitizedString(2000),
+  mediaLink: optionalUrl(2048),
   contactMethods: z.array(contactMethodSchema).optional(),
 });
 
@@ -127,8 +184,8 @@ export type ReportMetadata = z.infer<typeof reportMetadataSchema>;
 
 export const insertEntitySchema = createInsertSchema(entities, {
   publicId: z.string().min(8).max(32),
-  name: z.string().min(1).max(255),
-  role: z.string().min(1).max(500),
+  name: sanitizedString(255).refine((v) => v.length >= 1, { message: "Required" }),
+  role: sanitizedString(500).refine((v) => v.length >= 1, { message: "Required" }),
 }).omit({ id: true, createdAt: true, updatedAt: true, publishedAt: true, unpublishedAt: true });
 
 export const selectEntitySchema = createSelectSchema(entities);
@@ -139,7 +196,9 @@ export type SelectEntity = z.infer<typeof selectEntitySchema>;
 /* ---------- ALLEGATION ---------- */
 
 export const insertAllegationSchema = createInsertSchema(allegations, {
-  description: z.string().min(10).max(10000),
+  description: sanitizedString(10000).refine((v) => v.length >= 10, {
+    message: "Description must be at least 10 characters",
+  }),
 }).omit({ id: true, createdAt: true });
 
 export const selectAllegationSchema = createSelectSchema(allegations);
@@ -149,10 +208,13 @@ export type InsertAllegation = z.infer<typeof insertAllegationSchema>;
 /* ---------- SOURCE ---------- */
 
 export const insertSourceSchema = createInsertSchema(sources, {
-  title: z.string().min(1).max(500),
-  publisher: z.string().min(1).max(200),
+  title: sanitizedString(500).refine((v) => v.length >= 1, { message: "Required" }),
+  publisher: sanitizedString(200).refine((v) => v.length >= 1, { message: "Required" }),
   date: z.string().regex(/^\d{4}(-\d{2}(-\d{2})?)?$/),
-  url: z.string().url().optional().or(z.literal("")),
+  url: sanitizedString(2048)
+    .transform(sanitizeUrl)
+    .refine((v) => !v || isValidUrl(v), { message: "Invalid URL" })
+    .optional(),
 }).omit({ id: true, createdAt: true, verifiedAt: true });
 
 export type InsertSource = z.infer<typeof insertSourceSchema>;
@@ -160,7 +222,9 @@ export type InsertSource = z.infer<typeof insertSourceSchema>;
 /* ---------- SUBMISSION (public intake) ---------- */
 
 export const submitSchema = z.object({
-  entityName: z.string().max(255),
+  entityName: sanitizedString(255).refine((v) => v.length > 0, {
+    message: "Entity name is required",
+  }),
   entityType: z.enum([
     "individual",
     "organization",
@@ -170,11 +234,15 @@ export const submitSchema = z.object({
   ]),
   reportCategory: z.enum(reportCategories),
   reportMetadata: reportMetadataSchema.default({}),
-  entityRole: z.string().min(1).max(500),
-  allegationDescription: z.string().min(20).max(10000),
-  allegationPeriod: z.string().max(100).optional(),
-  allegationLocation: z.string().max(200).optional(),
-  allegationClassification: z.string().max(100).optional(),
+  entityRole: sanitizedString(500).refine((v) => v.length >= 1, {
+    message: "Entity role is required",
+  }),
+  allegationDescription: sanitizedString(10000).refine((v) => v.length >= 20, {
+    message: "Allegation description must be at least 20 characters",
+  }),
+  allegationPeriod: optionalSanitizedString(100),
+  allegationLocation: optionalSanitizedString(200),
+  allegationClassification: optionalSanitizedString(100),
   // Phase 33 (BE-01): first-class conduct slug (closed 14-set via shared const) —
   // drives auto-populated triageCategory on intake. Optional/additive.
   conductType: z.enum(conductTypes).optional(),
@@ -184,12 +252,14 @@ export const submitSchema = z.object({
   // Phase 33 (BE-02): /api/submit now PERSISTS this (was accept-but-ignore); it is still
   // NEVER returned on any public path, NEVER counted as a source, NEVER folded into
   // allegationDescription.
-  leadNote: z.string().max(5000).optional(),
+  leadNote: optionalSanitizedString(5000),
   sourceLinks: z
     .array(
       z.object({
-        url: z.string().url(),
-        title: z.string().min(1).max(500).optional(),
+        url: sanitizedString(2048)
+          .transform(sanitizeUrl)
+          .refine((v) => isValidUrl(v), { message: "Invalid URL" }),
+        title: optionalSanitizedString(500),
         // Phase 33 (BE-03): per-source provenance tag (closed 6-set). Optional —
         // a sourceLinks item without sourceType still parses.
         sourceType: z.enum(["un","court","sanctions","hr","journalism","official"]).optional(),
@@ -200,19 +270,19 @@ export const submitSchema = z.object({
     .array(
       z.object({
         hash: z.string(),
-        filename: z.string(),
-        originalName: z.string(),
+        filename: sanitizedString(255),
+        originalName: sanitizedString(255),
         url: z.string(),
         size: z.number(),
-        label: z.string().optional(),
+        label: optionalSanitizedString(255),
       })
     )
     .default([]),
-  submitterEmail: z.string().email().optional().or(z.literal("")),
-  submitterName: z.string().max(255).optional(),
+  submitterEmail: optionalEmail(255),
+  submitterName: optionalSanitizedString(255),
   isAnonymous: z.boolean().default(true),
 }).refine(
-  (data) => data.reportCategory === "individuals" || data.entityName.trim().length > 0,
+  (data) => data.reportCategory === "individuals" || data.entityName.length > 0,
   {
     message: "Entity name is required",
     path: ["entityName"],
@@ -224,8 +294,10 @@ export type SubmitInput = z.infer<typeof submitSchema>;
 /* ---------- USER ---------- */
 
 export const insertUserSchema = createInsertSchema(users, {
-  email: z.string().email(),
-  name: z.string().min(1).max(255).optional(),
+  email: sanitizedString(255)
+    .transform(sanitizeEmail)
+    .refine((v) => isValidEmail(v), { message: "Invalid email" }),
+  name: optionalSanitizedString(255),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
