@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useLocale, useTranslations } from "next-intl";
 
 const HANDLE = "HLShajara";
@@ -13,28 +12,16 @@ export function SocialFeedSection() {
     <section className="social-feed-section">
       <div className="social-feed-inner">
         <h2 className="social-feed-title">{t("socialFeedTitle")}</h2>
-        <div className="twitter-feed-wrap">
-          <a
-            className="twitter-timeline"
-            data-height="600"
-            data-tweet-limit="10"
-            data-chrome="noheader nofooter transparent"
-            href={`https://twitter.com/${HANDLE}`}
-          >
-            {locale === "ar" ? `تغريدات @${HANDLE}` : `Tweets by @${HANDLE}`}
-          </a>
-        </div>
+        <a
+          className="twitter-timeline"
+          data-height="600"
+          data-tweet-limit="10"
+          href={`https://twitter.com/${HANDLE}?ref_src=twsrc%5Etfw`}
+        >
+          {locale === "ar" ? `تغريدات @${HANDLE}` : `Tweets by @${HANDLE}`}
+        </a>
+        <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8" />
       </div>
-      <Script
-        src="https://platform.twitter.com/widgets.js"
-        strategy="lazyOnload"
-        onLoad={() => {
-          if (typeof window !== "undefined") {
-            const twttr = (window as unknown as { twttr?: { widgets?: { load: () => void } } }).twttr;
-            twttr?.widgets?.load();
-          }
-        }}
-      />
     </section>
   );
 }
