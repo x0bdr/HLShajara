@@ -1997,6 +1997,55 @@ input[type="checkbox"]:focus-visible {
   color: var(--on-green);
   text-decoration: underline;
 }
+.site-footer-social-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.site-footer-social-btn {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-900);
+  background: var(--green-100);
+  border: 1px solid var(--green-200);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  text-decoration: none;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.site-footer-social-btn:hover {
+  background: var(--on-green);
+  color: var(--green-900);
+}
+
+/* Social feed section */
+.social-feed-section {
+  border-top: 1px solid var(--border);
+  padding: 56px 20px 48px;
+  background: var(--surface);
+}
+.social-feed-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.social-feed-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 24px;
+  color: var(--fg1);
+}
+.twitter-feed-wrap {
+  min-height: 300px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.twitter-feed-wrap iframe,
+.twitter-feed-wrap .twitter-timeline {
+  width: 100% !important;
+}
 
 @media (max-width: 720px) {
   .site-footer-inner {
@@ -2006,5 +2055,8 @@ input[type="checkbox"]:focus-visible {
   }
   .site-footer-founded {
     text-align: start;
+  }
+  .social-feed-title {
+    font-size: var(--text-xl);
   }
 }

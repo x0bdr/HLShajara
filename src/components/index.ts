@@ -12,5 +12,6 @@ export * from "./SourceCitation";
 export * from "./PageShell";
 export * from "./Skeleton";
 export * from "./PrinciplesSection";
+export * from "./SocialFeedSection";
 export * from "./DocumentationDomains";
 export * from "./FoundingBanner";

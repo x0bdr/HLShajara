@@ -39,7 +39,8 @@
     "domainsLead": "We receive and verify evidence from multiple trusted sources.",
     "ctaTitle": "Do you have documented information?",
     "ctaText": "You can submit a documented report with sources. Every submission passes an automated filter and dual human review.",
-    "ctaButton": "Submit Report"
+    "ctaButton": "Submit Report",
+    "socialFeedTitle": "Ideas for Social Boycott"
   },
   "mission": {
     "title": "Mission & Principles",
