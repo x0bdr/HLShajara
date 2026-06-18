@@ -72,20 +72,24 @@ export async function POST(request: Request) {
       sourceLinks: data.sourceLinks,
     });
 
-    if (!screen.ok) {
-      return NextResponse.json(
-        { ok: false, code: screen.code, message: screen.message },
-        { status: 400 }
-      );
-    }
+    // Content screens (Family B) are ADVISORY at intake: a matched screen no longer
+    // rejects the submission. Instead the matched code is recorded as a reviewer-facing
+    // AUTO-FLAG in the immutable audit log below, preserving the safety signal for
+    // human review without blocking on imperfect (esp. Arabic) content heuristics.
 
     const session = await getSession();
     const isAnonymous = data.isAnonymous || !session;
     const actorId = session ? await getInternalUserId(session) : 0;
     const actorRole = (session?.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
+    const parts = [
+      isAnonymous ? "Anonymous submission" : null,
+      !screen.ok ? `AUTO-FLAG:${screen.code}` : null,
+    ].filter(Boolean);
+    const reason = parts.length ? parts.join("; ") : undefined;
+
     const [submission] = await withAudit(
-      { actorId, actorRole, reason: isAnonymous ? "Anonymous submission" : undefined },
+      { actorId, actorRole, reason },
       () =>
         db
           .insert(submissions)
