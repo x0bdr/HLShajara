@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated 2026-06-14)
 Milestone v1.4 (Report Submission Wizard): Phases 28–33 ALL code-complete + integrated on master.
 Progress: [██████████] 100% (6/6 phases, 17/17 plans)
 Status: code-complete; pending human EN/AR staging E2E sign-off before milestone close.
-Last activity: 2026-06-14
+Last activity: 2026-06-18 - Completed quick task 260618-nqm: content screens advisory (warn, not block) at intake
 
 **v1.4 delivery (this session):** built in two parallel lanes — frontend wizard chain 29→30→31→32
 (main tree, sequential) + backend Phase 33 (isolated git worktree, concurrent, merged at `c3ad335`).
@@ -176,6 +176,13 @@ SSH step is broken — missing `STAGING_SSH_*` secrets — so deploy-ops deploye
 - Phase 5 (Legal Release Gate): production publish of any living person remains blocked until lawyer sign-off + jurisdiction Key Decision are recorded.
 - Free-text incitement/hate-tone classifier (AR + EN): curated banned-pattern lists + human review behind a swappable interface; ML classification is a separately-researched future effort.
 - **Latent screen properties surfaced by 28-01 (pre-existing v1.0 behavior, mirrored not changed):** (1) `INCITEMENT` token set is a strict subset of the group-target screen, so it is effectively unreachable — `GROUP_TARGET` fires first. (2) The Arabic screen regexes use ASCII `\b` boundaries, so purely-Arabic terms only match when ASCII-flanked. Both are candidates for the incitement/hate-tone classifier rework; changing them now would alter `/api/submit` behavior.
+- **Intake posture changed (quick task 260618-nqm, 2026-06-18):** the six content screens (`GROUP_TARGET`, `INCITEMENT`, `HATE_TONE`, `INNOCENT_PARTY`, `PRIVATE_TARGETING`, `MISMATCH`) are now **advisory** at `/api/submit` — a match no longer rejects with HTTP 400. The submission is accepted and the matched code is recorded as `AUTO-FLAG:<CODE>` in `review_logs.reason` (immutable audit). `screens.ts`/`persist.ts` are unchanged (they still classify); only the route stopped blocking. Publication-time gates (≥1 source, lawyer sign-off) are unaffected. **Reviewer impact:** flagged submissions land in the queue and must be triaged via the `AUTO-FLAG:*` audit entries. Optional follow-up: surface flags in the reviewer console via a `screen_flags` column (needs a migration). Interacts with CRITICAL-0 (the automated intake gate is no longer a structural block).
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260618-nqm | Make post-submit content screens advisory (warn, not block) at intake | 2026-06-18 | 4fda90a | [260618-nqm-make-post-submit-content-screens-advisor](./quick/260618-nqm-make-post-submit-content-screens-advisor/) |
 
 ### v1.3 Specific Notes (prior milestone)
 
