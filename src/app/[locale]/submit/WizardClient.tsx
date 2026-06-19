@@ -126,7 +126,6 @@ export function WizardClient() {
   const [state, dispatch] = useReducer(wizardReducer, initialWizardState);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [recaptchaError, setRecaptchaError] = useState(false);
   const [stepErrors, setStepErrors] = useState<StepFieldErrors>({});
   const { execute } = useRecaptchaV3("submit");
   const [showRestore, setShowRestore] = useState(() => {
@@ -247,12 +246,13 @@ export function WizardClient() {
   }
 
   async function submitWithRecaptcha() {
-    setRecaptchaError(false);
-    const token = await execute();
-    if (!token) {
-      setRecaptchaError(true);
-      return;
-    }
+    // A null/empty token means the v3 script never produced one (blocked by Tor /
+    // adblock / privacy extensions) — exactly the users the gray band exists to serve.
+    // Do NOT hard-block: POST with an empty recaptchaToken so the server treats v3 as
+    // "not ok" and escalates to a challenge (CHALLENGE_REQUIRED). Mirrors submitChallenge,
+    // which already falls back to "". A genuine POST failure surfaces as the generic
+    // error inside handleSubmit's catch.
+    const token = (await execute()) ?? "";
     await handleSubmit(token);
   }
 
@@ -291,6 +291,9 @@ export function WizardClient() {
       });
       data = await res.json();
     } catch {
+      // Genuine unrecoverable network/POST failure (the request itself never completed) —
+      // surfaced as the generic error. A missing v3 token is NOT routed here: it POSTs
+      // with an empty token so the server escalates to a gray-band challenge instead.
       data = { ok: false, message: t("error") };
     }
 
@@ -494,13 +497,6 @@ export function WizardClient() {
           error={challengeError}
           submitting={submitting}
         />
-      )}
-
-      {isReview && recaptchaError && (
-        <div className="legal legal-error mt-16 mb-16" role="alert">
-          <div className="t">{t("error")}</div>
-          <p>{t("recaptchaError")}</p>
-        </div>
       )}
 
       <WizardNav

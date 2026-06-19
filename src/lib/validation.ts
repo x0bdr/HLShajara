@@ -281,12 +281,10 @@ export const submitSchema = z.object({
   submitterEmail: optionalEmail(255),
   submitterName: optionalSanitizedString(255),
   isAnonymous: z.boolean().default(true),
-  // HONEYPOT (anti-bot): a plausibly-named decoy field real users never see/fill
-  // (rendered visually-hidden client-side). Intentionally NOT sanitize-transformed —
-  // we evaluate the RAW bot-supplied value's truthiness in the route. Kept OUTSIDE
-  // the .refine below so it never affects real-field validation. The route gates on
-  // it FIRST (before reCAPTCHA) and returns a non-revealing response when filled.
-  website: z.string().max(255).optional(),
+  // NOTE: the anti-bot HONEYPOT (`website`) is intentionally NOT a schema field. The
+  // route destructures it straight off the raw request body and gates on it FIRST
+  // (before reCAPTCHA / any schema parse), evaluating the raw bot-supplied value's
+  // truthiness. Adding it here would be dead — the route never feeds it to this schema.
 }).refine(
   (data) => data.reportCategory === "individuals" || data.entityName.length > 0,
   {

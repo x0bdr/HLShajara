@@ -174,7 +174,6 @@
     "back": "Back",
     "next": "Next",
     "begin": "Begin",
-    "recaptchaError": "reCAPTCHA verification failed. Please try again.",
     "stepCounter": "Step {n} of {m}",
     "restoreDraftTitle": "Resume your draft?",
     "restoreDraftBody": "An unfinished report is saved on this device. You can resume it or start over.",

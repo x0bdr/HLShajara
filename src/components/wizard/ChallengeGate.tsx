@@ -39,11 +39,17 @@ export function ChallengeGate({
   const t = useTranslations("submit");
   const inputId = useId();
   const errorId = useId();
+  const questionId = useId();
 
   const question =
     op === "+"
       ? t("challengeQuestionAdd", { a, b })
       : t("challengeQuestionSub", { a, b });
+
+  // The visible <label> shows the math question; the input also carries an explicit
+  // accessible name ("Your answer" / "إجابتك") via aria-label, while aria-describedby
+  // keeps the question (and any error) announced to screen readers. RTL-safe.
+  const describedBy = [questionId, error ? errorId : null].filter(Boolean).join(" ");
 
   return (
     <div className="legal legal-warning mt-16 mb-16" role="group" aria-label={t("challengeTitle")}>
@@ -51,7 +57,7 @@ export function ChallengeGate({
       <p>{t("challengeIntro")}</p>
 
       <div className="form-field mt-16">
-        <label htmlFor={inputId}>{question}</label>
+        <label htmlFor={inputId} id={questionId}>{question}</label>
         <input
           id={inputId}
           type="text"
@@ -66,7 +72,8 @@ export function ChallengeGate({
               if (!submitting) onSubmit();
             }
           }}
-          aria-describedby={error ? errorId : undefined}
+          aria-label={t("challengeAnswerLabel")}
+          aria-describedby={describedBy || undefined}
           aria-invalid={error ? true : undefined}
           disabled={submitting}
         />
