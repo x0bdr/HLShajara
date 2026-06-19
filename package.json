@@ -11,7 +11,8 @@
     "check:i18n": "node scripts/i18n-parity-check.js",
     "check:i18n:submit": "node scripts/i18n-submit-parity-check.js",
     "check:screens": "node scripts/screens-parity-check.js",
-    "check:screens:arabic": "node scripts/screens-arabic-check.js"
+    "check:screens:arabic": "node scripts/screens-arabic-check.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "better-auth": "^1.6.19",
@@ -42,6 +43,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   }
 }
