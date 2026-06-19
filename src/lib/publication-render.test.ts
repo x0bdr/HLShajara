@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renderPublicationBody } from "@/lib/publication-render";
+import { renderPublicationBody, MAX_LEGACY_HTML_CHARS } from "@/lib/publication-render";
 
 /* TipTap-doc fixtures (stringified, as stored in posts.body). */
 function docJson(content: unknown[]): string {
@@ -80,6 +80,18 @@ describe("renderPublicationBody — legacy raw-HTML path", () => {
     expect(out.toLowerCase()).not.toContain("class");
     expect(out.toLowerCase()).not.toContain("style");
     expect(out.toLowerCase()).not.toContain("id=");
+  });
+
+  it("L1: returns '' for an over-length legacy-HTML body (input bound before sanitize)", () => {
+    const huge = "<p>" + "a".repeat(MAX_LEGACY_HTML_CHARS + 10) + "</p>";
+    expect(huge.length).toBeGreaterThan(MAX_LEGACY_HTML_CHARS);
+    expect(renderPublicationBody(huge)).toBe("");
+  });
+
+  it("L1: still renders a legacy-HTML body just under the bound", () => {
+    const ok = "<p>" + "a".repeat(100) + "</p>";
+    expect(ok.length).toBeLessThanOrEqual(MAX_LEGACY_HTML_CHARS);
+    expect(renderPublicationBody(ok)).toContain("<p>");
   });
 });
 

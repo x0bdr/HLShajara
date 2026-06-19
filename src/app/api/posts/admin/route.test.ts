@@ -186,6 +186,51 @@ describe("POST /api/posts/admin — TipTap-doc write validation", () => {
     expect(res.status).toBe(400);
     expect(insertValuesMock).not.toHaveBeenCalled();
   });
+
+  it("L3: drops an unsafe javascript: coverImageUrl (stored as null)", async () => {
+    const res = await POST(
+      makeRequest({ slug: "s", locale: "en", title: "T", body: validDoc(), coverImageUrl: "javascript:alert(1)" })
+    );
+    expect(res.status).toBe(200);
+    const written = insertValuesMock.mock.calls[0][0] as { coverImageUrl: string | null };
+    expect(written.coverImageUrl).toBeNull();
+  });
+
+  it("L3: keeps a safe https coverImageUrl", async () => {
+    const res = await POST(
+      makeRequest({ slug: "s", locale: "en", title: "T", body: validDoc(), coverImageUrl: "https://cdn.test/c.jpg" })
+    );
+    expect(res.status).toBe(200);
+    const written = insertValuesMock.mock.calls[0][0] as { coverImageUrl: string | null };
+    expect(written.coverImageUrl).toBe("https://cdn.test/c.jpg");
+  });
+
+  it("L3: keeps a safe site-relative /uploads coverImageUrl", async () => {
+    const res = await POST(
+      makeRequest({ slug: "s", locale: "en", title: "T", body: validDoc(), coverImageUrl: "/uploads/c.jpg" })
+    );
+    expect(res.status).toBe(200);
+    const written = insertValuesMock.mock.calls[0][0] as { coverImageUrl: string | null };
+    expect(written.coverImageUrl).toBe("/uploads/c.jpg");
+  });
+
+  it("L3: rejects an over-long title with 400 and does NOT insert", async () => {
+    const res = await POST(
+      makeRequest({ slug: "s", locale: "en", title: "x".repeat(301), body: validDoc() })
+    );
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.message).toBe("Title or excerpt too long");
+    expect(insertValuesMock).not.toHaveBeenCalled();
+  });
+
+  it("L3: rejects an over-long excerpt with 400 and does NOT insert", async () => {
+    const res = await POST(
+      makeRequest({ slug: "s", locale: "en", title: "T", excerpt: "x".repeat(1001), body: validDoc() })
+    );
+    expect(res.status).toBe(400);
+    expect(insertValuesMock).not.toHaveBeenCalled();
+  });
 });
 
 /* ----------------------------- PATCH ----------------------------- */
@@ -226,5 +271,20 @@ describe("PATCH /api/posts/admin — TipTap-doc write validation", () => {
     const written = updateSetMock.mock.calls[0][0] as { body?: string; status?: string };
     expect(written.body).toBeUndefined();
     expect(written.status).toBe("published");
+  });
+
+  it("L3: drops an unsafe data: coverImageUrl on PATCH (stored as null)", async () => {
+    selectRows = [{ id: 7, slug: "s", locale: "en", publishedAt: null }];
+    const res = await PATCH(makePatch({ id: 7, coverImageUrl: "data:text/html,<script>" }));
+    expect(res.status).toBe(200);
+    const written = updateSetMock.mock.calls[0][0] as { coverImageUrl?: string | null };
+    expect(written.coverImageUrl).toBeNull();
+  });
+
+  it("L3: rejects an over-long title on PATCH with 400 and does NOT update", async () => {
+    selectRows = [{ id: 7, slug: "s", locale: "en", publishedAt: null }];
+    const res = await PATCH(makePatch({ id: 7, title: "x".repeat(301) }));
+    expect(res.status).toBe(400);
+    expect(updateSetMock).not.toHaveBeenCalled();
   });
 });

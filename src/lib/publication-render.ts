@@ -19,6 +19,14 @@ import { publicationRenderExtensions } from "@/lib/publication-extensions";
 import { safeHttpUrl } from "@/lib/escape";
 
 /**
+ * L1: hard cap on the legacy raw-HTML branch input. A TipTap-JSON body is already
+ * bounded by `MAX_BODY_CHARS` in publication-body.ts; this bounds the OTHER branch so
+ * an absurdly large legacy/garbage string cannot make sanitize-html do unbounded work
+ * on a public view. Matched to the same 200k order of magnitude as the JSON cap.
+ */
+export const MAX_LEGACY_HTML_CHARS = 200_000;
+
+/**
  * STRICT_ALLOWLIST — the single sanitize-html policy both render branches funnel
  * through. Tags are exactly the publication prose set; the only attributes that
  * survive are an anchor's href/rel/target. Every anchor is forced to
@@ -109,6 +117,10 @@ export function renderPublicationBody(body: unknown): string {
   //      type) — it was MEANT to be a doc, so fail SAFE to "" rather than dumping the
   //      raw JSON source as visible text on the public page (M1).
   if (looksLikeJson(body)) return "";
+
+  // L1: bound the legacy raw-HTML input length before sanitize-html so a pathologically
+  // large stored string cannot make the sanitizer do unbounded work on a public view.
+  if (body.length > MAX_LEGACY_HTML_CHARS) return "";
 
   // Legacy raw-HTML body — same strict allowlist, never executed.
   return sanitize(body);
