@@ -587,8 +587,8 @@
       "unlink": "Remove link",
       "undo": "Undo",
       "redo": "Redo",
-      "linkPrompt": "Enter the link URL (http or https):",
-      "invalidUrl": "Only http and https links are allowed."
+      "linkPrompt": "Enter the link URL — an external https/http address or an internal /path:",
+      "invalidUrl": "External links must use http or https; internal links may start with a single /."
     }
   },
   "legal": {
