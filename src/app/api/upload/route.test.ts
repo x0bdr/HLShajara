@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 /* ----------------------------- mocks -----------------------------
  * Mirror the submit/route.test.ts mock style. We DO NOT mock `file-type`:
@@ -18,10 +18,24 @@ vi.mock("@/lib/media-metadata", () => ({
   stripVideoMetadata: vi.fn(async (buf: Buffer) => buf),
 }));
 
+// Shared mock state — declared via vi.hoisted so the (hoisted) vi.mock factories
+// below can safely reference them. `state.sharpShouldThrow` lets a single test
+// simulate a sharp processing failure (M1 fail-closed); `writeFileMock` is a spy
+// so a test can assert NO file was written on a fail-closed reject.
+const { state, writeFileMock } = vi.hoisted(() => ({
+  state: { sharpShouldThrow: false },
+  writeFileMock: vi.fn(async () => undefined),
+}));
+
 // sharp: chainable .rotate().toBuffer() resolving the input buffer unchanged.
 vi.mock("sharp", () => ({
   default: (buf: Buffer) => ({
-    rotate: () => ({ toBuffer: async () => buf }),
+    rotate: () => ({
+      toBuffer: async () => {
+        if (state.sharpShouldThrow) throw new Error("sharp: unsupported image");
+        return buf;
+      },
+    }),
   }),
 }));
 
@@ -30,13 +44,18 @@ vi.mock("@/lib/rate-limit", () => ({
   rateLimitResponse: vi.fn(async () => ({ ok: true })),
 }));
 
-// fs/promises: writeFile/mkdir are no-ops (never touch disk).
+// fs/promises: writeFile (spy)/mkdir are no-ops (never touch disk).
 vi.mock("fs/promises", () => ({
-  writeFile: vi.fn(async () => undefined),
+  writeFile: writeFileMock,
   mkdir: vi.fn(async () => undefined),
 }));
 
 import { POST } from "@/app/api/upload/route";
+
+beforeEach(() => {
+  state.sharpShouldThrow = false;
+  writeFileMock.mockClear();
+});
 
 /* ----------------------------- fixtures ----------------------------- */
 
@@ -142,12 +161,52 @@ describe("POST /api/upload — magic-byte validation (A.1)", () => {
     expect(json.code).toBe("INVALID_FILE_TYPE");
   });
 
-  it("rejects a genuine PNG whose client Content-Type LIES (claims jpeg) — sniff/type mismatch", async () => {
+  it("accepts a genuine PNG mislabeled as image/jpeg — SAME family, sniff is authoritative (M2)", async () => {
+    // Intra-family client mislabeling (browser quirk) must NOT reject; the file is
+    // stored with the canonical SNIFFED extension regardless of the client claim.
     const res = await POST(makeRequest(genuinePng(), "trick.jpg", "image/jpeg"));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.filename).toMatch(/\.png$/);
+  });
+
+  it("accepts a genuine PNG with an EMPTY client file.type — sniff∈allowlist alone (M2)", async () => {
+    // Real browsers sometimes send no Content-Type; strict equality would wrongly
+    // reject. The sniffed type is the authoritative gate.
+    const res = await POST(makeRequest(genuinePng(), "noheader.png", ""));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.filename).toMatch(/\.png$/);
+  });
+
+  it("rejects a genuine MP4 claimed as image/png — CROSS-family spoof (M2)", async () => {
+    // video bytes + a recognized image/* client type = clear cross-family lie → reject.
+    const res = await POST(makeRequest(genuineMp4(), "fake.png", "image/png"));
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.ok).toBe(false);
     expect(json.code).toBe("INVALID_FILE_TYPE");
+  });
+
+  it("rejects script bytes claimed as image/png — sniff undefined (M2 fail closed)", async () => {
+    const res = await POST(makeRequest(spoofedTextAsPng(), "evil.png", "image/png"));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.ok).toBe(false);
+    expect(json.code).toBe("INVALID_FILE_TYPE");
+  });
+
+  it("FAILS CLOSED and writes NO file when sharp cannot strip EXIF/GPS (M1)", async () => {
+    state.sharpShouldThrow = true;
+    const res = await POST(makeRequest(genuinePng(), "evidence.png", "image/png"));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.ok).toBe(false);
+    expect(json.code).toBe("IMAGE_PROCESSING_FAILED");
+    // the un-stripped original must NEVER reach disk
+    expect(writeFileMock).not.toHaveBeenCalled();
   });
 
   it("sanitizes a markup-laced originalName in the response (defense-in-depth)", async () => {

@@ -77,14 +77,33 @@ export async function POST(request: Request) {
     const sniffedMime = sniffed?.mime;
     const allowedExt = sniffedMime ? EXT_BY_TYPE[sniffedMime] : undefined;
 
-    // Reject when: content is unrecognized (fail closed), the sniffed type is not
-    // allowlisted (SVG, executables, etc.), OR the sniffed type disagrees with the
-    // client-declared Content-Type (spoofing). SVG is never in EXT_BY_TYPE.
-    if (!sniffedMime || !allowedExt || sniffedMime !== file.type) {
+    // SECURITY (A.1 / M2): the authoritative gate is "SNIFFED mime ∈ allowlist".
+    // Reject when content is unrecognized (fail closed) or the sniffed type is not
+    // allowlisted (SVG, executables, etc. — SVG is never in EXT_BY_TYPE).
+    if (!sniffedMime || !allowedExt) {
       return NextResponse.json(
         { ok: false, code: "INVALID_FILE_TYPE", message: "File type not allowed." },
         { status: 400 }
       );
+    }
+
+    // SECURITY (M2): the client-declared file.type is untrusted, so it cannot
+    // make an allowlisted-by-sniff file MORE trusted — but a CLEAR cross-family
+    // lie (client says image/png while the bytes are a video, or vice-versa) is a
+    // spoofing signal worth rejecting. Only reject when file.type is a non-empty,
+    // RECOGNIZED type whose family differs from the sniffed family. An empty /
+    // missing / non-canonical client type (common from real browsers) is ignored;
+    // the sniffed∈allowlist decision above stands.
+    const claimedType = (file.type ?? "").toLowerCase().trim();
+    if (claimedType && EXT_BY_TYPE[claimedType]) {
+      const claimedFamily = claimedType.split("/", 1)[0];
+      const sniffedFamily = sniffedMime.split("/", 1)[0];
+      if (claimedFamily !== sniffedFamily) {
+        return NextResponse.json(
+          { ok: false, code: "INVALID_FILE_TYPE", message: "File type not allowed." },
+          { status: 400 }
+        );
+      }
     }
 
     // Strip EXIF/GPS metadata from images using Sharp. Branch off the SNIFFED mime
@@ -93,8 +112,20 @@ export async function POST(request: Request) {
       try {
         buffer = Buffer.from(await sharp(buffer).rotate().toBuffer());
       } catch (err) {
+        // SECURITY (M1): FAIL CLOSED. CLAUDE.md mandates GPS/EXIF stripping so
+        // victim-location data never persists. If sharp throws we must NOT store
+        // the original (un-stripped) bytes — reject the upload, mirroring the
+        // video/ffmpeg fail-closed branch below.
         console.error("Sharp processing error:", err);
-        // Fall through to save original if Sharp fails
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "IMAGE_PROCESSING_FAILED",
+            message:
+              "Image could not be processed safely (metadata could not be stripped) and was not stored. Please try again or upload a different file.",
+          },
+          { status: 400 }
+        );
       }
     } else if (VIDEO_TYPES.has(sniffedMime)) {
       // Phase 33 (BE-05): strip container/stream metadata from videos via
