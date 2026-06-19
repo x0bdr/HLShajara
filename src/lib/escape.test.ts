@@ -67,6 +67,14 @@ describe("escapeMarkdown", () => {
     expect(escapeMarkdown("a`b")).toBe("a\\`b");
   });
 
+  it("backslash-escapes every markdown-active char AND angle brackets (L2)", () => {
+    // Each of these must be neutralized so a latent markdown->HTML render can't
+    // break out into a link/image/code/raw-HTML construct.
+    for (const ch of ["<", ">", "[", "]", "(", ")", "*", "_", "`", "#", "\\"]) {
+      expect(escapeMarkdown(ch)).toBe(`\\${ch}`);
+    }
+  });
+
   it("leaves plain text readable (backslash-escaped specials only)", () => {
     expect(escapeMarkdown("Acme Corp")).toBe("Acme Corp");
   });
