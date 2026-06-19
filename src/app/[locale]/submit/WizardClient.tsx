@@ -47,6 +47,7 @@ import {
 import { WizardProgress } from "@/components/wizard/WizardProgress";
 import { WizardNav } from "@/components/wizard/WizardNav";
 import { WizardPanel } from "@/components/wizard/WizardPanel";
+import { ChallengeGate } from "@/components/wizard/ChallengeGate";
 import { ReportCategoryStep } from "@/components/wizard/ReportCategoryStep";
 import { LocationInfoStep } from "@/components/wizard/LocationInfoStep";
 import { EntityTypeNameStep } from "@/components/wizard/EntityTypeNameStep";
@@ -100,6 +101,13 @@ function buildSubmitPayload(form: SubmitInput): Record<string, unknown> {
   return payload;
 }
 
+interface ChallengeData {
+  a: number;
+  b: number;
+  op: "+" | "-";
+  token: string;
+}
+
 interface SubmitResult {
   ok: boolean;
   message: string;
@@ -107,6 +115,7 @@ interface SubmitResult {
   submissionId?: number;
   errors?: Record<string, string[]>;
   warningCode?: string;
+  challenge?: ChallengeData;
 }
 
 export function WizardClient() {
@@ -127,6 +136,14 @@ export function WizardClient() {
   });
   const submittedRef = useRef(false);
   const stateRef = useRef(state);
+
+  // Honeypot: a hidden field real users never fill. Held as state (default empty)
+  // and POSTed alongside the payload; the server gates on its truthiness FIRST.
+  const [honeypot, setHoneypot] = useState("");
+  // Gray-band challenge surfaced when the server returns CHALLENGE_REQUIRED.
+  const [challenge, setChallenge] = useState<ChallengeData | null>(null);
+  const [challengeAnswer, setChallengeAnswer] = useState("");
+  const [challengeError, setChallengeError] = useState<string | null>(null);
 
   const stepDef: StepDef | undefined = STEPS.find((s) => s.id === state.currentStep);
   const archetype: StepArchetype = stepDef?.archetype ?? "choice";
@@ -239,7 +256,23 @@ export function WizardClient() {
     await handleSubmit(token);
   }
 
-  async function handleSubmit(recaptchaToken: string) {
+  // Resubmit the SAME payload plus the stored challenge token + entered answer. We
+  // re-run v3 (harmless); if the score is still low the verified challenge substitutes
+  // for the v3 gate server-side. A wrong/expired answer comes back as a new puzzle.
+  async function submitChallenge() {
+    if (!challenge) return;
+    setChallengeError(null);
+    const token = (await execute()) ?? "";
+    await handleSubmit(token, {
+      challengeToken: challenge.token,
+      challengeAnswer,
+    });
+  }
+
+  async function handleSubmit(
+    recaptchaToken: string,
+    challengeFields?: { challengeToken: string; challengeAnswer: string },
+  ) {
     setSubmitting(true);
     setResult(null);
 
@@ -248,7 +281,13 @@ export function WizardClient() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...buildSubmitPayload(state.form), recaptchaToken }),
+        body: JSON.stringify({
+          ...buildSubmitPayload(state.form),
+          recaptchaToken,
+          // Honeypot value — empty for real users; a bot fills it and is gated server-side.
+          website: honeypot,
+          ...(challengeFields ?? {}),
+        }),
       });
       data = await res.json();
     } catch {
@@ -265,8 +304,21 @@ export function WizardClient() {
 
     if (data.ok) {
       submittedRef.current = true;
+      setChallenge(null);
+      setChallengeError(null);
       clearDraft();
       setResult(data);
+      return;
+    }
+
+    // Gray-band: the server escalated. Surface the visible math challenge near the
+    // review step. If we were ALREADY answering a challenge, this is a wrong/expired
+    // answer → show the new puzzle with an inline error; otherwise it's the first prompt.
+    if (data.code === "CHALLENGE_REQUIRED" && data.challenge) {
+      const wasAnswering = challenge !== null;
+      setChallenge(data.challenge);
+      setChallengeAnswer("");
+      setChallengeError(wasAnswering ? t("challengeWrong") : null);
       return;
     }
 
@@ -294,6 +346,10 @@ export function WizardClient() {
     setResult(null);
     setSubmitting(false);
     submittedRef.current = false;
+    setChallenge(null);
+    setChallengeAnswer("");
+    setChallengeError(null);
+    setHoneypot("");
     clearDraft();
     dispatch({ type: "RESET" });
     goTo(STEPS[0].id, true);
@@ -400,6 +456,45 @@ export function WizardClient() {
           </div>
         ) : null}
       </WizardPanel>
+
+      {/* Honeypot: visually-hidden off-screen (NOT display:none — bots skip those),
+          tabIndex -1, autoComplete off, aria-hidden. Real users never see or fill it;
+          a non-empty value is gated server-side as a bot. RTL-safe (logical inset). */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: "hidden",
+          clip: "rect(0 0 0 0)",
+          clipPath: "inset(50%)",
+          whiteSpace: "nowrap",
+          border: 0,
+          insetInlineStart: "-9999px",
+        }}
+      />
+
+      {isReview && challenge && (
+        <ChallengeGate
+          a={challenge.a}
+          b={challenge.b}
+          op={challenge.op}
+          value={challengeAnswer}
+          onChange={setChallengeAnswer}
+          onSubmit={submitChallenge}
+          error={challengeError}
+          submitting={submitting}
+        />
+      )}
 
       {isReview && recaptchaError && (
         <div className="legal legal-error mt-16 mb-16" role="alert">

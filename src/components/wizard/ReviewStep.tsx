@@ -5,7 +5,10 @@
  *
  * Renders seven semantic groups (Category, Location, Entity, Details, Experience,
  * Supporting Media, You), each with an Edit link to the first step of that group.
- * Includes a lightweight math CAPTCHA at the bottom to reduce automated spam.
+ *
+ * This step has NO inline CAPTCHA by default. A deterministic math challenge is
+ * surfaced by WizardClient ONLY when the server escalates (gray-band,
+ * CHALLENGE_REQUIRED) for a low/failed reCAPTCHA v3 score — never shown otherwise.
  */
 
 import { useLocale, useTranslations } from "next-intl";
