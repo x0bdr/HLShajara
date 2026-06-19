@@ -11,6 +11,7 @@ import {
   getDocumentLabel,
 } from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
+import { escapeHtml, safeHttpUrl } from "@/lib/escape";
 
 interface SourceLink {
   url: string;
@@ -240,11 +241,22 @@ function exportSubmissionToPDF(sub: Submission, locale: string) {
 
   const metaRows = Object.entries(labels).map(([key, label]) => {
     const value = meta[key as keyof ReportMetadata];
-    return `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-weight:600;width:35%">${label}</td><td style="padding:6px 10px;border:1px solid #ddd">${fmtValue(key, value)}</td></tr>`;
+    // `label` is a static, code-defined column header (safe); the VALUE is
+    // user-controlled, so escape fmtValue's output before it reaches document.write.
+    return `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-weight:600;width:35%">${label}</td><td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(fmtValue(key, value))}</td></tr>`;
   }).join("");
 
   const mediaRows = sub.sourceFiles.length
-    ? sub.sourceFiles.map((f) => `<tr><td style="padding:6px 10px;border:1px solid #ddd">${f.label ? `${f.label} — ` : ""}${f.originalName}</td><td style="padding:6px 10px;border:1px solid #ddd"><a href="${f.url}" target="_blank">${f.url}</a></td></tr>`).join("")
+    ? sub.sourceFiles
+        .map((f) => {
+          const labelPrefix = f.label ? `${escapeHtml(f.label)} — ` : "";
+          const name = escapeHtml(f.originalName);
+          const safeUrl = safeHttpUrl(f.url);
+          const hrefAttr = escapeHtml(safeUrl);
+          const urlText = escapeHtml(safeUrl);
+          return `<tr><td style="padding:6px 10px;border:1px solid #ddd">${labelPrefix}${name}</td><td style="padding:6px 10px;border:1px solid #ddd"><a href="${hrefAttr}" target="_blank">${urlText}</a></td></tr>`;
+        })
+        .join("")
     : `<tr><td colspan="2" style="padding:6px 10px;border:1px solid #ddd">—</td></tr>`;
 
   const html = `
@@ -264,12 +276,12 @@ function exportSubmissionToPDF(sub: Submission, locale: string) {
       </style>
     </head>
     <body>
-      <h1 style="text-align:${align}">${sub.entityName}</h1>
-      <p style="text-align:${align}">${resolveSubTypeLabel(sub, () => "")} · ${resolveCategoryLabel(sub, () => "")}</p>
+      <h1 style="text-align:${align}">${escapeHtml(sub.entityName)}</h1>
+      <p style="text-align:${align}">${escapeHtml(resolveSubTypeLabel(sub, () => ""))} · ${escapeHtml(resolveCategoryLabel(sub, () => ""))}</p>
 
       <div class="section">
         <h2 style="text-align:${align}">${locale === "ar" ? "وصف البلاغ" : "Report Description"}</h2>
-        <p style="text-align:${align};white-space:pre-wrap">${sub.allegationDescription}</p>
+        <p style="text-align:${align};white-space:pre-wrap">${escapeHtml(sub.allegationDescription)}</p>
       </div>
 
       <div class="section">

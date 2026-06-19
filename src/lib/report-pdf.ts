@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import path from "path";
 import fs from "fs";
+import { escapeHtml } from "@/lib/escape";
 import type { submissions as submissionsTable } from "@/db/schema";
 import {
   getCategoryConfig,
@@ -141,17 +142,6 @@ function displayValue(value: unknown): string {
   }
   return String(value);
 }
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-
 
 function formatValue(key: string, raw: unknown, category?: string | null, orgType?: string): string {
   if (key === "googleMapsLink" || key === "websiteName" || key === "mediaLink") {
