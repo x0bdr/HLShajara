@@ -18,6 +18,7 @@ import {
   isValidUrl,
   sanitizeEmail,
   sanitizeInput,
+  sanitizeMediaName,
   sanitizeUrl,
 } from "@/lib/validation/is-valid";
 
@@ -29,6 +30,16 @@ function sanitizedString(max: number) {
 
 function optionalSanitizedString(max: number) {
   return sanitizedString(max).optional();
+}
+
+// Plain-text-only field for media labels / file names — strips angle brackets +
+// backticks so no markup survives at the submit trust boundary (MEDIA-NAME).
+function mediaNameString(max: number) {
+  return z.string().max(max).transform((v) => sanitizeMediaName(v, max));
+}
+
+function optionalMediaNameString(max: number) {
+  return mediaNameString(max).optional();
 }
 
 function optionalEmail(max = 255) {
@@ -271,10 +282,12 @@ export const submitSchema = z.object({
       z.object({
         hash: z.string(),
         filename: sanitizedString(255),
-        originalName: sanitizedString(255),
+        // Plain-text-only at the trust boundary (MEDIA-NAME): strip markup-forming
+        // chars so a crafted originalName/label cannot reach a render sink as HTML/MD.
+        originalName: mediaNameString(255),
         url: z.string(),
         size: z.number(),
-        label: optionalSanitizedString(255),
+        label: optionalMediaNameString(255),
       })
     )
     .default([]),

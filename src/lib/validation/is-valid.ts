@@ -31,6 +31,22 @@ export function sanitizeInput(value: string): string {
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 }
 
+/**
+ * Plain-text-only sanitizer for media labels and file names. Runs the base
+ * sanitizer (trim/collapse/strip control chars), then strips every angle bracket
+ * and backtick so the result can never carry HTML/markdown markup, and hard-caps
+ * the length. Fail closed: no HTML, no markdown, plain text only.
+ */
+export function sanitizeMediaName(value: unknown, max = 255): string {
+  const coerced = typeof value === "string" ? value : value == null ? "" : String(value);
+  const plain = sanitizeInput(coerced)
+    // Drop markup-forming characters entirely (not encode) so the stored value
+    // is genuinely plain text at the source.
+    .replace(/[<>`]/g, "")
+    .trim();
+  return plain.slice(0, max);
+}
+
 export function sanitizeEmail(value: string): string {
   const trimmed = sanitizeInput(value).toLowerCase();
   return validator.normalizeEmail(trimmed) || trimmed;

@@ -7,6 +7,7 @@ import { scanBuffer } from "@/lib/clamav";
 import { isFfmpegAvailable, stripVideoMetadata } from "@/lib/media-metadata";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { assetPath } from "@/lib/asset-path";
+import { sanitizeMediaName } from "@/lib/validation/is-valid";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -63,26 +64,39 @@ export async function POST(request: Request) {
       );
     }
 
-    const allowedExt = EXT_BY_TYPE[file.type];
-    if (!allowedExt) {
+    // Read the ORIGINAL intake bytes BEFORE any sharp/ffmpeg rewrite so the
+    // magic-byte sniff validates the true uploaded content (A.1).
+    const bytes = await file.arrayBuffer();
+    let buffer = Buffer.from(bytes);
+
+    // SECURITY (A.1): sniff the real magic bytes and make the allowlist decision
+    // on the SNIFFED mime — never the spoofable client-declared file.type. Fail
+    // closed on any uncertainty. `file-type` is ESM-only → dynamic import.
+    const { fileTypeFromBuffer } = await import("file-type");
+    const sniffed = await fileTypeFromBuffer(buffer);
+    const sniffedMime = sniffed?.mime;
+    const allowedExt = sniffedMime ? EXT_BY_TYPE[sniffedMime] : undefined;
+
+    // Reject when: content is unrecognized (fail closed), the sniffed type is not
+    // allowlisted (SVG, executables, etc.), OR the sniffed type disagrees with the
+    // client-declared Content-Type (spoofing). SVG is never in EXT_BY_TYPE.
+    if (!sniffedMime || !allowedExt || sniffedMime !== file.type) {
       return NextResponse.json(
         { ok: false, code: "INVALID_FILE_TYPE", message: "File type not allowed." },
         { status: 400 }
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    let buffer = Buffer.from(bytes);
-
-    // Strip EXIF/GPS metadata from images using Sharp
-    if (IMAGE_TYPES.has(file.type)) {
+    // Strip EXIF/GPS metadata from images using Sharp. Branch off the SNIFFED mime
+    // so processing runs on the verified true type.
+    if (IMAGE_TYPES.has(sniffedMime)) {
       try {
         buffer = Buffer.from(await sharp(buffer).rotate().toBuffer());
       } catch (err) {
         console.error("Sharp processing error:", err);
         // Fall through to save original if Sharp fails
       }
-    } else if (VIDEO_TYPES.has(file.type)) {
+    } else if (VIDEO_TYPES.has(sniffedMime)) {
       // Phase 33 (BE-05): strip container/stream metadata from videos via
       // `ffmpeg -map_metadata -1` BEFORE the malware scan and hash. ffmpeg is a
       // required system binary for video uploads — if it is unavailable, or if the
@@ -138,7 +152,9 @@ export async function POST(request: Request) {
       ok: true,
       hash,
       filename: safeName,
-      originalName: file.name,
+      // Plain-text-only at the source (MEDIA-NAME): strip markup-forming chars so a
+      // crafted filename cannot ride through to a render sink as HTML/markdown.
+      originalName: sanitizeMediaName(file.name),
       size: buffer.length,
       url: absoluteUrl,
     });

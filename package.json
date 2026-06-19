@@ -19,6 +19,7 @@
     "country-codes-list": "^2.0.0",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
+    "file-type": "^22.0.1",
     "lucide-react": "^1.18.0",
     "next": "16.2.6",
     "next-intl": "^4.13.0",
