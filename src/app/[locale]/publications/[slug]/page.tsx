@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PublicationTracker } from "@/components/PublicationTracker";
 import { SITE_URL, brandName } from "@/lib/seo";
+import { renderPublicationBody } from "@/lib/publication-render";
 
 export function generateStaticParams() {
   return [];
@@ -169,9 +170,10 @@ export default async function PublicationPage({
           )}
         </header>
 
+        {/* post.body is rendered server-side through renderPublicationBody (TipTap-JSON or legacy-HTML -> sanitize-html strict allowlist). The HTML reaching the DOM here is sanitized + schema-bound only. */}
         <div
           className="pub-body"
-          dangerouslySetInnerHTML={{ __html: post.body }}
+          dangerouslySetInnerHTML={{ __html: renderPublicationBody(post.body) }}
         />
       </article>
     </PageShell>
