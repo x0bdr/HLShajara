@@ -110,6 +110,46 @@ describe("safeHttpUrl", () => {
     expect(safeHttpUrl("  javascript:alert(1)")).toBe("");
   });
 
+  it("rejects a protocol-relative `//evil.com` (open-redirect/phishing)", () => {
+    expect(safeHttpUrl("//evil.com")).toBe("");
+    expect(safeHttpUrl("//evil.com/path?q=1")).toBe("");
+  });
+
+  it("rejects a backslash-smuggled `/\\evil.com` (browsers coerce `\\` to `/`)", () => {
+    expect(safeHttpUrl("/\\evil.com")).toBe("");
+  });
+
+  it("rejects a backslash-smuggled scheme `https:/\\/\\evil`", () => {
+    expect(safeHttpUrl("https:/\\/\\evil")).toBe("");
+  });
+
+  it("rejects an uppercase/mixed-case JaVaScRiPt: scheme", () => {
+    expect(safeHttpUrl("JaVaScRiPt:alert(1)")).toBe("");
+  });
+
+  it("rejects a tab-embedded scheme `java\\tscript:`", () => {
+    expect(safeHttpUrl("java\tscript:alert(1)")).toBe("");
+  });
+
+  it("rejects a newline-embedded scheme", () => {
+    expect(safeHttpUrl("java\nscript:alert(1)")).toBe("");
+    expect(safeHttpUrl("jav\r\nascript:alert(1)")).toBe("");
+  });
+
+  it("rejects a bare host with no scheme and no leading slash", () => {
+    expect(safeHttpUrl("evil.com")).toBe("");
+    expect(safeHttpUrl("evil.com/path")).toBe("");
+  });
+
+  it("accepts a single-slash site-relative path", () => {
+    expect(safeHttpUrl("/uploads/a.jpg")).toBe("/uploads/a.jpg");
+  });
+
+  it("accepts plain http/https hosts unchanged", () => {
+    expect(safeHttpUrl("https://x.com")).toBe("https://x.com");
+    expect(safeHttpUrl("http://x.com")).toBe("http://x.com");
+  });
+
   it("coerces undefined/null to empty string without throwing", () => {
     expect(safeHttpUrl(undefined as unknown)).toBe("");
     expect(safeHttpUrl(null as unknown)).toBe("");
