@@ -6,6 +6,7 @@ import {
   getFlagLabelAr,
   getDocumentLabelAr,
 } from "@/lib/wizard/category-config";
+import { escapeMarkdown, safeHttpUrl } from "@/lib/escape";
 import arMessages from "../../messages/ar.json";
 
 type Submission = typeof submissionsTable.$inferSelect;
@@ -131,24 +132,32 @@ function formatValue(
   category: string | null,
   orgType: string | undefined,
 ): string {
+  // System-generated label — not user-controlled, do not markdown-escape.
   if (key === "orgType") {
     return getSubTypeLabelAr(category ?? undefined, orgType);
   }
   if (key === "ownerNames" || key === "investorNames") {
     const arr = Array.isArray(raw) ? raw : [];
-    return arr.map((v) => String(v)).join(" · ");
+    return arr.map((v) => escapeMarkdown(String(v))).join(" · ");
   }
   if (key === "labourEntries" || key === "labourMembers" || key === "academicStaff") {
     const arr = Array.isArray(raw) ? (raw as { name?: string; role?: string }[]) : [];
     return arr
       .filter((e) => e.name || e.role)
-      .map((e) => (e.name && e.role ? `${e.name} (${e.role})` : e.name || e.role || ""))
+      .map((e) =>
+        e.name && e.role
+          ? `${escapeMarkdown(e.name)} (${escapeMarkdown(e.role)})`
+          : escapeMarkdown(e.name || e.role || ""),
+      )
       .join(" · ");
   }
   if (key === "socialContactMethods" || key === "contactMethods") {
     const arr = Array.isArray(raw) ? (raw as { type: string; value: string }[]) : [];
-    return arr.map((m) => `${arContactTypeLabel(m.type)}: ${m.value}`).join(" · ");
+    return arr
+      .map((m) => `${escapeMarkdown(arContactTypeLabel(m.type))}: ${escapeMarkdown(m.value)}`)
+      .join(" · ");
   }
+  // System-generated labels (document/flag) — not user-controlled.
   if (key === "supportingDocuments") {
     const arr = Array.isArray(raw) ? raw : [];
     return arr.map((v) => getDocumentLabelAr(String(v))).join(" · ");
@@ -158,7 +167,8 @@ function formatValue(
     return arr.map((v) => getFlagLabelAr(String(v))).join(" · ");
   }
   if (typeof raw === "boolean") return raw ? "نعم" : "لا";
-  return String(raw);
+  // Default: arbitrary user-controlled value — markdown-escape it.
+  return escapeMarkdown(String(raw));
 }
 
 export async function generateSubmissionMarkdown(submission: Submission): Promise<string> {
@@ -181,10 +191,12 @@ export async function generateSubmissionMarkdown(submission: Submission): Promis
   const sourceFilesSection =
     sourceFiles.length > 0
       ? sourceFiles
-          .map(
-            (file, i) =>
-              `${i + 1}. ${file.originalName}${file.label ? ` — ${file.label}` : ""} — ${toAbsoluteUrl(file.url)}`,
-          )
+          .map((file, i) => {
+            const name = escapeMarkdown(file.originalName);
+            const label = file.label ? ` — ${escapeMarkdown(file.label)}` : "";
+            const url = safeHttpUrl(toAbsoluteUrl(file.url));
+            return `${i + 1}. ${name}${label} — ${url}`;
+          })
           .join("\n")
       : "لا توجد ملفات مرفقة.";
 
@@ -195,7 +207,7 @@ export async function generateSubmissionMarkdown(submission: Submission): Promis
 
   return `# تقرير بلاغ #${submission.id}
 
-**الجهة:** ${submission.entityName}
+**الجهة:** ${escapeMarkdown(submission.entityName)}
 **التصنيف:** ${getCategoryLabelAr(submission.reportCategory)}
 **النوع الفرعي:** ${getSubTypeLabelAr(submission.reportCategory, orgType)}
 **الحالة:** ${arStatusLabel(submission.status)}
@@ -205,7 +217,7 @@ export async function generateSubmissionMarkdown(submission: Submission): Promis
 
 ## وصف البلاغ
 
-${submission.allegationDescription || "—"}
+${escapeMarkdown(submission.allegationDescription) || "—"}
 
 ## بيانات مصنّفة
 
