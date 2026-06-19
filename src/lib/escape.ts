@@ -56,7 +56,6 @@ export function safeHttpUrl(url: unknown): string {
 
   // Reject any embedded control character or whitespace (a scheme smuggled
   // behind a tab/newline is a known sanitizer-bypass; fail closed).
-  // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u0020\u007f]/.test(raw)) return "";
 
   // http/https pass; every other scheme (javascript:/data:/vbscript:/file:) is
