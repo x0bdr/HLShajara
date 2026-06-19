@@ -21,6 +21,7 @@ import {
   sanitizeMediaName,
   sanitizeUrl,
 } from "@/lib/validation/is-valid";
+import { safeHttpUrl } from "@/lib/escape";
 
 /* ---------- SANITIZED FIELD HELPERS ---------- */
 
@@ -54,6 +55,19 @@ function optionalUrl(max = 2048) {
     .transform(sanitizeUrl)
     .refine((v) => !v || isValidUrl(v), { message: "Invalid URL" })
     .optional();
+}
+
+// SECURITY (H2): a user-supplied URL that ends up in an href (reviewer PDF /
+// markdown / console) MUST be an http/https absolute URL or a single-slash
+// site-relative path. `safeHttpUrl` returns "" for javascript:/data:/vbscript:/
+// file:/protocol-relative inputs, so a non-empty result is the allowlist gate.
+// Bilingual message because it can surface to the public submitter.
+const UNSAFE_URL_MESSAGE = "Invalid URL / رابط غير صالح";
+
+function httpUrlString(max: number) {
+  return sanitizedString(max)
+    .transform(sanitizeUrl)
+    .refine((v) => safeHttpUrl(v) !== "", { message: UNSAFE_URL_MESSAGE });
 }
 
 function optionalPhone(max = 100) {
@@ -267,9 +281,13 @@ export const submitSchema = z.object({
   sourceLinks: z
     .array(
       z.object({
+        // SECURITY (H2): both gates — a real http/https public-source URL
+        // (isValidUrl) AND the href-safety allowlist (safeHttpUrl rejects
+        // javascript:/data:/protocol-relative, defense-in-depth at the boundary).
         url: sanitizedString(2048)
           .transform(sanitizeUrl)
-          .refine((v) => isValidUrl(v), { message: "Invalid URL" }),
+          .refine((v) => isValidUrl(v), { message: "Invalid URL" })
+          .refine((v) => safeHttpUrl(v) !== "", { message: UNSAFE_URL_MESSAGE }),
         title: optionalSanitizedString(500),
         // Phase 33 (BE-03): per-source provenance tag (closed 6-set). Optional —
         // a sourceLinks item without sourceType still parses.
@@ -285,7 +303,10 @@ export const submitSchema = z.object({
         // Plain-text-only at the trust boundary (MEDIA-NAME): strip markup-forming
         // chars so a crafted originalName/label cannot reach a render sink as HTML/MD.
         originalName: mediaNameString(255),
-        url: z.string(),
+        // SECURITY (H2): was bare z.string() — a client bypassing /api/upload could
+        // submit url:"javascript:alert(1)" which then landed in the reviewer PDF.
+        // Now allow only http/https absolute URLs or single-slash relative paths.
+        url: httpUrlString(2048),
         size: z.number(),
         label: optionalMediaNameString(255),
       })

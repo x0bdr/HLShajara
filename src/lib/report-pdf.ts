@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer";
 import path from "path";
 import fs from "fs";
-import { escapeHtml } from "@/lib/escape";
+import { escapeHtml, safeHttpUrl } from "@/lib/escape";
 import type { submissions as submissionsTable } from "@/db/schema";
 import {
   getCategoryConfig,
@@ -146,7 +146,12 @@ function displayValue(value: unknown): string {
 function formatValue(key: string, raw: unknown, category?: string | null, orgType?: string): string {
   if (key === "googleMapsLink" || key === "websiteName" || key === "mediaLink") {
     const url = String(raw);
-    return `<a href="${escapeHtml(url)}" dir="auto">${escapeHtml(url)}</a>`;
+    // SECURITY (H2): the user-supplied URL must pass the http/https-or-relative
+    // allowlist before it reaches an href — escapeHtml alone does NOT neutralize
+    // javascript:/data: schemes. An unsafe URL yields an inert, link-less label.
+    const href = safeHttpUrl(url);
+    if (!href) return escapeHtml(url);
+    return `<a href="${escapeHtml(href)}" dir="auto">${escapeHtml(url)}</a>`;
   }
   if (key === "orgType") {
     return escapeHtml(getSubTypeLabelAr(category ?? undefined, orgType));
@@ -203,13 +208,21 @@ function formatMetadata(
   return rows ? `<table class="meta-table">${rows}</table>` : "";
 }
 
-function formatSourceFiles(files: SourceFile[] | null | undefined): string {
+export function formatSourceFiles(files: SourceFile[] | null | undefined): string {
   if (!files || files.length === 0) return "<p class=\"empty\">لا توجد ملفات مرفقة.</p>";
   return `<ul class="source-list">${files
-    .map(
-      (f) =>
-        `<li>${f.label ? `${escapeHtml(f.label)} — ` : ""}${escapeHtml(f.originalName)} — <a href="${escapeHtml(toAbsoluteUrl(f.url))}" dir="auto">رابط</a></li>`
-    )
+    .map((f) => {
+      const labelPrefix = f.label ? `${escapeHtml(f.label)} — ` : "";
+      const name = escapeHtml(f.originalName);
+      // SECURITY (H2): a client that bypasses /api/upload can submit a
+      // `javascript:`/`data:` sourceFiles[].url. Gate it through safeHttpUrl
+      // BEFORE the href — escapeHtml does not neutralize those schemes. An
+      // unsafe URL drops the link entirely (defense-in-depth even if the schema
+      // is bypassed).
+      const href = safeHttpUrl(toAbsoluteUrl(f.url));
+      const link = href ? `<a href="${escapeHtml(href)}" dir="auto">رابط</a>` : "—";
+      return `<li>${labelPrefix}${name} — ${link}</li>`;
+    })
     .join("")}</ul>`;
 }
 

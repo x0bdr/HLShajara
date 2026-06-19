@@ -326,11 +326,16 @@ function resolveSubTypeLabel(sub: Submission, t: (key: string) => string) {
 
 function MetadataRow({ label, value, link }: { label: string; value: unknown; link?: boolean }) {
   const text = displayValue(value);
+  // SECURITY (H2): a user-controlled URL (e.g. googleMapsLink) must pass the
+  // http/https-or-relative allowlist before it reaches an href — otherwise a
+  // `javascript:`/`data:`/protocol-relative value would be live in the reviewer
+  // console. An unsafe URL falls back to inert text (no link).
+  const safeHref = link ? safeHttpUrl(String(value)) : "";
   return (
     <div className="meta-row">
       <span className="meta-label">{label}</span>
-      {link && text !== "—" ? (
-        <a className="meta-value" href={String(value)} target="_blank" rel="noreferrer">{text}</a>
+      {link && text !== "—" && safeHref ? (
+        <a className="meta-value" href={safeHref} target="_blank" rel="noreferrer">{text}</a>
       ) : (
         <span className="meta-value">{text}</span>
       )}
@@ -599,10 +604,19 @@ export default function ReviewerPage() {
               <div className="form-section-title">
                 {locale === "ar" ? "التحقق من المصادر" : "Source Verification"}
               </div>
-              {(selected.sourceLinks ?? []).map((link, i) => (
+              {(selected.sourceLinks ?? []).map((link, i) => {
+                // SECURITY (H2): citation URLs are user-supplied — gate each one
+                // through the http/https-or-relative allowlist before it reaches
+                // an href. An unsafe URL renders as inert text (no live link).
+                const safeLinkHref = safeHttpUrl(link.url);
+                return (
                 <div key={i} className="card" style={{ padding: 12, marginBottom: 8 }}>
                   <div className="ds-body-sm" style={{ marginBottom: 8, wordBreak: "break-all" }}>
-                    <a href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--brand)" }}>{link.title || link.url}</a>
+                    {safeLinkHref ? (
+                      <a href={safeLinkHref} target="_blank" rel="noreferrer" style={{ color: "var(--brand)" }}>{link.title || link.url}</a>
+                    ) : (
+                      <span>{link.title || link.url}</span>
+                    )}
                   </div>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer" }}>
@@ -646,7 +660,8 @@ export default function ReviewerPage() {
                     />
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </section>
 
             {/* Evidence & Privacy */}
