@@ -161,6 +161,7 @@
     "uploadTooManyFiles": "You can upload up to {max} files.",
     "uploadFileTooLarge": "File exceeds {max}.",
     "uploadFileTypeNotAllowed": "File type not allowed. Only images and videos are allowed.",
+    "uploadFileSpoofed": "This file's contents don't match its type and was not uploaded. Please upload a genuine image or video.",
     "uploadMaxReached": "Maximum file limit reached.",
     "uploadVideoUnavailable": "Video processing is currently unavailable. Try an image or try again later.",
     "uploadMalwareDetected": "File rejected for security reasons.",

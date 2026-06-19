@@ -161,6 +161,7 @@
     "uploadTooManyFiles": "يمكنك رفع {max} ملفات كحد أقصى.",
     "uploadFileTooLarge": "حجم الملف يتجاوز {max}.",
     "uploadFileTypeNotAllowed": "نوع الملف غير مسموح به. يُسمح فقط بالصور والفيديوهات.",
+    "uploadFileSpoofed": "محتوى هذا الملف لا يطابق نوعه ولم يُرفَع. يُرجى رفع صورة أو فيديو حقيقي.",
     "uploadMaxReached": "تم بلوغ الحد الأقصى للملفات.",
     "uploadVideoUnavailable": "معالج الفيديو غير متاح حاليًا. جرّب صورة أو حاول لاحقًا.",
     "uploadMalwareDetected": "تم رفض الملف لأسباب أمنية.",
