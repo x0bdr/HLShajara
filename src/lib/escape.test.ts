@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { escapeHtml, escapeMarkdown, safeHttpUrl } from "@/lib/escape";
+import {
+  escapeHtml,
+  escapeMarkdown,
+  safeHttpUrl,
+  safeAbsoluteHttpUrl,
+  jsonLdSafe,
+} from "@/lib/escape";
 
 describe("escapeHtml", () => {
   it("encodes all five HTML-sensitive characters", () => {
@@ -161,5 +167,74 @@ describe("safeHttpUrl", () => {
   it("coerces undefined/null to empty string without throwing", () => {
     expect(safeHttpUrl(undefined as unknown)).toBe("");
     expect(safeHttpUrl(null as unknown)).toBe("");
+  });
+});
+
+describe("safeAbsoluteHttpUrl", () => {
+  it("accepts an absolute https URL unchanged", () => {
+    expect(safeAbsoluteHttpUrl("https://x.test/a.png")).toBe("https://x.test/a.png");
+  });
+
+  it("accepts an absolute http URL unchanged", () => {
+    expect(safeAbsoluteHttpUrl("http://x.test/a.png")).toBe("http://x.test/a.png");
+  });
+
+  it("REJECTS a site-relative /path (must be absolute)", () => {
+    expect(safeAbsoluteHttpUrl("/uploads/a.png")).toBe("");
+  });
+
+  it("rejects javascript:/data:/protocol-relative just like safeHttpUrl", () => {
+    expect(safeAbsoluteHttpUrl("javascript:alert(1)")).toBe("");
+    expect(safeAbsoluteHttpUrl("data:text/html,<script>")).toBe("");
+    expect(safeAbsoluteHttpUrl("//evil.com")).toBe("");
+  });
+
+  it("coerces undefined/null/empty to '' without throwing", () => {
+    expect(safeAbsoluteHttpUrl(undefined as unknown)).toBe("");
+    expect(safeAbsoluteHttpUrl(null as unknown)).toBe("");
+    expect(safeAbsoluteHttpUrl("")).toBe("");
+  });
+});
+
+describe("jsonLdSafe (H1 — </script> breakout escape)", () => {
+  it("escapes a </script> breakout payload so no literal </script> survives", () => {
+    const out = jsonLdSafe({
+      title: "</script><script>alert(document.domain)</script>",
+    });
+    // The killer assertion: the serialized JSON-LD string must contain NO literal
+    // closing-script tag and NO unescaped angle bracket that could open one.
+    expect(out.toLowerCase()).not.toContain("</script");
+    expect(out).not.toContain("<");
+    expect(out).not.toContain(">");
+  });
+
+  it("escapes a bare < / > / & in any string value", () => {
+    const out = jsonLdSafe({ a: "1 < 2 & 3 > 0" });
+    expect(out).not.toContain("<");
+    expect(out).not.toContain(">");
+    expect(out).not.toContain("&");
+    expect(out).toContain("\\u003c");
+    expect(out).toContain("\\u003e");
+    expect(out).toContain("\\u0026");
+  });
+
+  it("escapes U+2028 / U+2029 line/paragraph separators (illegal in JS string literals)", () => {
+    const LS = String.fromCharCode(0x2028);
+    const PS = String.fromCharCode(0x2029);
+    const out = jsonLdSafe({ a: `line${LS}sep${PS}end` });
+    expect(out).not.toContain(LS);
+    expect(out).not.toContain(PS);
+    expect(out).toContain("\\u2028");
+    expect(out).toContain("\\u2029");
+  });
+
+  it("round-trips back to the original data when the JSON is re-parsed (semantics preserved)", () => {
+    const data = { headline: "</script> & <b> ok", n: 5, nested: { x: ["a", "</script>"] } };
+    // The escaped \u00XX sequences are valid JSON escapes, so JSON.parse restores them.
+    expect(JSON.parse(jsonLdSafe(data))).toEqual(data);
+  });
+
+  it("produces ordinary JSON for safe data", () => {
+    expect(jsonLdSafe({ a: 1, b: "x" })).toBe('{"a":1,"b":"x"}');
   });
 });

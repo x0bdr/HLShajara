@@ -6,6 +6,7 @@ import { fontVars } from "../fonts";
 import { GtmScript, GtmNoScript } from "@/components/GtmScript";
 import { GaScript } from "@/components/GaScript";
 import { SITE_URL, brandName } from "@/lib/seo";
+import { jsonLdSafe } from "@/lib/escape";
 import "@/styles/tokens.css";
 import "@/styles/globals.css";
 import "@/components/hlshajara.css";
@@ -68,10 +69,11 @@ export async function generateMetadata({
 }
 
 function JsonLd({ data }: { data: Record<string, unknown> }) {
+  // H1: escape `</script>` (and U+2028/U+2029) before embedding the JSON-LD inline.
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdSafe(data) }}
     />
   );
 }

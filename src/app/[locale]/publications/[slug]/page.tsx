@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { PublicationTracker } from "@/components/PublicationTracker";
 import { SITE_URL, brandName } from "@/lib/seo";
 import { renderPublicationBody } from "@/lib/publication-render";
+import { jsonLdSafe } from "@/lib/escape";
 
 export function generateStaticParams() {
   return [];
@@ -72,10 +73,12 @@ export async function generateMetadata({
 }
 
 function JsonLd({ data }: { data: Record<string, unknown> }) {
+  // H1: jsonLdSafe escapes `</script>` (and U+2028/U+2029) so reviewer-authored
+  // title/excerpt cannot break out of this inline script and execute on the public page.
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdSafe(data) }}
     />
   );
 }

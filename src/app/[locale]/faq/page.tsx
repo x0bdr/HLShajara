@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageShell, LegalNote } from "@/components";
 import { getPageMetadata } from "@/lib/seo";
+import { jsonLdSafe } from "@/lib/escape";
 
 export function generateStaticParams() {
   return [{ locale: "ar" }, { locale: "en" }];
@@ -17,10 +18,11 @@ export async function generateMetadata({
 }
 
 function JsonLd({ data }: { data: Record<string, unknown> }) {
+  // H1: escape `</script>` (and U+2028/U+2029) before embedding the JSON-LD inline.
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdSafe(data) }}
     />
   );
 }

@@ -86,3 +86,44 @@ export function safeHttpUrl(url: unknown): string {
 
   return "";
 }
+
+/**
+ * Allow ONLY http/https ABSOLUTE URLs — no site-relative paths. Used where a value
+ * is consumed as a fully-qualified URL by an external system (e.g. an `og:image` /
+ * JSON-LD `image` / `<img src>` that must resolve without a base). A scheme-less
+ * `/path`, a protocol-relative `//host`, and every non-http(s) scheme return "".
+ *
+ * Reuses `safeHttpUrl` (which already fails closed on control chars, backslashes,
+ * protocol-relative, and disallowed schemes), then additionally rejects the
+ * site-relative branch that `safeHttpUrl` permits.
+ */
+export function safeAbsoluteHttpUrl(url: unknown): string {
+  const safe = safeHttpUrl(url);
+  if (safe === "") return "";
+  return /^https?:\/\//i.test(safe) ? safe : "";
+}
+
+/**
+ * Serialize `data` to a JSON string that is SAFE to embed inside a
+ * `<script type="application/ld+json">…</script>` block via dangerouslySetInnerHTML.
+ *
+ * `JSON.stringify` alone is NOT safe here: it does not escape `<`/`>`/`&`, so a
+ * reviewer-authored value containing `</script>` (e.g. a post title of
+ * `</script><script>alert(document.domain)</script>`) closes the script element and
+ * executes attacker HTML on the PUBLIC page (stored XSS). It also leaves the raw
+ * U+2028 / U+2029 line/paragraph separators, which are valid JSON but ILLEGAL in a
+ * JS string literal and break inline-script parsers.
+ *
+ * Fix: replace `&`/`<`/`>` and U+2028/U+2029 with their `\uXXXX` JSON escape
+ * sequences. These are valid JSON escapes (so the structured data is byte-identical
+ * after JSON.parse) AND no literal `</script>` or unescaped angle bracket can survive
+ * to break out of the inline script element.
+ */
+export function jsonLdSafe(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/&/g, "\\u0026")
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
