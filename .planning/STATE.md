@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated 2026-06-14)
 Milestone v1.4 (Report Submission Wizard): Phases 28–33 ALL code-complete + integrated on master.
 Progress: [██████████] 100% (6/6 phases, 17/17 plans)
 Status: code-complete; pending human EN/AR staging E2E sign-off before milestone close.
-Last activity: 2026-06-18 - Completed quick task 260618-nqm: content screens advisory (warn, not block) at intake
+Last activity: 2026-06-20 - Completed quick task 260620-0d1: intake bot-protection (honeypot + self-hosted gray-band challenge); multi-model review found 3 High (all fixed)
 
 **v1.4 delivery (this session):** built in two parallel lanes — frontend wizard chain 29→30→31→32
 (main tree, sequential) + backend Phase 33 (isolated git worktree, concurrent, merged at `c3ad335`).
@@ -183,6 +183,7 @@ SSH step is broken — missing `STAGING_SSH_*` secrets — so deploy-ops deploye
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260618-nqm | Make post-submit content screens advisory (warn, not block) at intake | 2026-06-18 | 4fda90a | [260618-nqm-make-post-submit-content-screens-advisor](./quick/260618-nqm-make-post-submit-content-screens-advisor/) |
+| 260620-0d1 | Intake bot-protection: server-validated honeypot + self-hosted gray-band challenge fallback (never hard-blocks anonymous/Tor); reused rate_limits (no migration); CHALLENGE_SIGNING_SECRET added; multi-model review 3 High fixed | 2026-06-20 | 65fe8ff | [260620-0d1-intake-bot-protection-honeypot-and-self-](./quick/260620-0d1-intake-bot-protection-honeypot-and-self-/) |
 
 ### v1.3 Specific Notes (prior milestone)
 
