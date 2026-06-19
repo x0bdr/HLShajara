@@ -162,6 +162,30 @@ describe("POST /api/posts/admin — TipTap-doc write validation", () => {
     expect(res.status).toBe(400);
     expect(insertValuesMock).not.toHaveBeenCalled();
   });
+
+  it("rejects a doc with an UNKNOWN node type (M1 allowlist) with 400 and does NOT insert", async () => {
+    const bogus = JSON.stringify({
+      type: "doc",
+      content: [{ type: "bogusNode", content: [{ type: "text", text: "x" }] }],
+    });
+    const res = await POST(makeRequest({ slug: "s", locale: "en", title: "T", body: bogus }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.message).toBe("Invalid publication body");
+    expect(insertValuesMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a doc with an UNKNOWN mark type (M1 allowlist) with 400 and does NOT insert", async () => {
+    const bogus = JSON.stringify({
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "x", marks: [{ type: "evilMark" }] }] },
+      ],
+    });
+    const res = await POST(makeRequest({ slug: "s", locale: "en", title: "T", body: bogus }));
+    expect(res.status).toBe(400);
+    expect(insertValuesMock).not.toHaveBeenCalled();
+  });
 });
 
 /* ----------------------------- PATCH ----------------------------- */

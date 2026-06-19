@@ -80,6 +80,57 @@ describe("parseTiptapDoc", () => {
     }
   });
 
+  it("rejects a doc containing an unknown node type (M1 allowlist, fail-closed)", () => {
+    const bogus = JSON.stringify({
+      type: "doc",
+      content: [{ type: "bogusNode", content: [{ type: "text", text: "x" }] }],
+    });
+    expect(parseTiptapDoc(bogus)).toEqual({ ok: false });
+  });
+
+  it("rejects a doc containing an unknown MARK type (M1 allowlist, fail-closed)", () => {
+    const bogus = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "x", marks: [{ type: "evilMark" }] }],
+        },
+      ],
+    });
+    expect(parseTiptapDoc(bogus)).toEqual({ ok: false });
+  });
+
+  it("rejects a disabled-but-known node type (codeBlock is NOT in the allowlist)", () => {
+    const cb = JSON.stringify({
+      type: "doc",
+      content: [{ type: "codeBlock", content: [{ type: "text", text: "x" }] }],
+    });
+    expect(parseTiptapDoc(cb)).toEqual({ ok: false });
+  });
+
+  it("accepts every allowlisted node type (doc/paragraph/heading/text/lists/blockquote/hardBreak)", () => {
+    const full = JSON.stringify({
+      type: "doc",
+      content: [
+        { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "H" }] },
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "a", marks: [{ type: "bold" }] },
+            { type: "text", text: "b", marks: [{ type: "italic" }] },
+            { type: "hardBreak" },
+            { type: "text", text: "c", marks: [{ type: "link", attrs: { href: "https://x.com" } }] },
+          ],
+        },
+        { type: "bulletList", content: [{ type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "li" }] }] }] },
+        { type: "orderedList", content: [{ type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "li" }] }] }] },
+        { type: "blockquote", content: [{ type: "paragraph", content: [{ type: "text", text: "q" }] }] },
+      ],
+    });
+    expect(parseTiptapDoc(full).ok).toBe(true);
+  });
+
   it("rejects a pathologically deep document (depth bound)", () => {
     // build a deeply-nested content chain well past MAX_DEPTH
     let node: TiptapDoc["content"][number] = { type: "paragraph", content: [{ type: "text", text: "deep" }] };

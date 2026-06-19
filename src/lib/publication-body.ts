@@ -42,14 +42,44 @@ export interface TiptapDoc {
   [key: string]: unknown;
 }
 
+/**
+ * ALLOWLIST of node + mark types the write path accepts (M1, fail-closed).
+ *
+ * This MUST stay in lockstep with the shared TipTap extension set
+ * (publication-extensions.ts) and the sanitize-html allowlist (publication-render.ts):
+ * a reviewer can only author these nodes/marks, the renderer can only serialize these,
+ * and the sanitizer only keeps the tags they map to. A doc containing ANY other node
+ * (e.g. a hand-crafted `{"type":"bogusNode"}`) or mark is REJECTED on POST/PATCH before
+ * a DB write — so the public render is never asked to serialize an unknown node (the
+ * stored-DoS vector where `renderToHTMLString` throws and 500s every public view).
+ *
+ * `doc` is listed for completeness; the root is independently pinned by `tiptapDocSchema`.
+ */
+export const ALLOWED_NODE_TYPES = [
+  "doc",
+  "paragraph",
+  "heading",
+  "text",
+  "bulletList",
+  "orderedList",
+  "listItem",
+  "blockquote",
+  "hardBreak",
+] as const;
+
+export const ALLOWED_MARK_TYPES = ["bold", "italic", "link"] as const;
+
+const nodeTypeSchema = z.enum(ALLOWED_NODE_TYPES);
+const markTypeSchema = z.enum(ALLOWED_MARK_TYPES);
+
 const markSchema: z.ZodType<{ type: string; attrs?: Record<string, unknown> }> = z.object({
-  type: z.string(),
+  type: markTypeSchema,
   attrs: z.record(z.string(), z.unknown()).optional(),
 }).loose();
 
 const nodeSchema: z.ZodType<TiptapNode> = z.lazy(() =>
   z.object({
-    type: z.string(),
+    type: nodeTypeSchema,
     attrs: z.record(z.string(), z.unknown()).optional(),
     content: z.array(nodeSchema).optional(),
     marks: z.array(markSchema).optional(),

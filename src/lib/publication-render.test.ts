@@ -83,6 +83,31 @@ describe("renderPublicationBody — legacy raw-HTML path", () => {
   });
 });
 
+describe("renderPublicationBody — M1 fail-safe on unrenderable / bogus body", () => {
+  it("returns '' (no throw) for a doc with an unknown node type", () => {
+    const bogus = JSON.stringify({
+      type: "doc",
+      content: [{ type: "bogusNode", content: [{ type: "text", text: "x" }] }],
+    });
+    expect(() => renderPublicationBody(bogus)).not.toThrow();
+    expect(renderPublicationBody(bogus)).toBe("");
+  });
+
+  it("returns '' (no throw) for a doc with an unknown mark type", () => {
+    const bogus = JSON.stringify({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "x", marks: [{ type: "evilMark" }] }],
+        },
+      ],
+    });
+    expect(() => renderPublicationBody(bogus)).not.toThrow();
+    expect(renderPublicationBody(bogus)).toBe("");
+  });
+});
+
 describe("renderPublicationBody — empty / nullish", () => {
   it("returns '' for an empty string", () => {
     expect(renderPublicationBody("")).toBe("");
