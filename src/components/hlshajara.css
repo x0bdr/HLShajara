@@ -973,6 +973,8 @@
 .legal-success .t { color: var(--green-700) !important; }
 .legal-error { border-inline-start-color: var(--brick-500) !important; background: var(--brick-100) !important; }
 .legal-error .t { color: var(--brick-700) !important; }
+.legal-warning { border-inline-start-color: #f0b400 !important; background: #fff8e0 !important; }
+.legal-warning .t { color: #8a6200 !important; }
 
 /* Native checkbox focus */
 input[type="checkbox"]:focus-visible {
@@ -2245,4 +2247,79 @@ input[type="checkbox"]:focus-visible {
   }
   .image-slider-btn.prev { inset-inline-start: 8px; }
   .image-slider-btn.next { inset-inline-end: 8px; }
+}
+
+/* ===== PUBLICATION EDITOR ===== */
+.pub-editor {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+}
+.pub-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-block-end: 1px solid var(--border);
+  background: var(--bg2);
+}
+.pub-editor-btn {
+  min-width: 34px;
+  height: 34px;
+  padding-inline: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--fg1);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.pub-editor-btn:hover:not(:disabled) {
+  background: var(--bg);
+  border-color: var(--border-strong);
+}
+.pub-editor-btn[aria-pressed="true"] {
+  background: var(--brand-50);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.pub-editor-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pub-editor-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.pub-editor-content .ProseMirror,
+.pub-editor-surface {
+  min-height: 220px;
+  padding: var(--space-4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+  outline: none;
+}
+.pub-editor-content .ProseMirror:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+.pub-editor-content .ProseMirror p {
+  margin-block: 0 var(--space-3);
+}
+.pub-editor-content .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--fg3);
+  float: inline-start;
+  height: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pub-editor-btn { transition: none; }
 }

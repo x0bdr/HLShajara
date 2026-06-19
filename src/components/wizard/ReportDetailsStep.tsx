@@ -9,6 +9,7 @@
  */
 
 import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 import type { SubmitInput, ReportMetadata } from "@/lib/validation";
 import type { WizardAction } from "@/lib/wizard/state";
 import { getCategoryConfig, getSubTypeConfig, getFlagLabel, type DetailFieldId, DETAIL_FLAG_FIELDS } from "@/lib/wizard/category-config";
@@ -438,6 +439,15 @@ function StringArrayField({
   addLabel: string;
   onChange: (next: string[]) => void;
 }) {
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  useEffect(() => {
+    const last = inputRefs.current[values.length - 1];
+    if (values.length > 0 && last && last.value === "") {
+      last.focus();
+    }
+  }, [values.length]);
+
   function add() {
     onChange([...values, ""]);
   }
@@ -457,13 +467,16 @@ function StringArrayField({
         {values.map((value, index) => (
           <div key={index} className="form-row" style={{ alignItems: "flex-end", gap: 8 }}>
             <input
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               type="text"
               className="ds-input"
               value={value}
               onChange={(e) => update(index, e.target.value)}
               style={{ flex: 1 }}
             />
-            <button type="button" className="btn danger btn-sm" onClick={() => remove(index)}>
+            <button type="button" className="btn danger btn-sm" onClick={() => remove(index)} aria-label="remove">
               ✕
             </button>
           </div>
@@ -493,6 +506,15 @@ function LabourArrayField({
   namePlaceholder?: string;
   rolePlaceholder?: string;
 }) {
+  const nameRefs = useRef<Array<HTMLInputElement | null>>([]);
+
+  useEffect(() => {
+    const last = nameRefs.current[entries.length - 1];
+    if (entries.length > 0 && last && last.value === "") {
+      last.focus();
+    }
+  }, [entries.length]);
+
   function add() {
     onChange([...entries, { name: "", role: "" }]);
   }
@@ -513,6 +535,9 @@ function LabourArrayField({
           <div key={index} className="form-row" style={{ alignItems: "flex-end", gap: 8 }}>
             <div className="form-field" style={{ flex: 1, marginBottom: 0 }}>
               <input
+                ref={(el) => {
+                  nameRefs.current[index] = el;
+                }}
                 type="text"
                 className="ds-input"
                 placeholder={namePlaceholder ?? t("labourName")}
@@ -529,7 +554,7 @@ function LabourArrayField({
                 onChange={(e) => update(index, { role: e.target.value })}
               />
             </div>
-            <button type="button" className="btn danger btn-sm" onClick={() => remove(index)}>
+            <button type="button" className="btn danger btn-sm" onClick={() => remove(index)} aria-label="remove">
               ✕
             </button>
           </div>

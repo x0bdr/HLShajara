@@ -1,0 +1,240 @@
+import { describe, it, expect } from "vitest";
+import {
+  escapeHtml,
+  escapeMarkdown,
+  safeHttpUrl,
+  safeAbsoluteHttpUrl,
+  jsonLdSafe,
+} from "@/lib/escape";
+
+describe("escapeHtml", () => {
+  it("encodes all five HTML-sensitive characters", () => {
+    expect(escapeHtml(`& < > " '`)).toBe("&amp; &lt; &gt; &quot; &#039;");
+  });
+
+  it("neutralizes a <script> payload", () => {
+    expect(escapeHtml("<script>alert(1)</script>")).toBe(
+      "&lt;script&gt;alert(1)&lt;/script&gt;",
+    );
+  });
+
+  it("neutralizes an onerror image payload (attribute-breaking quotes encoded)", () => {
+    expect(escapeHtml(`<img src=x onerror="alert(1)">`)).toBe(
+      "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;",
+    );
+  });
+
+  it("matches the legacy report-pdf escaper byte-for-byte on the ampersand-first ordering", () => {
+    // & must be escaped first so already-escaped entities are not double-counted
+    expect(escapeHtml("a&b<c")).toBe("a&amp;b&lt;c");
+  });
+
+  it("coerces undefined/null to empty string without throwing", () => {
+    expect(escapeHtml(undefined as unknown)).toBe("");
+    expect(escapeHtml(null as unknown)).toBe("");
+  });
+
+  it("coerces numbers to their string form", () => {
+    expect(escapeHtml(42 as unknown)).toBe("42");
+  });
+});
+
+describe("escapeMarkdown", () => {
+  it("escapes a crafted javascript: link so it cannot form a markdown link", () => {
+    const out = escapeMarkdown("[click](javascript:alert(1))");
+    expect(out).not.toContain("](");
+    // brackets + parens are backslash-escaped
+    expect(out).toContain("\\[");
+    expect(out).toContain("\\]");
+    expect(out).toContain("\\(");
+    expect(out).toContain("\\)");
+  });
+
+  it("escapes a crafted data: image so it cannot form a markdown image", () => {
+    const out = escapeMarkdown("![x](data:text/html,<script>)");
+    expect(out).not.toContain("![");
+    expect(out).toContain("\\!");
+    // every angle bracket is backslash-escaped: no UNescaped `<`/`>` survives a
+    // markdown->HTML render
+    expect(out).not.toMatch(/(?<!\\)</);
+    expect(out).not.toMatch(/(?<!\\)>/);
+  });
+
+  it("escapes angle brackets to block raw HTML injection", () => {
+    const out = escapeMarkdown("<img onerror=alert(1)>");
+    // no UNescaped angle bracket survives
+    expect(out).not.toMatch(/(?<!\\)</);
+    expect(out).not.toMatch(/(?<!\\)>/);
+    expect(out).toContain("\\<");
+    expect(out).toContain("\\>");
+  });
+
+  it("escapes backticks so inline-code cannot be opened", () => {
+    expect(escapeMarkdown("a`b")).toBe("a\\`b");
+  });
+
+  it("backslash-escapes every markdown-active char AND angle brackets (L2)", () => {
+    // Each of these must be neutralized so a latent markdown->HTML render can't
+    // break out into a link/image/code/raw-HTML construct.
+    for (const ch of ["<", ">", "[", "]", "(", ")", "*", "_", "`", "#", "\\"]) {
+      expect(escapeMarkdown(ch)).toBe(`\\${ch}`);
+    }
+  });
+
+  it("leaves plain text readable (backslash-escaped specials only)", () => {
+    expect(escapeMarkdown("Acme Corp")).toBe("Acme Corp");
+  });
+
+  it("coerces undefined/null to empty string without throwing", () => {
+    expect(escapeMarkdown(undefined as unknown)).toBe("");
+    expect(escapeMarkdown(null as unknown)).toBe("");
+  });
+});
+
+describe("safeHttpUrl", () => {
+  it("rejects javascript: scheme", () => {
+    expect(safeHttpUrl("javascript:alert(1)")).toBe("");
+  });
+
+  it("rejects data: scheme", () => {
+    expect(safeHttpUrl("data:text/html,<script>alert(1)</script>")).toBe("");
+  });
+
+  it("rejects vbscript: scheme", () => {
+    expect(safeHttpUrl("vbscript:msgbox(1)")).toBe("");
+  });
+
+  it("rejects file: scheme", () => {
+    expect(safeHttpUrl("file:///etc/passwd")).toBe("");
+  });
+
+  it("accepts an https URL unchanged", () => {
+    expect(safeHttpUrl("https://x.test/a")).toBe("https://x.test/a");
+  });
+
+  it("accepts an http URL unchanged", () => {
+    expect(safeHttpUrl("http://x.test/a")).toBe("http://x.test/a");
+  });
+
+  it("accepts a path-relative URL (no scheme)", () => {
+    expect(safeHttpUrl("/uploads/abc.png")).toBe("/uploads/abc.png");
+  });
+
+  it("rejects a scheme hidden behind leading whitespace (fail closed)", () => {
+    expect(safeHttpUrl("  javascript:alert(1)")).toBe("");
+  });
+
+  it("rejects a protocol-relative `//evil.com` (open-redirect/phishing)", () => {
+    expect(safeHttpUrl("//evil.com")).toBe("");
+    expect(safeHttpUrl("//evil.com/path?q=1")).toBe("");
+  });
+
+  it("rejects a backslash-smuggled `/\\evil.com` (browsers coerce `\\` to `/`)", () => {
+    expect(safeHttpUrl("/\\evil.com")).toBe("");
+  });
+
+  it("rejects a backslash-smuggled scheme `https:/\\/\\evil`", () => {
+    expect(safeHttpUrl("https:/\\/\\evil")).toBe("");
+  });
+
+  it("rejects an uppercase/mixed-case JaVaScRiPt: scheme", () => {
+    expect(safeHttpUrl("JaVaScRiPt:alert(1)")).toBe("");
+  });
+
+  it("rejects a tab-embedded scheme `java\\tscript:`", () => {
+    expect(safeHttpUrl("java\tscript:alert(1)")).toBe("");
+  });
+
+  it("rejects a newline-embedded scheme", () => {
+    expect(safeHttpUrl("java\nscript:alert(1)")).toBe("");
+    expect(safeHttpUrl("jav\r\nascript:alert(1)")).toBe("");
+  });
+
+  it("rejects a bare host with no scheme and no leading slash", () => {
+    expect(safeHttpUrl("evil.com")).toBe("");
+    expect(safeHttpUrl("evil.com/path")).toBe("");
+  });
+
+  it("accepts a single-slash site-relative path", () => {
+    expect(safeHttpUrl("/uploads/a.jpg")).toBe("/uploads/a.jpg");
+  });
+
+  it("accepts plain http/https hosts unchanged", () => {
+    expect(safeHttpUrl("https://x.com")).toBe("https://x.com");
+    expect(safeHttpUrl("http://x.com")).toBe("http://x.com");
+  });
+
+  it("coerces undefined/null to empty string without throwing", () => {
+    expect(safeHttpUrl(undefined as unknown)).toBe("");
+    expect(safeHttpUrl(null as unknown)).toBe("");
+  });
+});
+
+describe("safeAbsoluteHttpUrl", () => {
+  it("accepts an absolute https URL unchanged", () => {
+    expect(safeAbsoluteHttpUrl("https://x.test/a.png")).toBe("https://x.test/a.png");
+  });
+
+  it("accepts an absolute http URL unchanged", () => {
+    expect(safeAbsoluteHttpUrl("http://x.test/a.png")).toBe("http://x.test/a.png");
+  });
+
+  it("REJECTS a site-relative /path (must be absolute)", () => {
+    expect(safeAbsoluteHttpUrl("/uploads/a.png")).toBe("");
+  });
+
+  it("rejects javascript:/data:/protocol-relative just like safeHttpUrl", () => {
+    expect(safeAbsoluteHttpUrl("javascript:alert(1)")).toBe("");
+    expect(safeAbsoluteHttpUrl("data:text/html,<script>")).toBe("");
+    expect(safeAbsoluteHttpUrl("//evil.com")).toBe("");
+  });
+
+  it("coerces undefined/null/empty to '' without throwing", () => {
+    expect(safeAbsoluteHttpUrl(undefined as unknown)).toBe("");
+    expect(safeAbsoluteHttpUrl(null as unknown)).toBe("");
+    expect(safeAbsoluteHttpUrl("")).toBe("");
+  });
+});
+
+describe("jsonLdSafe (H1 — </script> breakout escape)", () => {
+  it("escapes a </script> breakout payload so no literal </script> survives", () => {
+    const out = jsonLdSafe({
+      title: "</script><script>alert(document.domain)</script>",
+    });
+    // The killer assertion: the serialized JSON-LD string must contain NO literal
+    // closing-script tag and NO unescaped angle bracket that could open one.
+    expect(out.toLowerCase()).not.toContain("</script");
+    expect(out).not.toContain("<");
+    expect(out).not.toContain(">");
+  });
+
+  it("escapes a bare < / > / & in any string value", () => {
+    const out = jsonLdSafe({ a: "1 < 2 & 3 > 0" });
+    expect(out).not.toContain("<");
+    expect(out).not.toContain(">");
+    expect(out).not.toContain("&");
+    expect(out).toContain("\\u003c");
+    expect(out).toContain("\\u003e");
+    expect(out).toContain("\\u0026");
+  });
+
+  it("escapes U+2028 / U+2029 line/paragraph separators (illegal in JS string literals)", () => {
+    const LS = String.fromCharCode(0x2028);
+    const PS = String.fromCharCode(0x2029);
+    const out = jsonLdSafe({ a: `line${LS}sep${PS}end` });
+    expect(out).not.toContain(LS);
+    expect(out).not.toContain(PS);
+    expect(out).toContain("\\u2028");
+    expect(out).toContain("\\u2029");
+  });
+
+  it("round-trips back to the original data when the JSON is re-parsed (semantics preserved)", () => {
+    const data = { headline: "</script> & <b> ok", n: 5, nested: { x: ["a", "</script>"] } };
+    // The escaped \u00XX sequences are valid JSON escapes, so JSON.parse restores them.
+    expect(JSON.parse(jsonLdSafe(data))).toEqual(data);
+  });
+
+  it("produces ordinary JSON for safe data", () => {
+    expect(jsonLdSafe({ a: 1, b: "x" })).toBe('{"a":1,"b":"x"}');
+  });
+});

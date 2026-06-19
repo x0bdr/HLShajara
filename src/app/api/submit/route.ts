@@ -6,7 +6,8 @@ import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
 import { triageFromConduct } from "@/lib/constants/conduct";
 import { getSession, getInternalUserId } from "@/lib/session";
-import { rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimitResponse, checkRateLimit } from "@/lib/rate-limit";
+import { generateChallenge, verifyChallenge } from "@/lib/challenge";
 import { generateSubmissionPdf } from "@/lib/report-pdf";
 import { sendPdfToTelegram } from "@/lib/telegram";
 
@@ -38,23 +39,92 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { recaptchaToken, ...payload } = body;
+    // `website` is the honeypot field. Pull challenge fields too. Everything else flows
+    // into the schema parse via `payload`. (The honeypot is read here from the raw body,
+    // NOT via the schema — it is intentionally not a schema field.)
+    const { recaptchaToken, website: honeypot, challengeToken, challengeAnswer, ...payload } = body;
 
-    if (!recaptchaToken || typeof recaptchaToken !== "string") {
-      return NextResponse.json(
-        { ok: false, code: "RECAPTCHA_MISSING", message: "reCAPTCHA token is required." },
-        { status: 400 }
-      );
+    // ---------------------------------------------------------------------
+    // GATE 1 — HONEYPOT (FIRST, before reCAPTCHA / any DB work).
+    // A non-empty honeypot means a bot filled a field real users never see.
+    // Coerce to string first so a non-string value (e.g. `website: 123`) still trips
+    // the gate instead of slipping past a `typeof === "string"` check.
+    //
+    // The response is DELIBERATELY indistinguishable from a real success: HTTP 200 with
+    // the SAME body shape as a genuine submit (ok:true, a plausible submissionId, the
+    // same message) — but NO DB write and NO Telegram notification happen. A scraper
+    // therefore cannot diff the honeypot-trip response against a success response to
+    // learn the field exists and start leaving it empty. The honeypot field name never
+    // appears in any response.
+    // ---------------------------------------------------------------------
+    if (String(honeypot ?? "").trim().length > 0) {
+      return NextResponse.json({
+        ok: true,
+        // Synthetic, plausible id (mirrors the real success body's `submissionId`).
+        submissionId: Math.floor(Date.now() / 1000),
+        message: "Submission received and queued for review.",
+      });
     }
 
-    const recaptchaOk = await verifyRecaptcha(recaptchaToken);
+    // ---------------------------------------------------------------------
+    // GATE 2/3 — reCAPTCHA v3 with GRAY-BAND escalation.
+    // A missing token or a low/errored v3 score no longer hard-blocks. Instead the
+    // request enters the gray band: a verified math challenge SUBSTITUTES for the v3
+    // gate so a genuine human (Tor/VPN, low score) can always complete. This is the
+    // one deliberate fail-OPEN exception, bounded by the signed single-use puzzle.
+    // ---------------------------------------------------------------------
+    const recaptchaOk =
+      typeof recaptchaToken === "string" && recaptchaToken.length > 0
+        ? await verifyRecaptcha(recaptchaToken)
+        : false;
+
+    let challengePassed = false;
     if (!recaptchaOk) {
-      return NextResponse.json(
-        { ok: false, code: "RECAPTCHA_FAILED", message: "reCAPTCHA verification failed." },
-        { status: 400 }
-      );
+      // If THIS request carries a challenge answer, it may substitute for the v3 gate.
+      if (typeof challengeToken === "string" && typeof challengeAnswer === "string") {
+        const verdict = await verifyChallenge(challengeToken, challengeAnswer);
+        challengePassed = verdict.ok;
+      }
+
+      if (!challengePassed) {
+        // Re-issue a fresh puzzle. Rate-limit issuance per IP so the gray band cannot
+        // be abused to spam puzzle generation (DoS). FAIL-SAFE: if the issuance limiter
+        // THROWS (concurrent unique-key race / transient DB hiccup), issue a challenge
+        // anyway rather than 500-locking out a gray-band human — the outer per-IP submit
+        // limiter (5/min) still bounds abuse. Only an explicit allowed:false returns 429.
+        const ipKey = ip === "unknown" ? "unknown" : createHash("sha256").update(ip).digest("hex");
+        try {
+          const issue = await checkRateLimit(`challenge-issue:${ipKey}`, {
+            windowMs: 60_000,
+            maxRequests: 10,
+          });
+          if (!issue.allowed) {
+            return NextResponse.json(
+              { ok: false, code: "RATE_LIMITED", message: "Too many requests. Please wait." },
+              { status: 429 }
+            );
+          }
+        } catch (limiterErr) {
+          console.error("Challenge issuance rate-limiter error (issuing anyway):", limiterErr);
+        }
+
+        const { a, b, op, token } = generateChallenge();
+        // Transport choice: HTTP 200 with a discriminated body. 200 (not 4xx/409)
+        // keeps this off the browser's network-error path and is the simplest signal
+        // for the client to branch on (`data.code === "CHALLENGE_REQUIRED"`). It is
+        // NOT a success — the body's `ok:false` + `code` carry the real outcome.
+        return NextResponse.json({
+          ok: false,
+          code: "CHALLENGE_REQUIRED",
+          message: "Please answer the quick check to confirm you're human.",
+          challenge: { a, b, op, token },
+        });
+      }
     }
 
+    // Reached by EITHER a healthy v3 score OR a verified challenge. Single shared
+    // parse + advisory screen + insert block below — no validation is skipped on the
+    // challenge path.
     const parsed = submitSchema.safeParse(payload);
     if (!parsed.success) {
       return NextResponse.json(
@@ -72,20 +142,24 @@ export async function POST(request: Request) {
       sourceLinks: data.sourceLinks,
     });
 
-    if (!screen.ok) {
-      return NextResponse.json(
-        { ok: false, code: screen.code, message: screen.message },
-        { status: 400 }
-      );
-    }
+    // Content screens (Family B) are ADVISORY at intake: a matched screen no longer
+    // rejects the submission. Instead the matched code is recorded as a reviewer-facing
+    // AUTO-FLAG in the immutable audit log below, preserving the safety signal for
+    // human review without blocking on imperfect (esp. Arabic) content heuristics.
 
     const session = await getSession();
     const isAnonymous = data.isAnonymous || !session;
     const actorId = session ? await getInternalUserId(session) : 0;
     const actorRole = (session?.user.role ?? "submitter") as "submitter" | "reviewer" | "senior_reviewer" | "admin";
 
+    const parts = [
+      isAnonymous ? "Anonymous submission" : null,
+      !screen.ok ? `AUTO-FLAG:${screen.code}` : null,
+    ].filter(Boolean);
+    const reason = parts.length ? parts.join("; ") : undefined;
+
     const [submission] = await withAudit(
-      { actorId, actorRole, reason: isAnonymous ? "Anonymous submission" : undefined },
+      { actorId, actorRole, reason },
       () =>
         db
           .insert(submissions)
@@ -142,6 +216,7 @@ export async function POST(request: Request) {
       ok: true,
       submissionId: submission.id,
       message: "Submission received and queued for review.",
+      warningCode: !screen.ok ? screen.code : undefined,
     });
   } catch (err) {
     console.error("Submit error:", err);

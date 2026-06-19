@@ -730,12 +730,30 @@ export function getFlagLabel(t: SubmitT, flagValue: string | undefined): string 
   return flag ? t(flag.labelKey ?? flag.value) : String(flagValue ?? "");
 }
 
+/** Resolves the Arabic label for a detail flag. */
+export function getFlagLabelAr(flagValue: string | undefined): string {
+  const flag = Object.values(COMMON_FLAGS).find((f) => f.value === flagValue);
+  return flag ? arLabel(flag.labelKey ?? flag.value) : String(flagValue ?? "");
+}
+
 /** Resolves the localized label for a supporting-document option. */
 export function getDocumentLabel(t: SubmitT, docValue: string | undefined): string {
   const doc = SUPPORTING_DOCUMENT_OPTIONS.find((d) => d.value === docValue);
   return doc ? t(doc.labelKey ?? doc.value) : String(docValue ?? "");
 }
 
+
+/** Resolves the Arabic label for a supporting-document option. */
+export function getDocumentLabelAr(docValue: string | undefined): string {
+  const doc = SUPPORTING_DOCUMENT_OPTIONS.find((d) => d.value === docValue);
+  return doc ? arLabel(doc.labelKey ?? docValue ?? "") : String(docValue ?? "");
+}
+
+/** Resolves the Arabic label for a report category. */
+export function getCategoryLabelAr(category: ReportCategory | string | undefined): string {
+  const cat = getCategoryConfig(category);
+  return cat ? arLabel(cat.labelKey) : String(category ?? "");
+}
 /** Resolves the localized label for a country option (with flag emoji). */
 export function getCountryLabel(t: SubmitT, locale: string, countryValue: string | undefined): string {
   const country = COUNTRIES.find((c) => c.value === countryValue);

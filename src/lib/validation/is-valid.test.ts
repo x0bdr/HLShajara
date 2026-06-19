@@ -1,0 +1,54 @@
+import { describe, it, expect } from "vitest";
+import { sanitizeMediaName } from "@/lib/validation/is-valid";
+
+describe("sanitizeMediaName", () => {
+  it("strips angle brackets so a script/markup payload becomes plain text", () => {
+    const out = sanitizeMediaName("<img onerror=alert(1)>hello.png");
+    expect(out).not.toContain("<");
+    expect(out).not.toContain(">");
+    expect(out).toContain("hello.png");
+  });
+
+  it("neutralizes a <script> wrapper (no angle brackets survive to form a tag)", () => {
+    const out = sanitizeMediaName("<script>alert(1)</script>evidence.jpg");
+    expect(out).not.toContain("<");
+    expect(out).not.toContain(">");
+    // residual text is inert plain text; the executable tag can no longer form
+    expect(out).toContain("evidence.jpg");
+  });
+
+  it("strips backticks so inline-code markup cannot form", () => {
+    const out = sanitizeMediaName("`code`name.png");
+    expect(out).not.toContain("`");
+    expect(out).toContain("name.png");
+  });
+
+  it("removes control characters", () => {
+    // Control bytes are written as explicit escape sequences (NUL + BEL) so this
+    // file stays plain UTF-8 text and diffs normally — no raw binary in the blob.
+    const out = sanitizeMediaName("a\x00b\x07c");
+    expect(out).toBe("abc");
+  });
+
+  it("collapses surrounding/internal whitespace", () => {
+    expect(sanitizeMediaName("  spaced   name .png ")).toBe("spaced name .png");
+  });
+
+  it("retains ordinary plain-text names including non-ASCII", () => {
+    expect(sanitizeMediaName("héllo-تقرير.png")).toBe("héllo-تقرير.png");
+  });
+
+  it("hard-caps to the max length", () => {
+    const out = sanitizeMediaName("a".repeat(500), 255);
+    expect(out.length).toBe(255);
+  });
+
+  it("defaults the cap to 255", () => {
+    const out = sanitizeMediaName("b".repeat(400));
+    expect(out.length).toBe(255);
+  });
+
+  it("returns empty string for empty/whitespace-only input", () => {
+    expect(sanitizeMediaName("   ")).toBe("");
+  });
+});

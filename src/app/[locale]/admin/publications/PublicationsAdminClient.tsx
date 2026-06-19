@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
+import { PublicationEditor } from "@/components/admin/PublicationEditor";
 
 interface Post {
   id: number;
@@ -253,12 +254,11 @@ export default function PublicationsAdminClient() {
               </div>
 
               <div className="form-field">
-                <label>{locale === "ar" ? "المحتوى (HTML)" : "Body (HTML)"}</label>
-                <textarea
-                  className="ds-input"
+                <label>{locale === "ar" ? "المحتوى" : "Content"}</label>
+                <PublicationEditor
                   value={form.body}
-                  onChange={(e) => setForm({ ...form, body: e.target.value })}
-                  style={{ minHeight: 200, fontFamily: "monospace", fontSize: 13 }}
+                  onChange={(json) => setForm((f) => ({ ...f, body: json }))}
+                  locale={locale}
                 />
               </div>
 

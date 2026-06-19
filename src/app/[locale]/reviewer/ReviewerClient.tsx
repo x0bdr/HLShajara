@@ -11,6 +11,7 @@ import {
   getDocumentLabel,
 } from "@/lib/wizard/category-config";
 import { getIconByName } from "@/lib/wizard/icon-map";
+import { escapeHtml, safeHttpUrl } from "@/lib/escape";
 
 interface SourceLink {
   url: string;
@@ -166,19 +167,26 @@ const METADATA_LABELS_EN: Record<string, string> = {
   socialContactMethods: "Social accounts",
 };
 
-function displayValue(value: unknown): string {
+function displayValue(value: unknown, locale?: string): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "string" && value.trim() === "") return "—";
   if (Array.isArray(value) && value.length === 0) return "—";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "boolean") {
+    return locale === "ar" ? (value ? "نعم" : "لا") : value ? "Yes" : "No";
+  }
   return String(value);
 }
 
-function getStatusLabel(status: string, t: (key: string) => string): string {
+function getStatusLabel(
+  status: string,
+  tReviewer: (key: string) => string,
+  tSubmit: (key: string) => string,
+): string {
   const key = `status_${status}`;
-  const label = t(key);
-  // If no translation exists, fall back to the raw status string.
-  return label === key ? status : label;
+  const reviewerLabel = tReviewer(key);
+  if (reviewerLabel !== key) return reviewerLabel;
+  const submitLabel = tSubmit(key);
+  return submitLabel === key ? status : submitLabel;
 }
 
 function formatLabels(
@@ -233,11 +241,22 @@ function exportSubmissionToPDF(sub: Submission, locale: string) {
 
   const metaRows = Object.entries(labels).map(([key, label]) => {
     const value = meta[key as keyof ReportMetadata];
-    return `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-weight:600;width:35%">${label}</td><td style="padding:6px 10px;border:1px solid #ddd">${fmtValue(key, value)}</td></tr>`;
+    // `label` is a static, code-defined column header (safe); the VALUE is
+    // user-controlled, so escape fmtValue's output before it reaches document.write.
+    return `<tr><td style="padding:6px 10px;border:1px solid #ddd;font-weight:600;width:35%">${label}</td><td style="padding:6px 10px;border:1px solid #ddd">${escapeHtml(fmtValue(key, value))}</td></tr>`;
   }).join("");
 
   const mediaRows = sub.sourceFiles.length
-    ? sub.sourceFiles.map((f) => `<tr><td style="padding:6px 10px;border:1px solid #ddd">${f.label ? `${f.label} — ` : ""}${f.originalName}</td><td style="padding:6px 10px;border:1px solid #ddd"><a href="${f.url}" target="_blank">${f.url}</a></td></tr>`).join("")
+    ? sub.sourceFiles
+        .map((f) => {
+          const labelPrefix = f.label ? `${escapeHtml(f.label)} — ` : "";
+          const name = escapeHtml(f.originalName);
+          const safeUrl = safeHttpUrl(f.url);
+          const hrefAttr = escapeHtml(safeUrl);
+          const urlText = escapeHtml(safeUrl);
+          return `<tr><td style="padding:6px 10px;border:1px solid #ddd">${labelPrefix}${name}</td><td style="padding:6px 10px;border:1px solid #ddd"><a href="${hrefAttr}" target="_blank">${urlText}</a></td></tr>`;
+        })
+        .join("")
     : `<tr><td colspan="2" style="padding:6px 10px;border:1px solid #ddd">—</td></tr>`;
 
   const html = `
@@ -257,12 +276,12 @@ function exportSubmissionToPDF(sub: Submission, locale: string) {
       </style>
     </head>
     <body>
-      <h1 style="text-align:${align}">${sub.entityName}</h1>
-      <p style="text-align:${align}">${resolveSubTypeLabel(sub, () => "")} · ${resolveCategoryLabel(sub, () => "")}</p>
+      <h1 style="text-align:${align}">${escapeHtml(sub.entityName)}</h1>
+      <p style="text-align:${align}">${escapeHtml(resolveSubTypeLabel(sub, () => ""))} · ${escapeHtml(resolveCategoryLabel(sub, () => ""))}</p>
 
       <div class="section">
         <h2 style="text-align:${align}">${locale === "ar" ? "وصف البلاغ" : "Report Description"}</h2>
-        <p style="text-align:${align};white-space:pre-wrap">${sub.allegationDescription}</p>
+        <p style="text-align:${align};white-space:pre-wrap">${escapeHtml(sub.allegationDescription)}</p>
       </div>
 
       <div class="section">
@@ -307,11 +326,16 @@ function resolveSubTypeLabel(sub: Submission, t: (key: string) => string) {
 
 function MetadataRow({ label, value, link }: { label: string; value: unknown; link?: boolean }) {
   const text = displayValue(value);
+  // SECURITY (H2): a user-controlled URL (e.g. googleMapsLink) must pass the
+  // http/https-or-relative allowlist before it reaches an href — otherwise a
+  // `javascript:`/`data:`/protocol-relative value would be live in the reviewer
+  // console. An unsafe URL falls back to inert text (no link).
+  const safeHref = link ? safeHttpUrl(String(value)) : "";
   return (
     <div className="meta-row">
       <span className="meta-label">{label}</span>
-      {link && text !== "—" ? (
-        <a className="meta-value" href={String(value)} target="_blank" rel="noreferrer">{text}</a>
+      {link && text !== "—" && safeHref ? (
+        <a className="meta-value" href={safeHref} target="_blank" rel="noreferrer">{text}</a>
       ) : (
         <span className="meta-value">{text}</span>
       )}
@@ -369,7 +393,9 @@ function SubmissionMetadata({ sub, locale, t }: { sub: Submission; locale: strin
         }
         if (key === "socialContactMethods") {
           const arr = (value as { type: string; value: string }[] | undefined) ?? [];
-          const text = arr.map((m) => `${m.type}: ${m.value}`).join(" · ");
+          const text = arr
+            .map((m) => `${t(`contactType_${m.type}` as never) || m.type}: ${m.value}`)
+            .join(" · ");
           return <MetadataRow key={key} label={label} value={text} />;
         }
         return <MetadataRow key={key} label={label} value={value} />;
@@ -485,7 +511,7 @@ export default function ReviewerPage() {
                   <div>
                     <div className="rc-name">{s.entityName}</div>
                     <div className="rc-meta">
-                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{t("status")}: {getStatusLabel(s.status, t)}</span>
+                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{t("status")}: {getStatusLabel(s.status, t, tSubmit)}</span>
                     </div>
                   </div>
                   <button className="btn primary btn-sm" onClick={() => setSelected(s)}>
@@ -578,10 +604,19 @@ export default function ReviewerPage() {
               <div className="form-section-title">
                 {locale === "ar" ? "التحقق من المصادر" : "Source Verification"}
               </div>
-              {(selected.sourceLinks ?? []).map((link, i) => (
+              {(selected.sourceLinks ?? []).map((link, i) => {
+                // SECURITY (H2): citation URLs are user-supplied — gate each one
+                // through the http/https-or-relative allowlist before it reaches
+                // an href. An unsafe URL renders as inert text (no live link).
+                const safeLinkHref = safeHttpUrl(link.url);
+                return (
                 <div key={i} className="card" style={{ padding: 12, marginBottom: 8 }}>
                   <div className="ds-body-sm" style={{ marginBottom: 8, wordBreak: "break-all" }}>
-                    <a href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--brand)" }}>{link.title || link.url}</a>
+                    {safeLinkHref ? (
+                      <a href={safeLinkHref} target="_blank" rel="noreferrer" style={{ color: "var(--brand)" }}>{link.title || link.url}</a>
+                    ) : (
+                      <span>{link.title || link.url}</span>
+                    )}
                   </div>
                   <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer" }}>
@@ -625,7 +660,8 @@ export default function ReviewerPage() {
                     />
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </section>
 
             {/* Evidence & Privacy */}

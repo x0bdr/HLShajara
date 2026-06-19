@@ -6,6 +6,35 @@ import { getSession, forbiddenResponse, getInternalUserId } from "@/lib/session"
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { withAudit } from "@/db/persist";
+import { parseTiptapDoc, sanitizeDocLinks } from "@/lib/publication-body";
+import { safeHttpUrl } from "@/lib/escape";
+
+/**
+ * L3 write-side caps. Title/excerpt are user-controlled and flow into the page <title>,
+ * og/twitter tags, and the (now-escaped) JSON-LD; bound them so a reviewer cannot store
+ * an absurdly large value. The H1 jsonLdSafe escape already neutralizes their XSS — this
+ * is belt-and-suspenders sizing, not the XSS fix.
+ */
+const MAX_TITLE_CHARS = 300;
+const MAX_EXCERPT_CHARS = 1_000;
+
+/**
+ * L3: validate a cover-image URL on write. It is rendered as a <next/image src>, an
+ * og:image, and a JSON-LD `image` — all URL sinks. `safeHttpUrl` keeps http/https
+ * absolute URLs and site-relative `/uploads/...` paths (legitimate) and drops
+ * javascript:/data:/protocol-relative. An unsafe value becomes null (no cover image)
+ * rather than a stored sink. Returns `null` for empty/unsafe input.
+ */
+function normalizeCoverImageUrl(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  const safe = safeHttpUrl(value);
+  return safe === "" ? null : safe;
+}
+
+/** L3: reject an over-long title/excerpt on write (fail-closed before any DB write). */
+function tooLong(value: unknown, max: number): boolean {
+  return typeof value === "string" && value.length > max;
+}
 
 /* ---------- GET: list posts or single post ---------- */
 export async function GET(request: Request) {
@@ -75,6 +104,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Missing required fields: slug, locale, title, body" }, { status: 400 });
     }
 
+    // L3: bound title/excerpt length on write (fail-closed before any DB write).
+    if (tooLong(title, MAX_TITLE_CHARS) || tooLong(excerpt, MAX_EXCERPT_CHARS)) {
+      return NextResponse.json({ ok: false, message: "Title or excerpt too long" }, { status: 400 });
+    }
+
+    // Body MUST be a valid TipTap doc — fail-closed before any DB write (no raw-anything
+    // is stored). Drop unsafe link hrefs on write, then store the re-stringified doc.
+    const parsedBody = parseTiptapDoc(postBody);
+    if (!parsedBody.ok) {
+      return NextResponse.json({ ok: false, message: "Invalid publication body" }, { status: 400 });
+    }
+    const sanitizedBody = JSON.stringify(sanitizeDocLinks(parsedBody.doc));
+
     // Check slug uniqueness per locale
     const existing = await db
       .select({ id: posts.id })
@@ -99,8 +141,8 @@ export async function POST(request: Request) {
             locale,
             title,
             excerpt: excerpt || null,
-            body: postBody,
-            coverImageUrl: coverImageUrl || null,
+            body: sanitizedBody,
+            coverImageUrl: normalizeCoverImageUrl(coverImageUrl),
             status: status || "draft",
             publishedAt: status === "published" && publishedAt ? new Date(publishedAt) : status === "published" ? new Date() : null,
           })
@@ -133,6 +175,11 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ ok: false, message: "Post ID required" }, { status: 400 });
     }
 
+    // L3: bound title/excerpt length on write when present (fail-closed).
+    if (tooLong(title, MAX_TITLE_CHARS) || tooLong(excerpt, MAX_EXCERPT_CHARS)) {
+      return NextResponse.json({ ok: false, message: "Title or excerpt too long" }, { status: 400 });
+    }
+
     // Check slug uniqueness if changing slug or locale
     const current = await db.select().from(posts).where(eq(posts.id, Number(id))).limit(1);
     if (!current.length) {
@@ -160,8 +207,15 @@ export async function PATCH(request: Request) {
     if (locale !== undefined) updateData.locale = locale;
     if (title !== undefined) updateData.title = title;
     if (excerpt !== undefined) updateData.excerpt = excerpt;
-    if (postBody !== undefined) updateData.body = postBody;
-    if (coverImageUrl !== undefined) updateData.coverImageUrl = coverImageUrl;
+    if (postBody !== undefined) {
+      // Same fail-closed TipTap-doc validation + link-href sanitize as POST.
+      const parsedBody = parseTiptapDoc(postBody);
+      if (!parsedBody.ok) {
+        return NextResponse.json({ ok: false, message: "Invalid publication body" }, { status: 400 });
+      }
+      updateData.body = JSON.stringify(sanitizeDocLinks(parsedBody.doc));
+    }
+    if (coverImageUrl !== undefined) updateData.coverImageUrl = normalizeCoverImageUrl(coverImageUrl);
     if (status !== undefined) {
       updateData.status = status;
       if (status === "published" && !current[0].publishedAt) {

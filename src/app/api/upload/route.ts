@@ -7,6 +7,7 @@ import { scanBuffer } from "@/lib/clamav";
 import { isFfmpegAvailable, stripVideoMetadata } from "@/lib/media-metadata";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { assetPath } from "@/lib/asset-path";
+import { sanitizeMediaName } from "@/lib/validation/is-valid";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -58,31 +59,75 @@ export async function POST(request: Request) {
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { ok: false, message: "File too large (max 10 MB)" },
+        { ok: false, code: "FILE_TOO_LARGE", message: "File too large (max 10 MB)" },
         { status: 400 }
       );
     }
 
-    const allowedExt = EXT_BY_TYPE[file.type];
-    if (!allowedExt) {
+    // Read the ORIGINAL intake bytes BEFORE any sharp/ffmpeg rewrite so the
+    // magic-byte sniff validates the true uploaded content (A.1).
+    const bytes = await file.arrayBuffer();
+    let buffer = Buffer.from(bytes);
+
+    // SECURITY (A.1): sniff the real magic bytes and make the allowlist decision
+    // on the SNIFFED mime — never the spoofable client-declared file.type. Fail
+    // closed on any uncertainty. `file-type` is ESM-only → dynamic import.
+    const { fileTypeFromBuffer } = await import("file-type");
+    const sniffed = await fileTypeFromBuffer(buffer);
+    const sniffedMime = sniffed?.mime;
+    const allowedExt = sniffedMime ? EXT_BY_TYPE[sniffedMime] : undefined;
+
+    // SECURITY (A.1 / M2): the authoritative gate is "SNIFFED mime ∈ allowlist".
+    // Reject when content is unrecognized (fail closed) or the sniffed type is not
+    // allowlisted (SVG, executables, etc. — SVG is never in EXT_BY_TYPE).
+    if (!sniffedMime || !allowedExt) {
       return NextResponse.json(
         { ok: false, code: "INVALID_FILE_TYPE", message: "File type not allowed." },
         { status: 400 }
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    let buffer = Buffer.from(bytes);
+    // SECURITY (M2): the client-declared file.type is untrusted, so it cannot
+    // make an allowlisted-by-sniff file MORE trusted — but a CLEAR cross-family
+    // lie (client says image/png while the bytes are a video, or vice-versa) is a
+    // spoofing signal worth rejecting. Only reject when file.type is a non-empty,
+    // RECOGNIZED type whose family differs from the sniffed family. An empty /
+    // missing / non-canonical client type (common from real browsers) is ignored;
+    // the sniffed∈allowlist decision above stands.
+    const claimedType = (file.type ?? "").toLowerCase().trim();
+    if (claimedType && EXT_BY_TYPE[claimedType]) {
+      const claimedFamily = claimedType.split("/", 1)[0];
+      const sniffedFamily = sniffedMime.split("/", 1)[0];
+      if (claimedFamily !== sniffedFamily) {
+        return NextResponse.json(
+          { ok: false, code: "INVALID_FILE_TYPE", message: "File type not allowed." },
+          { status: 400 }
+        );
+      }
+    }
 
-    // Strip EXIF/GPS metadata from images using Sharp
-    if (IMAGE_TYPES.has(file.type)) {
+    // Strip EXIF/GPS metadata from images using Sharp. Branch off the SNIFFED mime
+    // so processing runs on the verified true type.
+    if (IMAGE_TYPES.has(sniffedMime)) {
       try {
         buffer = Buffer.from(await sharp(buffer).rotate().toBuffer());
       } catch (err) {
+        // SECURITY (M1): FAIL CLOSED. CLAUDE.md mandates GPS/EXIF stripping so
+        // victim-location data never persists. If sharp throws we must NOT store
+        // the original (un-stripped) bytes — reject the upload, mirroring the
+        // video/ffmpeg fail-closed branch below.
         console.error("Sharp processing error:", err);
-        // Fall through to save original if Sharp fails
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "IMAGE_PROCESSING_FAILED",
+            message:
+              "Image could not be processed safely (metadata could not be stripped) and was not stored. Please try again or upload a different file.",
+          },
+          { status: 400 }
+        );
       }
-    } else if (VIDEO_TYPES.has(file.type)) {
+    } else if (VIDEO_TYPES.has(sniffedMime)) {
       // Phase 33 (BE-05): strip container/stream metadata from videos via
       // `ffmpeg -map_metadata -1` BEFORE the malware scan and hash. ffmpeg is a
       // required system binary for video uploads — if it is unavailable, or if the
@@ -130,13 +175,19 @@ export async function POST(request: Request) {
     await mkdir(UPLOAD_DIR, { recursive: true });
     await writeFile(filePath, buffer);
 
+    const relativeUrl = assetPath(`/uploads/${safeName}`);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "";
+    const absoluteUrl = appUrl ? `${appUrl}${relativeUrl}` : relativeUrl;
+
     return NextResponse.json({
       ok: true,
       hash,
       filename: safeName,
-      originalName: file.name,
+      // Plain-text-only at the source (MEDIA-NAME): strip markup-forming chars so a
+      // crafted filename cannot ride through to a render sink as HTML/markdown.
+      originalName: sanitizeMediaName(file.name),
       size: buffer.length,
-      url: assetPath(`/uploads/${safeName}`),
+      url: absoluteUrl,
     });
   } catch (err) {
     console.error("Upload API error:", err);
