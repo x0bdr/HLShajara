@@ -6,10 +6,14 @@
  * genuine human (Tor/VPN, low score) can always complete by answering it.
  *
  * Security model:
- * - The token carries only { answerHash, exp, nonce } HMAC-SHA256-signed with
- *   CHALLENGE_SIGNING_SECRET. The plaintext answer is NEVER in the token (only its
- *   sha256), and the localized question sentence is rendered client-side from the
- *   returned operands — the question text is never trusted on verify.
+ * - The token carries the OPERANDS { a, b, op, exp, nonce } HMAC-SHA256-signed with
+ *   CHALLENGE_SIGNING_SECRET. The operands are public (they ARE the visible question),
+ *   but they are HMAC-bound so the client cannot swap in an easier puzzle. The answer is
+ *   NEITHER in the token NOR hashed into it — on verify the server recomputes the
+ *   canonical answer from the trusted (signed) operands and compares it to the user's.
+ *   This avoids the earlier brute-forceable answerHash (the answer space is ≤19 values,
+ *   so any hash of the answer is trivially reversible). The localized question sentence
+ *   is rendered client-side from the operands and is never trusted on verify.
  * - Verify uses crypto.timingSafeEqual (constant-time, length-guarded) so a tampered
  *   signature cannot be brute-forced via timing.
  * - Single-use: the nonce is consumed via checkRateLimit("challenge-nonce:<nonce>",
@@ -19,7 +23,7 @@
  * No third-party captcha dependency: only Node's built-in `crypto`.
  */
 
-import { createHmac, createHash, randomInt, randomUUID, timingSafeEqual } from "crypto";
+import { createHmac, randomInt, randomUUID, timingSafeEqual } from "crypto";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const TTL_MS = 5 * 60_000; // ~5 minutes
@@ -35,8 +39,12 @@ export interface GeneratedChallenge {
 }
 
 interface ChallengePayload {
-  /** sha256(String(canonicalAnswer)) — never the plaintext answer. */
-  answerHash: string;
+  /** First operand (public — it IS the visible question; HMAC-bound). */
+  a: number;
+  /** Second operand (public — HMAC-bound). */
+  b: number;
+  /** Operator (public — HMAC-bound). The answer is recomputed from a/b/op on verify. */
+  op: ChallengeOp;
   /** epoch ms expiry. */
   exp: number;
   /** single-use marker consumed via the rate_limits table. */
@@ -60,10 +68,6 @@ function signingSecret(): string {
   return secret;
 }
 
-function sha256(input: string): string {
-  return createHash("sha256").update(input).digest("hex");
-}
-
 function sign(payloadB64: string): string {
   return createHmac("sha256", signingSecret()).update(payloadB64).digest("base64url");
 }
@@ -73,10 +77,17 @@ export function normalizeArabicDigits(s: string): string {
   return s.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660));
 }
 
+/** Canonical answer for a set of operands. Single source of truth for generate + verify. */
+function canonicalAnswer(a: number, b: number, op: ChallengeOp): number {
+  return op === "+" ? a + b : a - b;
+}
+
 /**
  * Build a fresh signed math challenge. Operands are human-trivial (1–9); subtraction
- * is kept non-negative. The canonical answer is hashed into the token; the operands
- * are returned so the CLIENT renders the localized bilingual sentence.
+ * is kept non-negative. The operands themselves (a, b, op) are HMAC-bound into the token
+ * — NOT the answer or any hash of it. The answer is recomputed server-side from the
+ * trusted operands on verify. The operands are also returned so the CLIENT renders the
+ * localized bilingual sentence.
  */
 export function generateChallenge(): GeneratedChallenge {
   const op: ChallengeOp = randomInt(0, 2) === 0 ? "+" : "-";
@@ -86,10 +97,11 @@ export function generateChallenge(): GeneratedChallenge {
     // keep the result non-negative by swapping
     [a, b] = [b, a];
   }
-  const answer = op === "+" ? a + b : a - b;
 
   const payload: ChallengePayload = {
-    answerHash: sha256(String(answer)),
+    a,
+    b,
+    op,
     exp: Date.now() + TTL_MS,
     nonce: randomUUID(),
   };
@@ -105,14 +117,19 @@ export interface VerifyResult {
 }
 
 /**
- * Verify a challenge token + answer. Order: HMAC (constant-time) → TTL → answer →
- * single-use nonce. Any failed step returns { ok:false } (never throws on bad input;
- * the ONLY throw is the fail-fast missing-secret guard). Never logs the secret or token.
+ * Verify a challenge token + answer. Order: token shape → HMAC (constant-time) → TTL →
+ * answer (recomputed from the trusted operands) → single-use nonce. Any failed step
+ * returns { ok:false } (never throws on bad input; the ONLY throw is the fail-fast
+ * missing-secret guard). Never logs the secret or token.
  */
 export async function verifyChallenge(token: string, rawAnswer: string): Promise<VerifyResult> {
-  if (typeof token !== "string" || !token.includes(".")) return { ok: false };
+  if (typeof token !== "string") return { ok: false };
 
-  const [payloadB64, sigB64] = token.split(".");
+  // Require EXACTLY 2 dot-separated segments. A token with extra dots is malformed and
+  // could shift the signed boundary — reject before any HMAC work.
+  const segments = token.split(".");
+  if (segments.length !== 2) return { ok: false };
+  const [payloadB64, sigB64] = segments;
   if (!payloadB64 || !sigB64) return { ok: false };
 
   // 1. HMAC — recompute over the payload segment and compare in constant time.
@@ -132,7 +149,9 @@ export async function verifyChallenge(token: string, rawAnswer: string): Promise
   }
   if (
     !payload ||
-    typeof payload.answerHash !== "string" ||
+    typeof payload.a !== "number" ||
+    typeof payload.b !== "number" ||
+    (payload.op !== "+" && payload.op !== "-") ||
     typeof payload.exp !== "number" ||
     typeof payload.nonce !== "string"
   ) {
@@ -142,18 +161,29 @@ export async function verifyChallenge(token: string, rawAnswer: string): Promise
   // 3. TTL.
   if (Date.now() > payload.exp) return { ok: false };
 
-  // 4. Answer: normalize Arabic-Indic digits, trim, parse int, hash, compare.
+  // 4. Answer: normalize Arabic-Indic digits, trim, strict-integer parse, then compare
+  //    against the answer RECOMPUTED from the trusted (HMAC-bound) operands. A strict
+  //    integer match rejects "7abc"/"" rather than silently truncating via parseInt.
   const normalized = normalizeArabicDigits(String(rawAnswer ?? "")).trim();
+  if (!/^-?\d+$/.test(normalized)) return { ok: false };
   const parsed = Number.parseInt(normalized, 10);
   if (Number.isNaN(parsed)) return { ok: false };
-  if (sha256(String(parsed)) !== payload.answerHash) return { ok: false };
+  if (parsed !== canonicalAnswer(payload.a, payload.b, payload.op)) return { ok: false };
 
-  // 5. Single-use: consume the nonce. First use → allowed:true; replay → allowed:false.
-  const { allowed } = await checkRateLimit(`challenge-nonce:${payload.nonce}`, {
-    windowMs: TTL_MS,
-    maxRequests: 1,
-  });
-  if (!allowed) return { ok: false };
+  // 5. Single-use: consume the nonce ONLY after the answer is verified correct (a wrong
+  //    answer must not burn the nonce). First use → allowed:true; replay → allowed:false.
+  //    Fail-safe: a thrown error (e.g. a concurrent unique-key race or a transient DB
+  //    hiccup) is treated as a re-challenge — NEVER propagated as a 500 that would lock
+  //    out a gray-band human. The loser of a race is, correctly, a replay.
+  try {
+    const { allowed } = await checkRateLimit(`challenge-nonce:${payload.nonce}`, {
+      windowMs: TTL_MS,
+      maxRequests: 1,
+    });
+    if (!allowed) return { ok: false };
+  } catch {
+    return { ok: false };
+  }
 
   return { ok: true };
 }

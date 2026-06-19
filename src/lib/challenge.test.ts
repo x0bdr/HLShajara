@@ -71,6 +71,23 @@ describe("generateChallenge", () => {
       if (c.op === "-") expect(c.a - c.b).toBeGreaterThanOrEqual(0);
     }
   });
+
+  it("binds the operands (not the answer or its hash) into the signed payload", () => {
+    const c = generateChallenge();
+    const payloadB64 = c.token.split(".")[0];
+    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"));
+    // Operands ARE present (public, HMAC-bound).
+    expect(payload.a).toBe(c.a);
+    expect(payload.b).toBe(c.b);
+    expect(payload.op).toBe(c.op);
+    // The answer and any hash of it must NOT be in the token.
+    expect(payload).not.toHaveProperty("answerHash");
+    const answer = answerFor(c.a, c.b, c.op);
+    expect(JSON.stringify(payload)).not.toContain(`"answer"`);
+    // Sanity: the plaintext answer value is not embedded as its own field.
+    expect(payload.answer).toBeUndefined();
+    expect(typeof answer).toBe("number");
+  });
 });
 
 describe("verifyChallenge", () => {
@@ -124,14 +141,51 @@ describe("verifyChallenge", () => {
     expect(res.ok).toBe(false);
   });
 
-  it("tampered payload (recomputed nothing) → { ok: false }", async () => {
+  it("tampered payload (attacker swaps in easier operands) → { ok: false }", async () => {
     const c = generateChallenge();
     const [, sigSeg] = c.token.split(".");
-    // Swap in a different (attacker-built) payload while keeping the old signature.
+    // Swap in a different (attacker-built) payload — e.g. an easier puzzle whose answer
+    // the attacker knows — while keeping the old signature. The HMAC no longer matches,
+    // so the operand swap is rejected before the answer is ever recomputed.
     const forgedPayload = Buffer.from(
-      JSON.stringify({ answerHash: "deadbeef", exp: Date.now() + 60_000, nonce: "x" })
+      JSON.stringify({ a: 1, b: 1, op: "+", exp: Date.now() + 60_000, nonce: "x" })
     ).toString("base64url");
-    const res = await verifyChallenge(`${forgedPayload}.${sigSeg}`, "0");
+    const res = await verifyChallenge(`${forgedPayload}.${sigSeg}`, "2");
+    expect(res.ok).toBe(false);
+  });
+
+  it("token with extra dots (≠ 2 segments) → { ok: false }", async () => {
+    const c = generateChallenge();
+    const res = await verifyChallenge(`${c.token}.extra`, String(answerFor(c.a, c.b, c.op)));
+    expect(res.ok).toBe(false);
+  });
+
+  it("non-numeric answer (e.g. \"7abc\") → { ok: false }", async () => {
+    // Generate until the canonical answer is exactly 7 so "7abc" would parseInt to 7.
+    let c = generateChallenge();
+    let guard = 0;
+    while (answerFor(c.a, c.b, c.op) !== 7 && guard < 5000) {
+      c = generateChallenge();
+      guard++;
+    }
+    expect(answerFor(c.a, c.b, c.op)).toBe(7);
+    // Strict integer check rejects the trailing garbage rather than truncating to 7.
+    const res = await verifyChallenge(c.token, "7abc");
+    expect(res.ok).toBe(false);
+  });
+
+  it("empty answer → { ok: false } (does not throw)", async () => {
+    const c = generateChallenge();
+    const res = await verifyChallenge(c.token, "");
+    expect(res.ok).toBe(false);
+  });
+
+  it("nonce-consume throw on the human recovery path → { ok: false }, never throws", async () => {
+    const c = generateChallenge();
+    const correct = String(answerFor(c.a, c.b, c.op));
+    // Simulate a concurrent unique-key race / transient DB hiccup on the nonce consume.
+    mockedCheckRateLimit.mockRejectedValueOnce(new Error("unique violation"));
+    const res = await verifyChallenge(c.token, correct);
     expect(res.ok).toBe(false);
   });
 
