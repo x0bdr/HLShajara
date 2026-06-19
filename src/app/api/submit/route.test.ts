@@ -109,15 +109,31 @@ beforeEach(() => {
 /* ----------------------------- tests ----------------------------- */
 
 describe("POST /api/submit — honeypot first gate", () => {
-  it("filled honeypot → no DB insert and a non-revealing response", async () => {
+  it("filled honeypot → no DB insert and a non-revealing, success-shaped response", async () => {
     stubSiteverify(true, 0.9); // even with a healthy score, honeypot wins first
     const res = await POST(makeRequest(validPayload({ website: "http://spam.example" })));
+    // No DB write and no real submission processing on a honeypot trip.
     expect(insertMock).not.toHaveBeenCalled();
     const data = await res.json();
+    // Indistinguishable from success: HTTP 200, ok:true, a plausible submissionId, the
+    // same message — so a scraper cannot diff it against a real success response.
+    expect(res.status).toBe(200);
+    expect(data.ok).toBe(true);
+    expect(typeof data.submissionId).toBe("number");
+    expect(data.message).toBe("Submission received and queued for review.");
     // Non-leaking: response must NOT name "honeypot" or "website".
     const serialized = JSON.stringify(data).toLowerCase();
     expect(serialized).not.toContain("honeypot");
     expect(serialized).not.toContain("website");
+  });
+
+  it("non-string honeypot (website: 123) still trips the gate → no DB insert", async () => {
+    stubSiteverify(true, 0.9);
+    const res = await POST(makeRequest(validPayload({ website: 123 })));
+    expect(insertMock).not.toHaveBeenCalled();
+    const data = await res.json();
+    expect(data.ok).toBe(true);
+    expect(typeof data.submissionId).toBe("number");
   });
 });
 
@@ -184,5 +200,16 @@ describe("POST /api/submit — gray-band escalation", () => {
     const data = await res.json();
     expect(res.status).toBe(429);
     expect(data.code).toBe("RATE_LIMITED");
+  });
+
+  it("issuance limiter THROWS → issues a challenge anyway, never a 500 lockout (H3)", async () => {
+    stubSiteverify(true, 0.1);
+    // Simulate a concurrent unique-key race / transient DB hiccup on the issuance limiter.
+    mockedCheckRateLimit.mockRejectedValue(new Error("db hiccup"));
+    const res = await POST(makeRequest(validPayload()));
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.code).toBe("CHALLENGE_REQUIRED");
+    expect(data.challenge).toMatchObject({ token: "fresh.token" });
   });
 });

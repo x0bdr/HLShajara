@@ -39,20 +39,29 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    // `website` is the honeypot field (see submitSchema). Pull challenge fields too.
-    // Everything else flows into the schema parse via `payload`.
+    // `website` is the honeypot field. Pull challenge fields too. Everything else flows
+    // into the schema parse via `payload`. (The honeypot is read here from the raw body,
+    // NOT via the schema — it is intentionally not a schema field.)
     const { recaptchaToken, website: honeypot, challengeToken, challengeAnswer, ...payload } = body;
 
     // ---------------------------------------------------------------------
     // GATE 1 — HONEYPOT (FIRST, before reCAPTCHA / any DB work).
     // A non-empty honeypot means a bot filled a field real users never see.
-    // We DELIBERATELY return a non-revealing response (a fake-success-shaped 200
-    // with no real row + no submissionId) so a scraper cannot diff responses to
-    // learn the field exists and skip it next time. NO DB write occurs here.
+    // Coerce to string first so a non-string value (e.g. `website: 123`) still trips
+    // the gate instead of slipping past a `typeof === "string"` check.
+    //
+    // The response is DELIBERATELY indistinguishable from a real success: HTTP 200 with
+    // the SAME body shape as a genuine submit (ok:true, a plausible submissionId, the
+    // same message) — but NO DB write and NO Telegram notification happen. A scraper
+    // therefore cannot diff the honeypot-trip response against a success response to
+    // learn the field exists and start leaving it empty. The honeypot field name never
+    // appears in any response.
     // ---------------------------------------------------------------------
-    if (typeof honeypot === "string" && honeypot.trim().length > 0) {
+    if (String(honeypot ?? "").trim().length > 0) {
       return NextResponse.json({
         ok: true,
+        // Synthetic, plausible id (mirrors the real success body's `submissionId`).
+        submissionId: Math.floor(Date.now() / 1000),
         message: "Submission received and queued for review.",
       });
     }
@@ -79,17 +88,24 @@ export async function POST(request: Request) {
 
       if (!challengePassed) {
         // Re-issue a fresh puzzle. Rate-limit issuance per IP so the gray band cannot
-        // be abused to spam puzzle generation (DoS).
+        // be abused to spam puzzle generation (DoS). FAIL-SAFE: if the issuance limiter
+        // THROWS (concurrent unique-key race / transient DB hiccup), issue a challenge
+        // anyway rather than 500-locking out a gray-band human — the outer per-IP submit
+        // limiter (5/min) still bounds abuse. Only an explicit allowed:false returns 429.
         const ipKey = ip === "unknown" ? "unknown" : createHash("sha256").update(ip).digest("hex");
-        const issue = await checkRateLimit(`challenge-issue:${ipKey}`, {
-          windowMs: 60_000,
-          maxRequests: 10,
-        });
-        if (!issue.allowed) {
-          return NextResponse.json(
-            { ok: false, code: "RATE_LIMITED", message: "Too many requests. Please wait." },
-            { status: 429 }
-          );
+        try {
+          const issue = await checkRateLimit(`challenge-issue:${ipKey}`, {
+            windowMs: 60_000,
+            maxRequests: 10,
+          });
+          if (!issue.allowed) {
+            return NextResponse.json(
+              { ok: false, code: "RATE_LIMITED", message: "Too many requests. Please wait." },
+              { status: 429 }
+            );
+          }
+        } catch (limiterErr) {
+          console.error("Challenge issuance rate-limiter error (issuing anyway):", limiterErr);
         }
 
         const { a, b, op, token } = generateChallenge();
