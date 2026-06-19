@@ -6,7 +6,8 @@ import { validateSubmission, withAudit } from "@/db/persist";
 import { submitSchema } from "@/lib/validation";
 import { triageFromConduct } from "@/lib/constants/conduct";
 import { getSession, getInternalUserId } from "@/lib/session";
-import { rateLimitResponse } from "@/lib/rate-limit";
+import { rateLimitResponse, checkRateLimit } from "@/lib/rate-limit";
+import { generateChallenge, verifyChallenge } from "@/lib/challenge";
 import { generateSubmissionPdf } from "@/lib/report-pdf";
 import { sendPdfToTelegram } from "@/lib/telegram";
 
@@ -38,23 +39,76 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { recaptchaToken, ...payload } = body;
+    // `website` is the honeypot field (see submitSchema). Pull challenge fields too.
+    // Everything else flows into the schema parse via `payload`.
+    const { recaptchaToken, website: honeypot, challengeToken, challengeAnswer, ...payload } = body;
 
-    if (!recaptchaToken || typeof recaptchaToken !== "string") {
-      return NextResponse.json(
-        { ok: false, code: "RECAPTCHA_MISSING", message: "reCAPTCHA token is required." },
-        { status: 400 }
-      );
+    // ---------------------------------------------------------------------
+    // GATE 1 — HONEYPOT (FIRST, before reCAPTCHA / any DB work).
+    // A non-empty honeypot means a bot filled a field real users never see.
+    // We DELIBERATELY return a non-revealing response (a fake-success-shaped 200
+    // with no real row + no submissionId) so a scraper cannot diff responses to
+    // learn the field exists and skip it next time. NO DB write occurs here.
+    // ---------------------------------------------------------------------
+    if (typeof honeypot === "string" && honeypot.trim().length > 0) {
+      return NextResponse.json({
+        ok: true,
+        message: "Submission received and queued for review.",
+      });
     }
 
-    const recaptchaOk = await verifyRecaptcha(recaptchaToken);
+    // ---------------------------------------------------------------------
+    // GATE 2/3 — reCAPTCHA v3 with GRAY-BAND escalation.
+    // A missing token or a low/errored v3 score no longer hard-blocks. Instead the
+    // request enters the gray band: a verified math challenge SUBSTITUTES for the v3
+    // gate so a genuine human (Tor/VPN, low score) can always complete. This is the
+    // one deliberate fail-OPEN exception, bounded by the signed single-use puzzle.
+    // ---------------------------------------------------------------------
+    const recaptchaOk =
+      typeof recaptchaToken === "string" && recaptchaToken.length > 0
+        ? await verifyRecaptcha(recaptchaToken)
+        : false;
+
+    let challengePassed = false;
     if (!recaptchaOk) {
-      return NextResponse.json(
-        { ok: false, code: "RECAPTCHA_FAILED", message: "reCAPTCHA verification failed." },
-        { status: 400 }
-      );
+      // If THIS request carries a challenge answer, it may substitute for the v3 gate.
+      if (typeof challengeToken === "string" && typeof challengeAnswer === "string") {
+        const verdict = await verifyChallenge(challengeToken, challengeAnswer);
+        challengePassed = verdict.ok;
+      }
+
+      if (!challengePassed) {
+        // Re-issue a fresh puzzle. Rate-limit issuance per IP so the gray band cannot
+        // be abused to spam puzzle generation (DoS).
+        const ipKey = ip === "unknown" ? "unknown" : createHash("sha256").update(ip).digest("hex");
+        const issue = await checkRateLimit(`challenge-issue:${ipKey}`, {
+          windowMs: 60_000,
+          maxRequests: 10,
+        });
+        if (!issue.allowed) {
+          return NextResponse.json(
+            { ok: false, code: "RATE_LIMITED", message: "Too many requests. Please wait." },
+            { status: 429 }
+          );
+        }
+
+        const { a, b, op, token } = generateChallenge();
+        // Transport choice: HTTP 200 with a discriminated body. 200 (not 4xx/409)
+        // keeps this off the browser's network-error path and is the simplest signal
+        // for the client to branch on (`data.code === "CHALLENGE_REQUIRED"`). It is
+        // NOT a success — the body's `ok:false` + `code` carry the real outcome.
+        return NextResponse.json({
+          ok: false,
+          code: "CHALLENGE_REQUIRED",
+          message: "Please answer the quick check to confirm you're human.",
+          challenge: { a, b, op, token },
+        });
+      }
     }
 
+    // Reached by EITHER a healthy v3 score OR a verified challenge. Single shared
+    // parse + advisory screen + insert block below — no validation is skipped on the
+    // challenge path.
     const parsed = submitSchema.safeParse(payload);
     if (!parsed.success) {
       return NextResponse.json(

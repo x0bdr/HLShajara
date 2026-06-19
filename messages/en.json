@@ -516,7 +516,15 @@
     "govQuneitra": "Quneitra",
     "govSweida": "As-Suwayda",
     "govDaraa": "Daraa",
-    "govIdlib": "Idlib"
+    "govIdlib": "Idlib",
+    "challengeTitle": "Quick check",
+    "challengeIntro": "Quick check to confirm you're human.",
+    "challengeQuestionAdd": "What is {a} plus {b}?",
+    "challengeQuestionSub": "What is {a} minus {b}?",
+    "challengeAnswerLabel": "Your answer",
+    "challengeSubmit": "Verify",
+    "challengeWrong": "That answer wasn't correct. Please try the new question.",
+    "challengeExpired": "The check expired. Please answer the new question."
   },
   "reply": {
     "title": "Right of Reply",

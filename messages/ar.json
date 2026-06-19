@@ -516,7 +516,15 @@
     "govQuneitra": "القنيطرة",
     "govSweida": "السويداء",
     "govDaraa": "درعا",
-    "govIdlib": "إدلب"
+    "govIdlib": "إدلب",
+    "challengeTitle": "تحقّق سريع",
+    "challengeIntro": "تحقّق سريع للتأكد من أنك إنسان.",
+    "challengeQuestionAdd": "كم يساوي {a} زائد {b}؟",
+    "challengeQuestionSub": "كم يساوي {a} ناقص {b}؟",
+    "challengeAnswerLabel": "إجابتك",
+    "challengeSubmit": "تحقّق",
+    "challengeWrong": "الإجابة غير صحيحة. من فضلك جرّب السؤال الجديد.",
+    "challengeExpired": "انتهت صلاحية التحقّق. من فضلك أجب عن السؤال الجديد."
   },
   "reply": {
     "title": "حق الرد",
