@@ -973,6 +973,8 @@
 .legal-success .t { color: var(--green-700) !important; }
 .legal-error { border-inline-start-color: var(--brick-500) !important; background: var(--brick-100) !important; }
 .legal-error .t { color: var(--brick-700) !important; }
+.legal-warning { border-inline-start-color: #f0b400 !important; background: #fff8e0 !important; }
+.legal-warning .t { color: #8a6200 !important; }
 
 /* Native checkbox focus */
 input[type="checkbox"]:focus-visible {

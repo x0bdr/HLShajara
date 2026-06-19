@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { ok: false, message: "File too large (max 10 MB)" },
+        { ok: false, code: "FILE_TOO_LARGE", message: "File too large (max 10 MB)" },
         { status: 400 }
       );
     }
@@ -130,13 +130,17 @@ export async function POST(request: Request) {
     await mkdir(UPLOAD_DIR, { recursive: true });
     await writeFile(filePath, buffer);
 
+    const relativeUrl = assetPath(`/uploads/${safeName}`);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "";
+    const absoluteUrl = appUrl ? `${appUrl}${relativeUrl}` : relativeUrl;
+
     return NextResponse.json({
       ok: true,
       hash,
       filename: safeName,
       originalName: file.name,
       size: buffer.length,
-      url: assetPath(`/uploads/${safeName}`),
+      url: absoluteUrl,
     });
   } catch (err) {
     console.error("Upload API error:", err);

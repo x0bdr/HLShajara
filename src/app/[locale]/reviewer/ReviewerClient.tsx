@@ -166,19 +166,26 @@ const METADATA_LABELS_EN: Record<string, string> = {
   socialContactMethods: "Social accounts",
 };
 
-function displayValue(value: unknown): string {
+function displayValue(value: unknown, locale?: string): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "string" && value.trim() === "") return "—";
   if (Array.isArray(value) && value.length === 0) return "—";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "boolean") {
+    return locale === "ar" ? (value ? "نعم" : "لا") : value ? "Yes" : "No";
+  }
   return String(value);
 }
 
-function getStatusLabel(status: string, t: (key: string) => string): string {
+function getStatusLabel(
+  status: string,
+  tReviewer: (key: string) => string,
+  tSubmit: (key: string) => string,
+): string {
   const key = `status_${status}`;
-  const label = t(key);
-  // If no translation exists, fall back to the raw status string.
-  return label === key ? status : label;
+  const reviewerLabel = tReviewer(key);
+  if (reviewerLabel !== key) return reviewerLabel;
+  const submitLabel = tSubmit(key);
+  return submitLabel === key ? status : submitLabel;
 }
 
 function formatLabels(
@@ -369,7 +376,9 @@ function SubmissionMetadata({ sub, locale, t }: { sub: Submission; locale: strin
         }
         if (key === "socialContactMethods") {
           const arr = (value as { type: string; value: string }[] | undefined) ?? [];
-          const text = arr.map((m) => `${m.type}: ${m.value}`).join(" · ");
+          const text = arr
+            .map((m) => `${t(`contactType_${m.type}` as never) || m.type}: ${m.value}`)
+            .join(" · ");
           return <MetadataRow key={key} label={label} value={text} />;
         }
         return <MetadataRow key={key} label={label} value={value} />;
@@ -485,7 +494,7 @@ export default function ReviewerPage() {
                   <div>
                     <div className="rc-name">{s.entityName}</div>
                     <div className="rc-meta">
-                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{t("status")}: {getStatusLabel(s.status, t)}</span>
+                      {resolveSubTypeLabel(s, tSubmit)} · {resolveCategoryLabel(s, tSubmit)} · <span className="font-semibold">{t("status")}: {getStatusLabel(s.status, t, tSubmit)}</span>
                     </div>
                   </div>
                   <button className="btn primary btn-sm" onClick={() => setSelected(s)}>

@@ -15,6 +15,7 @@
  */
 
 import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   STEPS,
   type StepId,
@@ -27,8 +28,8 @@ import type { WizardState } from "@/lib/wizard/state";
 interface WizardProgressProps {
   /** Full wizard state — drives done/current/upcoming + the branch-aware count. */
   state: WizardState;
-  /** Called when a completed pill is tapped (parent routes back to that step). */
-  onJump: (id: StepId) => void;
+  /** Legacy callback; kept for API compatibility but pills now navigate via real links. */
+  onJump?: (id: StepId) => void;
 }
 
 /**
@@ -75,18 +76,17 @@ export function WizardProgress({ state, onJump }: WizardProgressProps) {
         const status = statusFor(step.id);
         const label = t(step.titleKey as never);
 
-        // Completed pills are real <button>s that jump back; current + upcoming
-        // pills are inert <span>s (no handler) so only visited steps are reachable.
+        // Completed pills are real links so they work even if the JS click
+        // delegation is interrupted; current + upcoming pills are inert <span>s.
         if (status === "done") {
           return (
-            <button
+            <Link
               key={step.id}
-              type="button"
+              href={`/submit?step=${step.id}`}
               className="wizard-step-pill done"
-              onClick={() => onJump(step.id)}
             >
               {label}
-            </button>
+            </Link>
           );
         }
 

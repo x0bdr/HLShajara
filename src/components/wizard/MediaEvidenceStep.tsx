@@ -19,7 +19,13 @@ interface MediaEvidenceStepProps {
   dispatch: Dispatch<WizardAction>;
 }
 
-const ACCEPTED_TYPES = "image/*,.pdf,.doc,.docx,.txt,video/*";
+const ACCEPTED_TYPES = "image/*,video/*";
+const MAX_FILES = 10;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+function isAllowedFileType(file: File): boolean {
+  return file.type.startsWith("image/") || file.type.startsWith("video/");
+}
 
 export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
   const t = useTranslations("submit");
@@ -33,8 +39,26 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
 
   async function uploadFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    setUploading(true);
     setUploadError(null);
+
+    const totalAfterUpload = form.sourceFiles.length + files.length;
+    if (totalAfterUpload > MAX_FILES) {
+      setUploadError(t("uploadTooManyFiles", { max: MAX_FILES }));
+      return;
+    }
+
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_FILE_SIZE) {
+        setUploadError(t("uploadFileTooLarge", { max: "10 MB" }));
+        return;
+      }
+      if (!isAllowedFileType(file)) {
+        setUploadError(t("uploadFileTypeNotAllowed"));
+        return;
+      }
+    }
+
+    setUploading(true);
 
     for (const file of Array.from(files)) {
       const data = new FormData();
@@ -54,7 +78,18 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
             },
           });
         } else {
-          setUploadError(json.message ?? t("uploadFailed"));
+          const code = json.code;
+          const message =
+            code === "INVALID_FILE_TYPE" || code === "UNSUPPORTED_FILE_TYPE"
+              ? t("uploadFileTypeNotAllowed")
+              : code === "FILE_TOO_LARGE"
+                ? t("uploadFileTooLarge", { max: "10 MB" })
+                : code === "FFMPEG_UNAVAILABLE"
+                  ? t("uploadVideoUnavailable")
+                  : code === "MALWARE_DETECTED"
+                    ? t("uploadMalwareDetected")
+                    : json.message ?? t("uploadFailed");
+          setUploadError(message);
         }
       } catch (err) {
         console.error("Upload error:", err);
@@ -118,15 +153,21 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
       <div className="form-field">
         <label>{t("mediaTitle")}</label>
         <div
-          className={`dropzone ${isDragging ? "dragging" : ""} ${uploading ? "uploading" : ""}`}
-          onClick={() => inputRef.current?.click()}
-          onDrop={onDrop}
+          className={`dropzone ${isDragging ? "dragging" : ""} ${uploading ? "uploading" : ""} ${form.sourceFiles.length >= MAX_FILES ? "disabled" : ""}`}
+          onClick={() => {
+            if (form.sourceFiles.length < MAX_FILES) inputRef.current?.click();
+          }}
+          onDrop={(e) => {
+            if (form.sourceFiles.length < MAX_FILES) onDrop(e);
+          }}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           role="button"
-          tabIndex={0}
+          tabIndex={form.sourceFiles.length >= MAX_FILES ? -1 : 0}
           aria-label={t("mediaTitle")}
+          aria-disabled={form.sourceFiles.length >= MAX_FILES || undefined}
           onKeyDown={(e) => {
+            if (form.sourceFiles.length >= MAX_FILES) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               inputRef.current?.click();
@@ -138,13 +179,21 @@ export function MediaEvidenceStep({ form, dispatch }: MediaEvidenceStepProps) {
             type="file"
             multiple
             accept={ACCEPTED_TYPES}
-            disabled={uploading}
+            disabled={uploading || form.sourceFiles.length >= MAX_FILES}
             className="dropzone-input"
             onChange={handleFileChange}
           />
           <div className="dropzone-icon">☁️</div>
-          <div className="dropzone-title">{uploading ? t("uploading") : t("dropzoneTitle")}</div>
-          <div className="dropzone-hint">{t("dropzoneHint")}</div>
+          <div className="dropzone-title">
+            {uploading
+              ? t("uploading")
+              : form.sourceFiles.length >= MAX_FILES
+                ? t("uploadMaxReached")
+                : t("dropzoneTitle")}
+          </div>
+          <div className="dropzone-hint">
+            {t("dropzoneHint", { maxFiles: MAX_FILES, maxSize: "10 MB" })}
+          </div>
         </div>
 
         {uploadError && (

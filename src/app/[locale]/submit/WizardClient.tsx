@@ -106,6 +106,7 @@ interface SubmitResult {
   code?: string;
   submissionId?: number;
   errors?: Record<string, string[]>;
+  warningCode?: string;
 }
 
 export function WizardClient() {
@@ -137,7 +138,9 @@ export function WizardClient() {
   const goTo = useCallback(
     (id: StepId, replace = false) => {
       dispatch({ type: "GOTO_STEP", step: id });
-      const href = { pathname: "/submit", query: { step: id } };
+      // next-intl's App Router useRouter expects paths WITHOUT the locale prefix;
+      // it adds the prefix automatically.
+      const href = `/submit?step=${id}`;
       if (replace) router.replace(href, { scroll: false });
       else router.push(href, { scroll: false });
     },
@@ -322,6 +325,12 @@ export function WizardClient() {
             </Button>
           </div>
         </div>
+        {result?.warningCode && (
+          <div className="legal legal-warning mt-16 mb-16" role="alert">
+            <div className="t">{t("advisoryTitle")}</div>
+            <p>{t("contentAdvisory")}</p>
+          </div>
+        )}
       </div>
     );
   }

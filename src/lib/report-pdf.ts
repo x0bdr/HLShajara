@@ -5,15 +5,15 @@ import type { submissions as submissionsTable } from "@/db/schema";
 import {
   getCategoryConfig,
   getSubTypeConfig,
+  getCategoryLabelAr,
+  getSubTypeLabelAr,
+  getFlagLabelAr,
+  getDocumentLabelAr,
   type DetailFieldId,
 } from "@/lib/wizard/category-config";
+import arMessages from "../../messages/ar.json";
 
 type Submission = typeof submissionsTable.$inferSelect;
-
-interface SourceLink {
-  url: string;
-  title?: string;
-}
 
 interface SourceFile {
   url: string;
@@ -108,6 +108,25 @@ const METADATA_LABELS_AR: Record<string, string> = {
   contactMethods: "وسائل التواصل",
 };
 
+const arSubmit = (arMessages.submit as unknown) as Record<string, string>;
+const arReviewer = (arMessages.reviewer as unknown) as Record<string, string>;
+const arRecord = (arMessages.record as unknown) as Record<string, string>;
+
+function arStatusLabel(status: string): string {
+  return arReviewer[`status_${status}`] ?? arRecord[`status_${status}`] ?? status;
+}
+
+function arContactTypeLabel(type: string): string {
+  return arSubmit[`contactType_${type}`] ?? type;
+}
+
+function toAbsoluteUrl(url: string): string {
+  if (!url) return url;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(url)) return url;
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL ?? "";
+  return `${base}${url}`;
+}
+
 function displayValue(value: unknown): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "string" && value.trim() === "") return "—";
@@ -132,16 +151,21 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;");
 }
 
-function formatValue(key: string, raw: unknown): string {
+
+
+function formatValue(key: string, raw: unknown, category?: string | null, orgType?: string): string {
   if (key === "googleMapsLink" || key === "websiteName" || key === "mediaLink") {
     const url = String(raw);
     return `<a href="${escapeHtml(url)}" dir="auto">${escapeHtml(url)}</a>`;
+  }
+  if (key === "orgType") {
+    return escapeHtml(getSubTypeLabelAr(category ?? undefined, orgType));
   }
   if (key === "ownerNames" || key === "investorNames") {
     const arr = Array.isArray(raw) ? raw : [];
     return arr.map((v) => escapeHtml(String(v))).join(" · ");
   }
-  if (key === "labourEntries") {
+  if (key === "labourEntries" || key === "labourMembers" || key === "academicStaff") {
     const arr = Array.isArray(raw) ? (raw as { name?: string; role?: string }[]) : [];
     return arr
       .filter((e) => e.name || e.role)
@@ -150,11 +174,15 @@ function formatValue(key: string, raw: unknown): string {
   }
   if (key === "socialContactMethods" || key === "contactMethods") {
     const arr = Array.isArray(raw) ? (raw as { type: string; value: string }[]) : [];
-    return arr.map((m) => `${escapeHtml(m.type)}: ${escapeHtml(m.value)}`).join(" · ");
+    return arr.map((m) => `${escapeHtml(arContactTypeLabel(m.type))}: ${escapeHtml(m.value)}`).join(" · ");
   }
-  if (key === "supportingDocuments" || key === "detailFlags") {
+  if (key === "supportingDocuments") {
     const arr = Array.isArray(raw) ? raw : [];
-    return arr.map((v) => escapeHtml(String(v))).join(" · ");
+    return arr.map((v) => escapeHtml(getDocumentLabelAr(String(v)))).join(" · ");
+  }
+  if (key === "detailFlags") {
+    const arr = Array.isArray(raw) ? raw : [];
+    return arr.map((v) => escapeHtml(getFlagLabelAr(String(v)))).join(" · ");
   }
   return escapeHtml(displayValue(raw));
 }
@@ -166,13 +194,18 @@ function isEmptyValue(value: unknown): boolean {
   return false;
 }
 
-function formatMetadata(meta: Record<string, unknown>, allowedKeys: Set<string>): string {
+function formatMetadata(
+  meta: Record<string, unknown>,
+  allowedKeys: Set<string>,
+  category: string | null,
+  orgType: string | undefined,
+): string {
   const rows = Object.entries(METADATA_LABELS_AR)
     .map(([key, label]) => {
       if (!allowedKeys.has(key)) return "";
       const raw = meta[key];
       if (isEmptyValue(raw)) return "";
-      return `<tr><td class="meta-label">${label}</td><td class="meta-value">${formatValue(key, raw)}</td></tr>`;
+      return `<tr><td class="meta-label">${label}</td><td class="meta-value">${formatValue(key, raw, category, orgType)}</td></tr>`;
     })
     .filter(Boolean)
     .join("");
@@ -180,22 +213,12 @@ function formatMetadata(meta: Record<string, unknown>, allowedKeys: Set<string>)
   return rows ? `<table class="meta-table">${rows}</table>` : "";
 }
 
-function formatSourceLinks(links: SourceLink[] | null | undefined): string {
-  if (!links || links.length === 0) return "<p class=\"empty\">لا توجد روابط مصادر.</p>";
-  return `<ul class="source-list">${links
-    .map(
-      (l) =>
-        `<li><a href="${escapeHtml(l.url)}" dir="auto">${escapeHtml(l.title || l.url)}</a></li>`
-    )
-    .join("")}</ul>`;
-}
-
 function formatSourceFiles(files: SourceFile[] | null | undefined): string {
   if (!files || files.length === 0) return "<p class=\"empty\">لا توجد ملفات مرفقة.</p>";
   return `<ul class="source-list">${files
     .map(
       (f) =>
-        `<li>${f.label ? `${escapeHtml(f.label)} — ` : ""}${escapeHtml(f.originalName)} — <a href="${escapeHtml(f.url)}" dir="auto">رابط</a></li>`
+        `<li>${f.label ? `${escapeHtml(f.label)} — ` : ""}${escapeHtml(f.originalName)} — <a href="${escapeHtml(toAbsoluteUrl(f.url))}" dir="auto">رابط</a></li>`
     )
     .join("")}</ul>`;
 }
@@ -241,10 +264,10 @@ function getAllowedMetaKeys(category: string | null, orgType: string | undefined
 
 export async function generateSubmissionPdf(submission: Submission): Promise<Buffer> {
   const meta = (submission.reportMetadata as Record<string, unknown>) ?? {};
-  const sourceLinks = (submission.sourceLinks as SourceLink[] | null) ?? [];
   const sourceFiles = (submission.sourceFiles as SourceFile[] | null) ?? [];
   const createdAt = new Date(submission.createdAt).toLocaleString("ar-SA");
-  const allowedKeys = getAllowedMetaKeys(submission.reportCategory, meta.orgType as string | undefined);
+  const orgType = meta.orgType as string | undefined;
+  const allowedKeys = getAllowedMetaKeys(submission.reportCategory, orgType);
 
   const logoImg = LOGO_BASE64
     ? `<img src="data:image/jpeg;base64,${LOGO_BASE64}" class="logo" alt="HLShajara" />`
@@ -479,14 +502,9 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
 
     <h1 dir="auto">${escapeHtml(submission.entityName)}</h1>
     <div class="meta-bar">
-      <span>نوع الجهة: <span dir="auto">${escapeHtml(submission.entityType)}</span></span>
-      <span>التصنيف: <span dir="auto">${escapeHtml(submission.reportCategory ?? "—")}</span></span>
-      <span>الحالة: <span dir="auto">${escapeHtml(submission.status)}</span></span>
-    </div>
-
-    <div class="card">
-      <h2>الدور / المنصب المُبلَّغ عنه</h2>
-      <p dir="auto">${escapeHtml(submission.entityRole)}</p>
+      <span>التصنيف: <span dir="auto">${escapeHtml(getCategoryLabelAr(submission.reportCategory))}</span></span>
+      <span>النوع الفرعي: <span dir="auto">${escapeHtml(getSubTypeLabelAr(submission.reportCategory, orgType))}</span></span>
+      <span>الحالة: <span dir="auto">${escapeHtml(arStatusLabel(submission.status))}</span></span>
     </div>
 
     <div class="card">
@@ -496,12 +514,7 @@ export async function generateSubmissionPdf(submission: Submission): Promise<Buf
 
     <div class="card">
       <h2>بيانات مصنّفة</h2>
-      ${formatMetadata(meta, allowedKeys)}
-    </div>
-
-    <div class="card">
-      <h2>روابط المصادر</h2>
-      ${formatSourceLinks(sourceLinks)}
+      ${formatMetadata(meta, allowedKeys, submission.reportCategory, orgType)}
     </div>
 
     <div class="card">

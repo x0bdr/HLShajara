@@ -146,6 +146,7 @@ export async function POST(request: Request) {
       ok: true,
       submissionId: submission.id,
       message: "Submission received and queued for review.",
+      warningCode: !screen.ok ? screen.code : undefined,
     });
   } catch (err) {
     console.error("Submit error:", err);
