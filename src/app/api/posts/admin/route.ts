@@ -6,6 +6,7 @@ import { getSession, forbiddenResponse, getInternalUserId } from "@/lib/session"
 import { hasRole } from "@/lib/auth";
 import { rateLimitResponse } from "@/lib/rate-limit";
 import { withAudit } from "@/db/persist";
+import { parseTiptapDoc, sanitizeDocLinks } from "@/lib/publication-body";
 
 /* ---------- GET: list posts or single post ---------- */
 export async function GET(request: Request) {
@@ -75,6 +76,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Missing required fields: slug, locale, title, body" }, { status: 400 });
     }
 
+    // Body MUST be a valid TipTap doc — fail-closed before any DB write (no raw-anything
+    // is stored). Drop unsafe link hrefs on write, then store the re-stringified doc.
+    const parsedBody = parseTiptapDoc(postBody);
+    if (!parsedBody.ok) {
+      return NextResponse.json({ ok: false, message: "Invalid publication body" }, { status: 400 });
+    }
+    const sanitizedBody = JSON.stringify(sanitizeDocLinks(parsedBody.doc));
+
     // Check slug uniqueness per locale
     const existing = await db
       .select({ id: posts.id })
@@ -99,7 +108,7 @@ export async function POST(request: Request) {
             locale,
             title,
             excerpt: excerpt || null,
-            body: postBody,
+            body: sanitizedBody,
             coverImageUrl: coverImageUrl || null,
             status: status || "draft",
             publishedAt: status === "published" && publishedAt ? new Date(publishedAt) : status === "published" ? new Date() : null,
@@ -160,7 +169,14 @@ export async function PATCH(request: Request) {
     if (locale !== undefined) updateData.locale = locale;
     if (title !== undefined) updateData.title = title;
     if (excerpt !== undefined) updateData.excerpt = excerpt;
-    if (postBody !== undefined) updateData.body = postBody;
+    if (postBody !== undefined) {
+      // Same fail-closed TipTap-doc validation + link-href sanitize as POST.
+      const parsedBody = parseTiptapDoc(postBody);
+      if (!parsedBody.ok) {
+        return NextResponse.json({ ok: false, message: "Invalid publication body" }, { status: 400 });
+      }
+      updateData.body = JSON.stringify(sanitizeDocLinks(parsedBody.doc));
+    }
     if (coverImageUrl !== undefined) updateData.coverImageUrl = coverImageUrl;
     if (status !== undefined) {
       updateData.status = status;
